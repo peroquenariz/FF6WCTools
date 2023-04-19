@@ -20,6 +20,7 @@ namespace StatsCompanion
         public int countTimesMenuWasOpened { get; set; }
         public string timeSpentDrivingAirship { get; set; }
         public int countTimesAirshipWasUsed { get; set; }
+        public string timeSpentonBattles { get; set; }
         public List<string> startingChars { get; set; }
         public List<string> startingAbilities { get; set; }
         public bool disableAbilityCheck { get; set; }
@@ -89,6 +90,7 @@ namespace StatsCompanion
             countTimesMenuWasOpened = run.MenuOpenCounter;
             timeSpentDrivingAirship = run.TimeSpentOnAirship.ToString(@"hh\:mm\:ss\.ff");
             countTimesAirshipWasUsed = run.AirshipCounter;
+            timeSpentonBattles = run.TimeSpentOnBattles.ToString(@"hh\:mm\:ss\.ff");
             checksCompleted = run.ChecksCompleted;
             checksPeeked = run.ChecksPeeked;
             finalBattleCharacters = run.FinalBattleCharacters;

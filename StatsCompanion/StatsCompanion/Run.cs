@@ -9,6 +9,7 @@ namespace StatsCompanion
     internal class Run
     {
         bool _isMenuTimerRunning;
+        bool _isBattleTimerRunning;
         bool _isAirshipTimerRunning;
         bool _seedHasBeenAbandoned;
         bool _steppedOnKTSwitches;
@@ -35,6 +36,8 @@ namespace StatsCompanion
         byte _isKefkaDead;
         byte _isMenuActive;
         byte _isMenuActivePrevious;
+        byte _battleCounter;
+        byte _battleCounterPrevious;
         byte _enableDialogWindow;
         byte _character1Graphic;
         byte _character1GraphicPrevious;
@@ -71,6 +74,8 @@ namespace StatsCompanion
         DateTime _EndTime;
         DateTime _menuOpen;
         DateTime _menuClose;
+        DateTime _battleStart;
+        DateTime _battleEnd;
         DateTime _airshipStart;
         DateTime _airshipStop;
         DateTime _kefkaTowerUnlockTime;
@@ -79,6 +84,7 @@ namespace StatsCompanion
         DateTime _kefkaStartTime;
         DateTime _lastMapTimestamp;
         TimeSpan _timeSpentOnMenus;
+        TimeSpan _timeSpentOnBattles;
         TimeSpan _timeSpentOnAirship;
         string _hasExpEgg;
         string _hasSuperBall;
@@ -113,7 +119,9 @@ namespace StatsCompanion
             _characterMaxLevel = 0;
             _menuOpenCounter = 0;
             _isMenuTimerRunning = false;
+            _isBattleTimerRunning = false;
             _timeSpentOnMenus = new(0, 0, 0);
+            _timeSpentOnBattles = new(0, 0, 0);
             _timeSpentOnAirship = new(0, 0, 0);
             _isAirshipTimerRunning = false;
             _airshipCounter = 0;
@@ -253,6 +261,12 @@ namespace StatsCompanion
         public List<string> KnownBlitzes { get => _knownBlitzes; set => _knownBlitzes = value; }
         public List<string> KnownLores { get => _knownLores; set => _knownLores = value; }
         public List<string> FinalBattlePrep { get => _finalBattlePrep; set => _finalBattlePrep = value; }
+        public bool IsBattleTimerRunning { get => _isBattleTimerRunning; set => _isBattleTimerRunning = value; }
+        public TimeSpan TimeSpentOnBattles { get => _timeSpentOnBattles; set => _timeSpentOnBattles = value; }
+        public byte BattleCounter { get => _battleCounter; set => _battleCounter = value; }
+        public byte BattleCounterPrevious { get => _battleCounterPrevious; set => _battleCounterPrevious = value; }
+        public DateTime BattleStart { get => _battleStart; set => _battleStart = value; }
+        public DateTime BattleEnd { get => _battleEnd; set => _battleEnd = value; }
 
         public bool CheckIfRunStarted()
         {
@@ -288,6 +302,31 @@ namespace StatsCompanion
                 }
             }
             IsMenuActivePrevious = IsMenuActive;
+        }
+
+        public void CheckIfInBattle()
+        {
+            if (!IsBattleTimerRunning)
+            {
+                if (BattleCounter - BattleCounterPrevious > 0 &&
+                    BattleCounter - BattleCounterPrevious < 10 &&
+                    MapId != 0x150)
+                {
+                    BattleStart = DateTime.Now;
+                    IsBattleTimerRunning = true;
+                }
+            }
+            else
+            {
+                if (BattleCounter == BattleCounterPrevious ||
+                    HasFinished == true)
+                {
+                    BattleEnd = DateTime.Now;
+                    IsBattleTimerRunning = false;
+                    TimeSpentOnBattles += BattleEnd - BattleStart;
+                }
+            }
+            BattleCounterPrevious = BattleCounter;
         }
 
         public void CheckIfFlyingAirship()
@@ -543,6 +582,9 @@ namespace StatsCompanion
             Console.WriteLine($"Flying the airship: {IsAirshipTimerRunning}");
             Console.WriteLine($"Time spent flying the airship: {TimeSpentOnAirship}");
             Console.WriteLine($"Times you used the airship: {AirshipCounter}");
+            Console.WriteLine();
+            Console.WriteLine($"In battle: {IsBattleTimerRunning}");
+            Console.WriteLine($"Time spent battling: {TimeSpentOnBattles}");
             Console.WriteLine();
             Console.WriteLine($"Current map: {WCData.MapsDict[(uint)MapId]}");
             Console.WriteLine();

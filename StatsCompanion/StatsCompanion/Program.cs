@@ -72,7 +72,7 @@ namespace StatsCompanion
                         run.EnableDialogWindow = sniConnection.ReadMemory(WCData.EnableDialogWindow, 1)[0];
                         run.IsMenuActive = sniConnection.ReadMemory(WCData.MenuCounter, 1)[0];
                         run.CheckIfMenuOpen();
-
+                        
                         // Check if the player is flying the airship, track time spent flying and times they drove it.
                         if (WCData.AirshipMapIds.Contains(run.MapId) && run.EnableDialogWindow != 1) // !run.MenuTimerRunning &&
                         {
@@ -103,6 +103,10 @@ namespace StatsCompanion
                             run.CheckKefkaKill();
                         }
 
+                        // Check if the player is in a battle, track time spent battling.
+                        run.BattleCounter = sniConnection.ReadMemory(WCData.BattleCounter, 1)[0];
+                        run.CheckIfInBattle();
+                        
                         // Tzen thief peek WoB.
                         if (run.MapId == 0x132 && run.TzenThiefPeekWob == "Did not check")
                         {

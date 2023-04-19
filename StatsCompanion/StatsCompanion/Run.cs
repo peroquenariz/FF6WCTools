@@ -310,6 +310,7 @@ namespace StatsCompanion
             {
                 if (BattleCounter - BattleCounterPrevious > 0 &&
                     BattleCounter - BattleCounterPrevious < 10 &&
+                    BattleCounter - BattleCounterPrevious != 4 &&
                     MapId != 0x150)
                 {
                     BattleStart = DateTime.Now;

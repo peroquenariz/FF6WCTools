@@ -250,6 +250,8 @@ namespace StatsCompanion
         /// </summary>
         public static readonly List<int> AirshipMapIds = new() { 0x000, 0x001, 0x006, 0x00B, 0x00A, 0x011 };
 
+        public static readonly List<int> AirshipFalsePositives = new() { 0x161, 0x0BB };
+
         /// <summary>
         /// Dictionary holding the bit offsets of every check event.
         /// </summary>

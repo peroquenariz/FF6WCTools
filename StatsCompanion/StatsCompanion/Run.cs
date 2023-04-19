@@ -334,7 +334,8 @@ namespace StatsCompanion
         {
             if (!IsAirshipTimerRunning)
             {
-                if (Character1Graphic == 6 || Character1Graphic == 1)
+                if ((Character1Graphic == 6 || Character1Graphic == 1) &&
+                    !WCData.AirshipFalsePositives.Contains(MapsVisited[^2]))
                 {
                     AirshipStart = DateTime.Now;
                     IsAirshipTimerRunning = true;
@@ -345,7 +346,7 @@ namespace StatsCompanion
             {
                 if ((Character1Graphic == 3 && Character1GraphicPrevious == 9) ||
                     (Character1Graphic == 0 && (MapId == 0x006 || MapId == 0x00B || MapId == 0x00A)) ||
-                    IsMenuTimerRunning)
+                    IsMenuTimerRunning || IsBattleTimerRunning)
                 {
                     AirshipStop = DateTime.Now;
                     IsAirshipTimerRunning = false;

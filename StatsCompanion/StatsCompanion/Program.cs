@@ -38,23 +38,23 @@ namespace StatsCompanion
                     Console.WriteLine("Waiting for new game...");
                     Console.WriteLine();
 
-                    //// Wait for the player to start a new game.
-                    //// Only exit the loop if current menu is FF6WC custom pre-game menu and new game has been selected.
-                    //while (true)
-                    //{
-                    //    run.MapId = DataHandler.ConcatenateByteArray(sniConnection.ReadMemory(WCData.MapId, 2)) & 0x1FF;
-                    //    run.MenuNumber = sniConnection.ReadMemory(WCData.MenuNumber, 1)[0];
-                    //    run.NewGameSelected = sniConnection.ReadMemory(WCData.NewGameSelected, 1)[0];
-                    //    if (run.CheckIfRunStarted() == true)
-                    //    {
-                    //        break;
-                    //    }
-                    //}
-                    //Console.Clear();
-                    //Console.WriteLine("Stats Companion is now tracking your run...");
-                    //Console.WriteLine("*** DO NOT close this window! ***");
+                    // Wait for the player to start a new game.
+                    // Only exit the loop if current menu is FF6WC custom pre-game menu and new game has been selected.
+                    while (true)
+                    {
+                        run.MapId = DataHandler.ConcatenateByteArray(sniConnection.ReadMemory(WCData.MapId, 2)) & 0x1FF;
+                        run.MenuNumber = sniConnection.ReadMemory(WCData.MenuNumber, 1)[0];
+                        run.NewGameSelected = sniConnection.ReadMemory(WCData.NewGameSelected, 1)[0];
+                        if (run.CheckIfRunStarted() == true)
+                        {
+                            break;
+                        }
+                    }
+                    Console.Clear();
+                    Console.WriteLine("Stats Companion is now tracking your run...");
+                    Console.WriteLine("*** DO NOT close this window! ***");
 
-                    //Thread.Sleep(3500);
+                    Thread.Sleep(3500);
 
                     // Read character data.
                     run.CharacterData = sniConnection.ReadMemory(WCData.CharacterDataStart, WCData.CharacterDataSize);

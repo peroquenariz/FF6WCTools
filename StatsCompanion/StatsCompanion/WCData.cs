@@ -244,6 +244,7 @@ namespace StatsCompanion
 
         static public readonly TimeSpan TimeFromKefkaFlashToAnimation = new(0, 0, 0, 4, 967); // 298 frames at 60FPS.
         static public readonly TimeSpan TimeFromSwitchesToKefkaLair = new(0, 0, 0, 13, 50); // 783 frames at 60FPS.
+        static public readonly TimeSpan TimeSearchTheSkies = new(0, 0, 3);
 
         /// <summary>
         /// List containing the maps that are used to determine if the airship is being flown.

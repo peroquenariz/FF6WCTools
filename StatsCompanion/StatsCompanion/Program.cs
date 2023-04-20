@@ -90,15 +90,23 @@ namespace StatsCompanion
                         }
 
                         // Check for final Kefka kill.
-                        if (run.MapId == 0x164 && !run.IsMenuTimerRunning)
+                        if (run.MapId == 0x164)
                         {
                             run.IsKefkaFight = DataHandler.ConcatenateByteArray(sniConnection.ReadMemory(WCData.BattleIndex, 2));
                             run.IsKefkaDead = sniConnection.ReadMemory(WCData.EnableKefkaFinalAnimation, 1)[0];
+
+                            // Check if the player is in the party selection menu before final Kefka fight.
+                            if (run.IsMenuTimerRunning)
+                            {
+                                // Get final Kefka character lineup.
+                                run.FinalBattleLineup = sniConnection.ReadMemory(WCData.FinalBattleCharacterListStart, 12);
+                            }
 
                             // Get character data.
                             if (!run.IsFinalBattle)
                             {
                                 run.CharacterData = sniConnection.ReadMemory(WCData.CharacterDataStart, WCData.CharacterDataSize);
+                                run.CharacterSkillData = sniConnection.ReadMemory(WCData.CharacterSkillData, WCData.CharacterSkillDataSize);
                                 run.IsFinalBattle = true;
                             }
 
@@ -144,13 +152,6 @@ namespace StatsCompanion
 
                             // Add visited maps to the list.
                             run.UpdateMapsVisited();
-
-                            // Check if the player is in the party selection menu before final Kefka fight.
-                            if (run.MapId == 0x164 && run.IsMenuTimerRunning)
-                            {
-                                // Get final Kefka character lineup.
-                                run.FinalBattleLineup = sniConnection.ReadMemory(WCData.FinalBattleCharacterListStart, 12);
-                            }
 
                             // Only execute on game reset.
                             if (run.MapId == 3)
@@ -266,7 +267,6 @@ namespace StatsCompanion
                     run.DragonCount = sniConnection.ReadMemory(WCData.DragonCount, 1)[0];
                     run.ChestData = sniConnection.ReadMemory(WCData.ChestDataStart, WCData.ChestDataSize);
                     run.EventBitData = sniConnection.ReadMemory(WCData.EventBitStartAddress, WCData.EventBitDataSize);
-                    run.CharacterSkillData = sniConnection.ReadMemory(WCData.CharacterSkillData, WCData.CharacterSkillDataSize);
                     run.CharacterCount = DataHandler.GetCharacterCount(run.CharactersBytes);
                     run.ChestCount = DataHandler.GetChestCount(run.ChestData);
                     run.CharacterMaxLevel = DataHandler.GetMaximumCharacterLevel(run.CharacterData);

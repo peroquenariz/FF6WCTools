@@ -253,7 +253,7 @@ namespace StatsCompanion
         public byte EsperCountPrevious { get => _esperCountPrevious; set => _esperCountPrevious = value; }
         public bool InTzenThiefArea { get => _inTzenThiefArea; set => _inTzenThiefArea = value; }
         public byte EnableDialogWindow { get => _enableDialogWindow; set => _enableDialogWindow = value; }
-        internal Character[] FinalBattleCharacters { get => _finalBattleCharacters; set => _finalBattleCharacters = value; }
+        public Character[] FinalBattleCharacters { get => _finalBattleCharacters; set => _finalBattleCharacters = value; }
         public List<(string, string)> MapsVisitedWithTimestamps { get => _mapsVisitedWithTimestamps; set => _mapsVisitedWithTimestamps = value; }
         public DateTime LastMapTimestamp { get => _lastMapTimestamp; set => _lastMapTimestamp = value; }
         public byte[] CharacterSkillData { get => _characterSkillData; set => _characterSkillData = value; }
@@ -600,7 +600,7 @@ namespace StatsCompanion
             }
         }
 
-        internal void CreateAuctionHouseString()
+        public void CreateAuctionHouseString()
         {
             switch (AuctionHouseEsperCount)
             {
@@ -616,7 +616,7 @@ namespace StatsCompanion
             }
         }
 
-        internal void CreateTimestampedMapsList()
+        public void CreateTimestampedMapsList()
         {
             foreach (var item in MapsVisitedWithTimestamps)
             {
@@ -628,19 +628,19 @@ namespace StatsCompanion
             }
         }
 
-        internal void GetFinalLineup()
+        public void GetFinalLineup()
         {
             for (int i = 0; i < 4; i++)
             {
                 // Get character data.
-                byte[] cData = CharacterData[(FinalBattleLineup[i] * 37)..(FinalBattleLineup[i] * 37 + 38)];
-                
+                byte[] cData = CharacterData[(FinalBattleLineup[i] * 37)..(FinalBattleLineup[i] * 37 + 37)];
+
                 // Get character skill data.
                 byte[] cSkillData;
                 
                 if (FinalBattleLineup[i] < 0x0C)
                 {
-                    cSkillData = CharacterSkillData[(FinalBattleLineup[i] * 54)..(FinalBattleLineup[i] * 54 + 55)]; 
+                    cSkillData = CharacterSkillData[(FinalBattleLineup[i] * 54)..(FinalBattleLineup[i] * 54 + 54)];
                 }
                 else
                 {
@@ -652,7 +652,7 @@ namespace StatsCompanion
             }
         }
 
-        internal void GetSwdTechList()
+        public void GetSwdTechList()
         {
             byte swdTechData = CharacterSkillData[WCData.SwdTechOffset];
             for (byte i = 0; i < 8; i++)
@@ -665,7 +665,7 @@ namespace StatsCompanion
             }
         }
 
-        internal void GetBlitzList()
+        public void GetBlitzList()
         {
             byte blitzData = CharacterSkillData[WCData.BlitzOffset];
             for (byte i = 0; i < 8; i++)
@@ -678,7 +678,7 @@ namespace StatsCompanion
             }
         }
 
-        internal void GetLoreList()
+        public void GetLoreList()
         {
             int loreData = DataHandler.ConcatenateByteArray(CharacterSkillData[WCData.LoreOffset..(WCData.LoreOffset+3)]);
             for (byte i = 0; i < 24; i++)
@@ -691,7 +691,7 @@ namespace StatsCompanion
             }
         }
 
-        internal void CheckForMute()
+        public void CheckForMute()
         {
             foreach (var character in FinalBattleCharacters)
             {
@@ -705,7 +705,7 @@ namespace StatsCompanion
             }
         }
 
-        internal void CheckForInstantDeath()
+        public void CheckForInstantDeath()
         {
             foreach (var character in FinalBattleCharacters)
             {
@@ -720,7 +720,7 @@ namespace StatsCompanion
             }
         }
 
-        internal void CheckForCalmnessProtection()
+        public void CheckForCalmnessProtection()
         {
             foreach (var character in FinalBattleCharacters)
             {

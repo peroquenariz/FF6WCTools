@@ -335,7 +335,7 @@ namespace StatsCompanion
             if (!IsAirshipTimerRunning)
             {
                 if ((Character1Graphic == 6 || Character1Graphic == 1) &&
-                    !WCData.AirshipFalsePositives.Contains(MapsVisited[^2]))
+                    !CheckAirshipFalsePositives())
                 {
                     AirshipStart = DateTime.Now;
                     IsAirshipTimerRunning = true;
@@ -354,6 +354,16 @@ namespace StatsCompanion
                 }
             }
             Character1GraphicPrevious = Character1Graphic;
+        }
+
+        public bool CheckAirshipFalsePositives()
+        {
+            bool airshipFalsePositive = false;
+            if (MapsVisited.Count>2)
+            {
+                airshipFalsePositive = WCData.AirshipFalsePositives.Contains(MapsVisited[^2]);
+            }
+            return airshipFalsePositive;
         }
 
         public void LogKefkaStartTime()

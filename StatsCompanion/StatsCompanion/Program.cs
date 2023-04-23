@@ -168,10 +168,16 @@ namespace StatsCompanion
                             }
 
                             // Count espers that were bought at the Auction House.
-                            if (run.MapId == 0x0C8)
+                            if (run.MapId == 0x0C8 && !run.InAuctionHouse)
                             {
-                                run.DialogIndex = DataHandler.ConcatenateByteArray(sniConnection.ReadMemory(WCData.DialogIndex, 2));
+                                run.EsperCountPrevious = sniConnection.ReadMemory(WCData.EsperCount, 1)[0];
+                                run.InAuctionHouse = true;
+                            }
+                            else if (run.MapId != 0x0C8 && run.InAuctionHouse)
+                            {
+                                run.EsperCount = sniConnection.ReadMemory(WCData.EsperCount, 1)[0];
                                 run.CountAuctionHouseEspersBought();
+                                run.InAuctionHouse = false;
                             }
 
                             // Whelk peek.

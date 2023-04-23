@@ -24,6 +24,7 @@ namespace StatsCompanion
         bool _wonColiseumMatch;
         bool _tzenThiefBit;
         bool _inTzenThiefArea;
+        bool _inAuctionHouse;
         byte _auctionHouseEsperCount;
         byte _menuNumber;
         byte _newGameSelected;
@@ -269,6 +270,7 @@ namespace StatsCompanion
         public DateTime BattleStart { get => _battleStart; set => _battleStart = value; }
         public DateTime BattleEnd { get => _battleEnd; set => _battleEnd = value; }
         public int BattlesFought { get => _battlesFought; set => _battlesFought = value; }
+        public bool InAuctionHouse { get => _inAuctionHouse; set => _inAuctionHouse = value; }
 
         public bool CheckIfRunStarted()
         {
@@ -410,11 +412,10 @@ namespace StatsCompanion
 
         public void CountAuctionHouseEspersBought()
         {
-            if (DialogIndex != DialogIndexPrevious && DialogIndex == 1380)
+            if (EsperCount - EsperCountPrevious >= 0)
             {
-                AuctionHouseEsperCount++;
+                AuctionHouseEsperCount += (byte)(EsperCount - EsperCountPrevious);
             }
-            DialogIndexPrevious = DialogIndex;
         }
 
         public void CheckForItemsInInventory()

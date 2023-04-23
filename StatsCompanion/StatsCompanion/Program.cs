@@ -135,7 +135,7 @@ namespace StatsCompanion
                         if (requestTimer > 10) // TODO: find a better way of timing loops.
                         {
 #if DEBUG
-                            run.WriteDebugInformation(); 
+                            run.WriteDebugInformation();
 #endif
 
                             requestTimer = 0;

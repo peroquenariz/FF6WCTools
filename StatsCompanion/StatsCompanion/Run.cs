@@ -64,6 +64,7 @@ namespace StatsCompanion
         int _isKefkaFight;
         int _menuOpenCounter;
         int _airshipCounter;
+        int _battlesFought;
         int _mapId;
         int _dialogIndex;
         int _dialogIndexPrevious;
@@ -267,6 +268,7 @@ namespace StatsCompanion
         public byte BattleCounterPrevious { get => _battleCounterPrevious; set => _battleCounterPrevious = value; }
         public DateTime BattleStart { get => _battleStart; set => _battleStart = value; }
         public DateTime BattleEnd { get => _battleEnd; set => _battleEnd = value; }
+        public int BattlesFought { get => _battlesFought; set => _battlesFought = value; }
 
         public bool CheckIfRunStarted()
         {
@@ -314,13 +316,14 @@ namespace StatsCompanion
                     MapId != 0x150)
                 {
                     BattleStart = DateTime.Now;
+                    BattlesFought++;
                     IsBattleTimerRunning = true;
                 }
             }
             else
             {
-                if (BattleCounter == BattleCounterPrevious ||
-                    HasFinished == true)
+                if ((BattleCounter == BattleCounterPrevious || HasFinished == true) &&
+                    DateTime.Now - BattleStart > WCData.TimeFalsePositives)
                 {
                     BattleEnd = DateTime.Now;
                     IsBattleTimerRunning = false;
@@ -337,7 +340,7 @@ namespace StatsCompanion
                 if ((Character1Graphic == 6 || Character1Graphic == 1) && 
                     !CheckAirshipFalsePositives() && // ignore Cave in the Veldt, Serpent Trench
                     !IsBattleTimerRunning &&
-                    DateTime.Now - BattleEnd > WCData.TimeSearchTheSkies) // don't start timer after Search the Skies cutscene
+                    DateTime.Now - BattleEnd > WCData.TimeFalsePositives) // don't start timer after Search the Skies cutscene
                 {
                     AirshipStart = DateTime.Now;
                     IsAirshipTimerRunning = true;
@@ -599,6 +602,8 @@ namespace StatsCompanion
             Console.WriteLine();
             Console.WriteLine($"In battle: {IsBattleTimerRunning}");
             Console.WriteLine($"Time spent battling: {TimeSpentOnBattles}");
+            Console.WriteLine($"Battles done: {BattlesFought}");
+            Console.WriteLine($"{AuctionHouseEsperCount}");
             Console.WriteLine();
             Console.WriteLine($"Current map: {WCData.MapsDict[(uint)MapId]}");
             Console.WriteLine();

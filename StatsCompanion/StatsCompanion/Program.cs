@@ -112,10 +112,6 @@ namespace StatsCompanion
 
                             run.CheckKefkaKill();
                         }
-
-                        // Check if the player is in a battle, track time spent battling.
-                        run.BattleCounter = sniConnection.ReadMemory(WCData.BattleCounter, 1)[0];
-                        run.CheckIfInBattle();
                         
                         // Tzen thief peek WoB.
                         if (run.MapId == 0x132 && run.TzenThiefPeekWob == "Did not check")
@@ -132,13 +128,16 @@ namespace StatsCompanion
 
                         // All the reads that don't need to happen every frame go here, to avoid spamming SNI with requests.
                         requestTimer++;
-                        if (requestTimer > 10) // TODO: find a better way of timing loops.
+                        if (requestTimer > 10 || run.HasFinished)
                         {
 #if DEBUG
                             run.WriteDebugInformation();
 #endif
-
                             requestTimer = 0;
+                            // Check if the player is in a battle, track time spent battling.
+                            run.BattleCounter = sniConnection.ReadMemory(WCData.BattleCounter, 1)[0];
+                            run.CheckIfInBattle();
+                            
                             run.MapId = DataHandler.ConcatenateByteArray(sniConnection.ReadMemory(WCData.MapId, 2)) & 0x1FF;
                             run.Inventory = sniConnection.ReadMemory(WCData.InventoryStart, WCData.InventorySize);
                             if (!run.IsKTSkipUnlocked || !run.IsKefkaTowerUnlocked)

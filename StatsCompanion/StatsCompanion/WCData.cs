@@ -244,13 +244,19 @@ namespace StatsCompanion
 
         static public readonly TimeSpan TimeFromKefkaFlashToAnimation = new(0, 0, 0, 4, 967); // 298 frames at 60FPS.
         static public readonly TimeSpan TimeFromSwitchesToKefkaLair = new(0, 0, 0, 13, 50); // 783 frames at 60FPS.
-        static public readonly TimeSpan TimeFalsePositives = new(0, 0, 3);
+        
+        // These are used to avoid false positives with frame counters stopping and resuming too fast.
+        static public readonly TimeSpan TimeBattleFalsePositives = new(0, 0, 3);
+        static public readonly TimeSpan TimeMenuFalsePositives = new(0, 0, 0, 0, 500);
 
         /// <summary>
         /// List containing the maps that are used to determine if the airship is being flown.
         /// </summary>
         public static readonly List<int> AirshipMapIds = new() { 0x000, 0x001, 0x006, 0x00B, 0x00A, 0x011 };
 
+        /// <summary>
+        /// List with maps that are excluded in the airship check.
+        /// </summary>
         public static readonly List<int> AirshipFalsePositives = new() { 0x161, 0x0BB };
 
         /// <summary>

@@ -298,7 +298,8 @@ namespace StatsCompanion
             else
             {
                 if (IsMenuActive == IsMenuActivePrevious &&
-                     ScreenDisplayRegister == 0)
+                     ScreenDisplayRegister == 0 &&
+                     DateTime.Now - MenuOpen > WCData.TimeMenuFalsePositives)
                 {
                     MenuClose = DateTime.Now;
                     IsMenuTimerRunning = false;
@@ -325,7 +326,7 @@ namespace StatsCompanion
             else
             {
                 if ((BattleCounter == BattleCounterPrevious || HasFinished == true) &&
-                    DateTime.Now - BattleStart > WCData.TimeFalsePositives)
+                    DateTime.Now - BattleStart > WCData.TimeBattleFalsePositives)
                 {
                     BattleEnd = DateTime.Now;
                     IsBattleTimerRunning = false;
@@ -342,7 +343,7 @@ namespace StatsCompanion
                 if ((Character1Graphic == 6 || Character1Graphic == 1) && 
                     !CheckAirshipFalsePositives() && // ignore Cave in the Veldt, Serpent Trench
                     !IsBattleTimerRunning &&
-                    DateTime.Now - BattleEnd > WCData.TimeFalsePositives) // don't start timer after Search the Skies cutscene
+                    DateTime.Now - BattleEnd > WCData.TimeBattleFalsePositives) // don't start timer after Search the Skies cutscene
                 {
                     AirshipStart = DateTime.Now;
                     IsAirshipTimerRunning = true;
@@ -603,8 +604,7 @@ namespace StatsCompanion
             Console.WriteLine();
             Console.WriteLine($"In battle: {IsBattleTimerRunning}");
             Console.WriteLine($"Time spent battling: {TimeSpentOnBattles}");
-            Console.WriteLine($"Battles done: {BattlesFought}");
-            Console.WriteLine($"{AuctionHouseEsperCount}");
+            Console.WriteLine($"Battles fought: {BattlesFought}");
             Console.WriteLine();
             Console.WriteLine($"Current map: {WCData.MapsDict[(uint)MapId]}");
             Console.WriteLine();

@@ -51,14 +51,7 @@ namespace StatsCompanion
             {
                 var devicesList = devicesClient.ListDevices(new DevicesRequest { }).Devices[0];
                 singleReadMemoryRequest.Uri = devicesList.Uri;
-                if (singleReadMemoryRequest.Uri.Contains("fxpakpro"))
-                {
-                    readMemoryRequest.RequestAddressSpace = AddressSpace.FxPakPro;
-                }
-                else
-                {
-                    readMemoryRequest.RequestAddressSpace = AddressSpace.SnesAbus;
-                }
+                readMemoryRequest.RequestAddressSpace = AddressSpace.SnesAbus;
                 Console.WriteLine("Connection to SNI successful!");
                 Console.WriteLine($"Tracking device URI: {singleReadMemoryRequest.Uri}");
                 Console.WriteLine($"Address space: {readMemoryRequest.RequestAddressSpace}");

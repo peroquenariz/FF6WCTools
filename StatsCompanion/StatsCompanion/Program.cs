@@ -70,13 +70,16 @@ namespace StatsCompanion
                     // Loop while run is in progress.
                     while (run.HasFinished == false)
                     {
-                        // Check if the player is in a menu or shop, track time spent menuing and times they opened a menu.
-                        run.EnableDialogWindow = sniConnection.ReadMemory(WCData.EnableDialogWindow, 1)[0];
-                        run.IsMenuActive = sniConnection.ReadMemory(WCData.MenuCounter, 1)[0];
-                        run.CheckIfMenuOpen();
+                        if (requestTimer % 2 != 0)
+                        {
+                            // Check if the player is in a menu or shop, track time spent menuing and times they opened a menu.
+                            run.EnableDialogWindow = sniConnection.ReadMemory(WCData.EnableDialogWindow, 1)[0];
+                            run.IsMenuActive = sniConnection.ReadMemory(WCData.MenuCounter, 1)[0];
+                            run.CheckIfMenuOpen(); 
+                        }
                         
                         // Check if the player is flying the airship, track time spent flying and times they drove it.
-                        if (WCData.AirshipMapIds.Contains(run.MapId) && run.EnableDialogWindow != 1) // !run.MenuTimerRunning &&
+                        if (WCData.AirshipMapIds.Contains(run.MapId) && run.EnableDialogWindow != 1)
                         {
                             run.Character1Graphic = sniConnection.ReadMemory(WCData.Character1Graphic, 1)[0];
                             run.CheckIfFlyingAirship();
@@ -126,17 +129,21 @@ namespace StatsCompanion
                             }
                         }
 
-                        // All the reads that don't need to happen every frame go here, to avoid spamming SNI with requests.
+                        // All the reads that don't need to happen every frame are checked against requestTimer, to avoid spamming SNI.
                         requestTimer++;
-                        if (requestTimer > 10 || run.HasFinished)
+                        if (requestTimer % 10 == 0 || run.HasFinished)
+                        {
+                            // Check if the player is in a battle, track time spent battling.
+                            run.BattleCounter = sniConnection.ReadMemory(WCData.BattleCounter, 1)[0];
+                            run.CheckIfInBattle();
+                        }
+                        
+                        if (requestTimer > 10)
                         {
 #if DEBUG
                             run.WriteDebugInformation();
 #endif
                             requestTimer = 0;
-                            // Check if the player is in a battle, track time spent battling.
-                            run.BattleCounter = sniConnection.ReadMemory(WCData.BattleCounter, 1)[0];
-                            run.CheckIfInBattle();
                             
                             run.MapId = DataHandler.ConcatenateByteArray(sniConnection.ReadMemory(WCData.MapId, 2)) & 0x1FF;
                             run.Inventory = sniConnection.ReadMemory(WCData.InventoryStart, WCData.InventorySize);

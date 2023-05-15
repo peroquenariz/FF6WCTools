@@ -249,6 +249,11 @@ namespace StatsCompanion
         static public readonly TimeSpan TimeBattleFalsePositives = new(0, 0, 3);
         static public readonly TimeSpan TimeMenuFalsePositives = new(0, 0, 0, 0, 500);
 
+        static public readonly TimeSpan TimeFromFadeToBattle = new(0, 0, 0, 0, 617);
+        static public readonly TimeSpan TimeFromMenuToOverworld = new(0, 0, 0, 0, 750);
+        static public readonly TimeSpan TimeFromBattleToOverworld = new(0, 0, 0, 2, 500);
+
+
         /// <summary>
         /// List containing the maps that are used to determine if the airship is being flown.
         /// </summary>

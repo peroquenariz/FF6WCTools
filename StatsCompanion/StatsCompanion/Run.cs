@@ -313,12 +313,17 @@ namespace StatsCompanion
         {
             if (!IsBattleTimerRunning)
             {
-                if (BattleCounter - BattleCounterPrevious > 0 &&
-                    BattleCounter - BattleCounterPrevious < 10 &&
-                    !IsMenuTimerRunning &&
-                    MapId != 0x150)
+                if (BattleCounter > 30 && // values 0-30 are used for flashes, buckets and certain animations
+                    BattleCounterPrevious != 0 && // sets to zero when in town
+                    BattleCounter - BattleCounterPrevious > 0 && // only account for small increments
+                    BattleCounter - BattleCounterPrevious < 45 &&
+                    BattleCounter - BattleCounterPrevious != 4 && // Cursor false positive
+                    MenuClose - DateTime.Now < WCData.TimeFromMenuToOverworld && // Menu exit false positive
+                    BattleEnd - DateTime.Now < WCData.TimeFromBattleToOverworld && // Battle end false positive
+                    !IsMenuTimerRunning) // && MapId != 0x150) // False positive on Kefka's cinematic before final battle
+
                 {
-                    BattleStart = DateTime.Now;
+                    BattleStart = DateTime.Now - WCData.TimeFromFadeToBattle;
                     BattlesFought++;
                     IsBattleTimerRunning = true;
                 }
@@ -333,6 +338,7 @@ namespace StatsCompanion
                     TimeSpentOnBattles += BattleEnd - BattleStart;
                 }
             }
+            Console.WriteLine(BattleCounter - BattleCounterPrevious);
             BattleCounterPrevious = BattleCounter;
         }
 

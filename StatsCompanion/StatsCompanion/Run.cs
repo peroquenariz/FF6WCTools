@@ -338,7 +338,7 @@ namespace StatsCompanion
                     TimeSpentOnBattles += BattleEnd - BattleStart;
                 }
             }
-            Console.WriteLine(BattleCounter - BattleCounterPrevious);
+            // Console.WriteLine(BattleCounter - BattleCounterPrevious); // For debugging the battle counter
             BattleCounterPrevious = BattleCounter;
         }
 

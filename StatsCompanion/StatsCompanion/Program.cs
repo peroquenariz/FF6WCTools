@@ -18,9 +18,9 @@ namespace StatsCompanion
 
                 while (true)
                 {
-                    Console.Clear();
                     if (run.SeedHasBeenAbandoned == true)
                     {
+                        Console.Clear();
                         Console.WriteLine("It seems like you've abandoned your run! Better luck next time!");
                     }
                     else
@@ -329,8 +329,8 @@ namespace StatsCompanion
                     Console.WriteLine($"The clown is dead, GG! Final time is {(run.EndTime - run.StartTime - WCData.TimeFromKefkaFlashToAnimation).ToString(@"hh\:mm\:ss\.ff")}");
                     Console.WriteLine($"Run successfully saved at {jsonFilename}");
                     Console.WriteLine();
-                    Console.WriteLine("Press enter to start tracking a new run...");
-                    Console.ReadLine();
+                    Console.WriteLine("-------------------------------------------------------------");
+                    Console.WriteLine();
                 }
             }
             catch (Exception e)

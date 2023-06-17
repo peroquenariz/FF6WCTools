@@ -69,6 +69,9 @@ namespace StatsCompanion
                     run.StartingCharacters = DataHandler.GetAvailableCharacters(run.CharactersBytes);
                     run.StartingCommands = DataHandler.GetAvailableCommands(run.CharactersBytes, run.CharacterCommands);
 
+                    // Get initial GP count.
+                    run.GPCurrent = run.GPPrevious = DataHandler.ConcatenateByteArray(sniConnection.ReadMemory(WCData.CurrentGP, 3));
+
                     // Loop while run is in progress.
                     while (run.HasFinished == false)
                     {

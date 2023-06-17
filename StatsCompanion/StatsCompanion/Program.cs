@@ -164,6 +164,13 @@ namespace StatsCompanion
                             // Add visited maps to the list.
                             run.UpdateMapsVisited();
 
+                            // Update GP spent.
+                            if (run.MapId != 3)
+                            {
+                                run.GPCurrent = DataHandler.ConcatenateByteArray(sniConnection.ReadMemory(WCData.CurrentGP, 3));
+                            }
+                            run.UpdateGPSpent();
+
                             // Only execute on game reset.
                             if (run.MapId == 3)
                             {

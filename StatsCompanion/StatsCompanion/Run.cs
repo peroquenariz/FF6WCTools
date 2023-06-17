@@ -69,8 +69,9 @@ namespace StatsCompanion
         int _mapId;
         int _dialogIndex;
         int _dialogIndexPrevious;
-        int _currentGP;
-        int _currentGPprevious;
+        int _gpCurrent;
+        int _gpPrevious;
+        int _gpSpent;
         int _resetCount;
         DateTime _StartTime;
         DateTime _EndTime;
@@ -214,9 +215,8 @@ namespace StatsCompanion
         public int AirshipCounter { get => _airshipCounter; set => _airshipCounter = value; }
         public int MapId { get => _mapId; set => _mapId = value; }
         public int DialogIndex { get => _dialogIndex; set => _dialogIndex = value; }
-        public int DialogIndexPrevious { get => _dialogIndexPrevious; set => _dialogIndexPrevious = value; }
-        public int CurrentGP { get => _currentGP; set => _currentGP = value; }
-        public int CurrentGPprevious { get => _currentGPprevious; set => _currentGPprevious = value; }
+        public int GPCurrent { get => _gpCurrent; set => _gpCurrent = value; }
+        public int GPPrevious { get => _gpPrevious; set => _gpPrevious = value; }
         public DateTime StartTime { get => _StartTime; set => _StartTime = value; }
         public DateTime EndTime { get => _EndTime; set => _EndTime = value; }
         public DateTime MenuOpen { get => _menuOpen; set => _menuOpen = value; }
@@ -271,6 +271,7 @@ namespace StatsCompanion
         public DateTime BattleEnd { get => _battleEnd; set => _battleEnd = value; }
         public int BattlesFought { get => _battlesFought; set => _battlesFought = value; }
         public bool InAuctionHouse { get => _inAuctionHouse; set => _inAuctionHouse = value; }
+        public int GPSpent { get => _gpSpent; set => _gpSpent = value; }
 
         public bool CheckIfRunStarted()
         {
@@ -755,6 +756,15 @@ namespace StatsCompanion
                     return;
                 }
             }
+        }
+
+        public void UpdateGPSpent()
+        {
+            if (GPCurrent < GPPrevious && !IsInSaveMenu())
+            {
+                GPSpent += (GPPrevious - GPCurrent);
+            }
+            GPPrevious = GPCurrent;
         }
     }
 }

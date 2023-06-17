@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading;
 using System.Text.Json;
+using System.Reflection;
 
 namespace StatsCompanion
 {
@@ -26,6 +27,7 @@ namespace StatsCompanion
                     else
                     {
                         Console.WriteLine("Welcome to Stats Companion!");
+                        Console.WriteLine($"v{Assembly.GetEntryAssembly()!.GetName().Version}");
                     }
                     Console.WriteLine();
 

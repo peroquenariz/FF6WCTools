@@ -59,6 +59,8 @@ namespace StatsCompanion
         byte[] _chestData;
         byte[] _eventBitData;
         byte[] _finalBattleLineup;
+        byte[] _monsterBytes;
+        byte[] _monsterBytesPrevious;
         Character[] _finalBattleCharacters;
         int _chestCount;
         int _characterCount;
@@ -86,6 +88,7 @@ namespace StatsCompanion
         DateTime _kefkaTowerStartTime;
         DateTime _kefkaStartTime;
         DateTime _lastMapTimestamp;
+        DateTime _lastAddedBattleFormation;
         TimeSpan _timeSpentOnMenus;
         TimeSpan _timeSpentOnBattles;
         TimeSpan _timeSpentOnAirship;
@@ -99,6 +102,7 @@ namespace StatsCompanion
         string _coliseumVisit;
         string _auctionHouseEsperCountText;
         string _ktSkipUnlockTimeString;
+        string _battleFormation;
         List<string> _startingCharacters;
         List<string> _startingCommands;
         List<string> _dragonsKilled;
@@ -138,6 +142,7 @@ namespace StatsCompanion
             _tzenThiefBit = false;
             _inTzenThiefArea = false;
             _ktSkipUnlockTimeString = "";
+            _battleFormation = "";
             _tzenThiefPeekWob = "Did not check";
             _tzenThiefPeekWor = "Did not check";
             _tzenThiefBought = "";
@@ -167,6 +172,8 @@ namespace StatsCompanion
             _chestData = Array.Empty<byte>();
             _eventBitData = Array.Empty<byte>();
             _finalBattleLineup = Array.Empty<byte>();
+            _monsterBytes = Array.Empty<byte>();
+            _monsterBytesPrevious = Array.Empty<byte>();
             _finalBattleCharacters = new Character[4];
         }
 
@@ -271,7 +278,11 @@ namespace StatsCompanion
         public DateTime BattleEnd { get => _battleEnd; set => _battleEnd = value; }
         public int BattlesFought { get => _battlesFought; set => _battlesFought = value; }
         public bool InAuctionHouse { get => _inAuctionHouse; set => _inAuctionHouse = value; }
+        public byte[] MonsterBytes { get => _monsterBytes; set => _monsterBytes = value; }
+        public byte[] MonsterBytesPrevious { get => _monsterBytesPrevious; set => _monsterBytesPrevious = value; }
+        public string BattleFormation { get => _battleFormation; set => _battleFormation = value; }
         public int GPSpent { get => _gpSpent; set => _gpSpent = value; }
+        public DateTime LastAddedBattleFormation { get => _lastAddedBattleFormation; set => _lastAddedBattleFormation = value; }
 
         public bool CheckIfRunStarted()
         {
@@ -335,12 +346,54 @@ namespace StatsCompanion
                     DateTime.Now - BattleStart > WCData.TimeBattleFalsePositives)
                 {
                     BattleEnd = DateTime.Now;
+                    MonsterBytesPrevious = Array.Empty<byte>();
+                    BattleFormation = ""; // Clear battle formation after battle is done.
+                    CleanupBattleFormationFalsePositives();
                     IsBattleTimerRunning = false;
                     TimeSpentOnBattles += BattleEnd - BattleStart;
                 }
             }
             // Console.WriteLine(BattleCounter - BattleCounterPrevious); // For debugging the battle counter
             BattleCounterPrevious = BattleCounter;
+        }
+
+        /// <summary>
+        /// Deletes the last battle formation from the route if less than 0.5 seconds elapsed since battle ended.
+        /// </summary>
+        private void CleanupBattleFormationFalsePositives()
+        {
+            TimeSpan timeDifference = BattleEnd - LastAddedBattleFormation;
+            if (timeDifference < WCData.TimeBattleFormationFalsePositives &&
+                timeDifference > WCData.TimeZero)
+            {
+                Route.RemoveAt(Route.Count - 1);
+            }
+        }
+
+        /// <summary>
+        /// Logs every battle in the event list.
+        /// </summary>
+        public void LogBattle()
+        {
+            if (!DataHandler.AreArraysEqual(MonsterBytes, MonsterBytesPrevious)) // Check for changes in monster indexes
+            {
+                int[] monsterIndexes = DataHandler.GetMonsterIndexes(MonsterBytes);
+                BattleFormation = "Battle: ";
+                for (int i = 0; i < 6; i++)
+                {
+                    if (monsterIndexes[i] <= 383) // Ignore if monster doesn't exist
+                    {
+                        BattleFormation += WCData.MonsterDict[monsterIndexes[i]] + ", ";
+                    }
+                }
+                if (BattleFormation != "Battle: ")
+                {
+                    BattleFormation = BattleFormation.Remove(BattleFormation.Length - 2, 2);
+                    LastAddedBattleFormation = DateTime.Now;
+                    Route.Add((BattleFormation, (LastAddedBattleFormation - StartTime).ToString(@"hh\:mm\:ss")));
+                }
+            }
+            MonsterBytesPrevious = MonsterBytes;
         }
 
         public void CheckIfFlyingAirship()

@@ -8,6 +8,43 @@ namespace StatsCompanion
     internal static class DataHandler
     {
         /// <summary>
+        /// Method that takes 2 arrays of the same size and type and checks if they have the same data.
+        /// </summary>
+        /// <param name="monsterBytes"></param>
+        /// <param name="monsterBytesPrevious"></param>
+        /// <returns>true if they're equal, otherwise false.</returns>
+        public static bool AreArraysEqual(byte[] arr1, byte[] arr2)
+        {
+            bool equal = true;
+            for (int i = 0; i < arr1.Length; i++)
+            {
+                if (arr1.Length != arr2.Length || arr1[i] != arr2[i])
+                {
+                    equal = false;
+                    return equal;
+                }
+            }
+            return equal;
+        }
+
+        /// <summary>
+        /// Method that concatenates the monster indexes.
+        /// </summary>
+        /// <param name="monsterBytes">The array containing the bytes of the monster indexes.</param>
+        /// <returns>An array of integers with the concatenated monster indexes.</returns>
+        public static int[] GetMonsterIndexes(byte[] monsterBytes)
+        {
+            int[] result = new int[6];
+            for (int i = 0; i < 6; i++)
+            {
+                byte[] arr = { monsterBytes[i * 2], monsterBytes[i * 2 + 1] }; // Original data is 6 indexes, 2 bytes each.
+                int monsterIndex = ConcatenateByteArray(arr);                  // Concatenate the 2 bytes.
+                result[i] = monsterIndex;                                      // Save it to the new array.
+            }
+            return result;
+        }
+        
+        /// <summary>
         /// Method that checks if the Tzen Thief reward was bought.
         /// </summary>
         /// <param name="currentGP">The current amount of GP.</param>

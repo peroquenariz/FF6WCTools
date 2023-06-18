@@ -141,6 +141,13 @@ namespace StatsCompanion
                             // Check if the player is in a battle, track time spent battling.
                             run.BattleCounter = sniConnection.ReadMemory(WCData.BattleCounter, 1)[0];
                             run.CheckIfInBattle();
+
+                            // If in battle, log encounter in event list.
+                            if (run.IsBattleTimerRunning)
+                            {
+                                run.MonsterBytes = sniConnection.ReadMemory(WCData.MonsterIndexStart, 12);
+                                run.LogBattle();
+                            }
                         }
                         
                         if (requestTimer > 10)

@@ -166,6 +166,7 @@ namespace StatsCompanion
                             if (run.IsMenuTimerRunning)
                             {
                                 run.ScreenDisplayRegister = sniConnection.ReadMemory(WCData.ScreenDisplayRegister, 1)[0];
+                                run.NextMenuState = sniConnection.ReadMemory(WCData.NextMenuState, 1)[0]; // Next menu state
                             }
 
                             // Add visited maps to the list.

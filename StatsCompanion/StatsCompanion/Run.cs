@@ -37,6 +37,7 @@ namespace StatsCompanion
         byte _isKefkaDead;
         byte _isMenuActive;
         byte _isMenuActivePrevious;
+        byte _nextMenuState;
         byte _battleCounter;
         byte _battleCounterPrevious;
         byte _enableDialogWindow;
@@ -283,6 +284,7 @@ namespace StatsCompanion
         public string BattleFormation { get => _battleFormation; set => _battleFormation = value; }
         public int GPSpent { get => _gpSpent; set => _gpSpent = value; }
         public DateTime LastAddedBattleFormation { get => _lastAddedBattleFormation; set => _lastAddedBattleFormation = value; }
+        public byte NextMenuState { get => _nextMenuState; set => _nextMenuState = value; }
 
         public bool CheckIfRunStarted()
         {
@@ -818,6 +820,11 @@ namespace StatsCompanion
                 GPSpent += (GPPrevious - GPCurrent);
             }
             GPPrevious = GPCurrent;
+        }
+
+        private bool IsInSaveMenu()
+        {
+            return MapId == 3 || (IsMenuTimerRunning && NextMenuState >= 19 && NextMenuState <= 22);
         }
     }
 }

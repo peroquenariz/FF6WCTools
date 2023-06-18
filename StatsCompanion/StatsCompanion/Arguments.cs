@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace StatsCompanion
@@ -16,8 +17,11 @@ namespace StatsCompanion
         public string kefkaTime { get; set; }
         public string userId { get; set; }
         public int countResets { get; set; }
-        public string timeSpentOnMenu { get; set; }
+        public string timeSpentOnMenus { get; set; }
         public int countTimesMenuWasOpened { get; set; }
+        public string timeSpentOnShops { get; set; }
+        public int countTimesShopsWereVisited { get; set; }
+        public string totalMenuTime { get; set; }
         public string timeSpentDrivingAirship { get; set; }
         public int countTimesAirshipWasUsed { get; set; }
         public string timeSpentonBattles { get; set; }
@@ -88,8 +92,11 @@ namespace StatsCompanion
             seed = "";
             raceId = "";
             countResets = run.ResetCount;
-            timeSpentOnMenu = run.TimeSpentOnMenus.ToString(@"hh\:mm\:ss\.ff");
+            timeSpentOnMenus = run.TimeSpentOnMenus.ToString(@"hh\:mm\:ss\.ff");
             countTimesMenuWasOpened = run.MenuOpenCounter;
+            timeSpentOnShops = run.TimeSpentOnShops.ToString(@"hh\:mm\:ss\.ff");
+            countTimesShopsWereVisited = run.ShopOpenCounter;
+            totalMenuTime = (run.TimeSpentOnMenus + run.TimeSpentOnShops).ToString(@"hh\:mm\:ss\.ff");
             timeSpentDrivingAirship = run.TimeSpentOnAirship.ToString(@"hh\:mm\:ss\.ff");
             countTimesAirshipWasUsed = run.AirshipCounter;
             timeSpentonBattles = run.TimeSpentOnBattles.ToString(@"hh\:mm\:ss\.ff");

@@ -67,6 +67,7 @@ namespace StatsCompanion
         int _characterCount;
         int _isKefkaFight;
         int _menuOpenCounter;
+        int _shopOpenCounter;
         int _airshipCounter;
         int _battlesFought;
         int _mapId;
@@ -91,6 +92,7 @@ namespace StatsCompanion
         DateTime _lastMapTimestamp;
         DateTime _lastAddedBattleFormation;
         TimeSpan _timeSpentOnMenus;
+        TimeSpan _timeSpentOnShops;
         TimeSpan _timeSpentOnBattles;
         TimeSpan _timeSpentOnAirship;
         string _hasExpEgg;
@@ -235,7 +237,6 @@ namespace StatsCompanion
         public DateTime KtSkipUnlockTime { get => _ktSkipUnlockTime; set => _ktSkipUnlockTime = value; }
         public DateTime KefkaTowerStartTime { get => _kefkaTowerStartTime; set => _kefkaTowerStartTime = value; }
         public DateTime KefkaStartTime { get => _kefkaStartTime; set => _kefkaStartTime = value; }
-        public TimeSpan TimeSpentOnMenus { get => _timeSpentOnMenus; set => _timeSpentOnMenus = value; }
         public TimeSpan TimeSpentOnAirship { get => _timeSpentOnAirship; set => _timeSpentOnAirship = value; }
         public string TzenThiefPeekWob { get => _tzenThiefPeekWob; set => _tzenThiefPeekWob = value; }
         public string TzenThiefPeekWor { get => _tzenThiefPeekWor; set => _tzenThiefPeekWor = value; }
@@ -285,6 +286,9 @@ namespace StatsCompanion
         public int GPSpent { get => _gpSpent; set => _gpSpent = value; }
         public DateTime LastAddedBattleFormation { get => _lastAddedBattleFormation; set => _lastAddedBattleFormation = value; }
         public byte NextMenuState { get => _nextMenuState; set => _nextMenuState = value; }
+        public TimeSpan TimeSpentOnMenus { get => _timeSpentOnMenus; set => _timeSpentOnMenus = value; }
+        public TimeSpan TimeSpentOnShops { get => _timeSpentOnShops; set => _timeSpentOnShops = value; }
+        public int ShopOpenCounter { get => _shopOpenCounter; set => _shopOpenCounter = value; }
 
         public bool CheckIfRunStarted()
         {
@@ -306,8 +310,7 @@ namespace StatsCompanion
                 {
                     MenuOpen = DateTime.Now;
                     IsMenuTimerRunning = true;
-                    MenuOpenCounter++;
-                } 
+                }
             }
             else
             {
@@ -317,7 +320,16 @@ namespace StatsCompanion
                 {
                     MenuClose = DateTime.Now;
                     IsMenuTimerRunning = false;
-                    TimeSpentOnMenus += MenuClose - MenuOpen;
+                    if (MenuNumber == 3)
+                    {
+                        TimeSpentOnShops += MenuClose - MenuOpen;
+                        ShopOpenCounter++;
+                    }
+                    else
+                    {
+                        TimeSpentOnMenus += MenuClose - MenuOpen;
+                        MenuOpenCounter++;
+                    }
                 }
             }
             IsMenuActivePrevious = IsMenuActive;

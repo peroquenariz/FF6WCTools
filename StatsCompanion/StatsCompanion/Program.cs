@@ -166,6 +166,7 @@ namespace StatsCompanion
                             if (run.IsMenuTimerRunning)
                             {
                                 run.ScreenDisplayRegister = sniConnection.ReadMemory(WCData.ScreenDisplayRegister, 1)[0];
+                                run.MenuNumber = sniConnection.ReadMemory(WCData.MenuNumber, 1)[0];
                                 run.NextMenuState = sniConnection.ReadMemory(WCData.NextMenuState, 1)[0]; // Next menu state
                             }
 
@@ -183,7 +184,6 @@ namespace StatsCompanion
                             if (run.MapId == 3)
                             {
                                 // Check if the seed has been abandoned.
-                                run.MenuNumber = sniConnection.ReadMemory(WCData.MenuNumber, 1)[0];
                                 run.NewGameSelected = sniConnection.ReadMemory(WCData.NewGameSelected, 1)[0];
                                 if (run.MenuNumber == 9 && run.NewGameSelected == 0)
                                 {

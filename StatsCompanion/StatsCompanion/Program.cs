@@ -282,6 +282,10 @@ namespace StatsCompanion
                         run.KtSkipUnlockTimeString = (run.KtSkipUnlockTime - run.StartTime).ToString(@"hh\:mm\:ss\.ff");
                     }
 
+                    // Add Kefka kill time to event list.
+                    string kefkaKillTime = (run.EndTime - run.StartTime - WCData.TimeFromKefkaFlashToAnimation).ToString(@"hh\:mm\:ss");
+                    run.Route.Add(("Kefka kill", kefkaKillTime));
+
                     // Get data after Kefka kill.
                     run.CharactersBytes = sniConnection.ReadMemory(WCData.CharactersByte, 2);
                     run.DragonsBytes = sniConnection.ReadMemory(WCData.DragonsByte, 2);

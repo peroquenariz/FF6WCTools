@@ -104,13 +104,13 @@ namespace StatsCompanion
         List<string> _dragonsKilled;
         List<string> _checksCompleted;
         List<string> _checksPeeked;
-        List<string> _mapsVisitedJson;
+        List<string> _routeJson;
         List<string> _knownSwdTechs;
         List<string> _knownBlitzes;
         List<string> _knownLores;
         List<string> _finalBattlePrep;
         List<int> _mapsVisited;
-        List<(string, string)> _mapsVisitedWithTimestamps;
+        List<(string, string)> _route;
 
         public Run()
         {
@@ -152,8 +152,8 @@ namespace StatsCompanion
             _checksCompleted = new();
             _checksPeeked = new();
             _mapsVisited = new();
-            _mapsVisitedJson = new();
-            _mapsVisitedWithTimestamps = new();
+            _routeJson = new();
+            _route = new();
             _knownBlitzes = new();
             _knownLores = new();
             _knownSwdTechs = new();
@@ -245,7 +245,7 @@ namespace StatsCompanion
         public byte PartyXPosition { get => _partyXPosition; set => _partyXPosition = value; }
         public bool WonColiseumMatch { get => _wonColiseumMatch; set => _wonColiseumMatch = value; }
         public string AuctionHouseEsperCountText { get => _auctionHouseEsperCountText; set => _auctionHouseEsperCountText = value; }
-        public List<string> MapsVisitedJson { get => _mapsVisitedJson; set => _mapsVisitedJson = value; }
+        public List<string> RouteJson { get => _routeJson; set => _routeJson = value; }
         public byte ScreenDisplayRegister { get => _screenDisplayRegister; set => _screenDisplayRegister = value; }
         public byte PartyYPosition { get => _partyYPosition; set => _partyYPosition = value; }
         public int ResetCount { get => _resetCount; set => _resetCount = value; }
@@ -256,7 +256,7 @@ namespace StatsCompanion
         public bool InTzenThiefArea { get => _inTzenThiefArea; set => _inTzenThiefArea = value; }
         public byte EnableDialogWindow { get => _enableDialogWindow; set => _enableDialogWindow = value; }
         public Character[] FinalBattleCharacters { get => _finalBattleCharacters; set => _finalBattleCharacters = value; }
-        public List<(string, string)> MapsVisitedWithTimestamps { get => _mapsVisitedWithTimestamps; set => _mapsVisitedWithTimestamps = value; }
+        public List<(string, string)> Route { get => _route; set => _route = value; }
         public DateTime LastMapTimestamp { get => _lastMapTimestamp; set => _lastMapTimestamp = value; }
         public byte[] CharacterSkillData { get => _characterSkillData; set => _characterSkillData = value; }
         public List<string> KnownSwdTechs { get => _knownSwdTechs; set => _knownSwdTechs = value; }
@@ -641,11 +641,11 @@ namespace StatsCompanion
             }
         }
 
-        public void CreateTimestampedMapsList()
+        public void CreateTimestampedRoute()
         {
-            foreach (var item in MapsVisitedWithTimestamps)
+            foreach (var item in Route)
             {
-                MapsVisitedJson.Add($"{item.Item2} {item.Item1}");
+                RouteJson.Add($"{item.Item2} {item.Item1}");
                 if (item.Item1 == "Reset")
                 {
                     ResetCount++;

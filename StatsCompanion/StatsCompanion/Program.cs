@@ -321,9 +321,9 @@ namespace StatsCompanion
                     run.CheckForInstantDeath();
                     run.CheckForCalmnessProtection();
 
-                    // Make a timestamped visited maps list that is usable in JSON format.
+                    // Make a timestamped route that is usable in JSON format.
                     // Get reset count.
-                    run.CreateTimestampedMapsList();
+                    run.CreateTimestampedRoute();
 
                     // Create JSON string with the run data.
                     Arguments runArguments = new(run);

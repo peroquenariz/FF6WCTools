@@ -51,7 +51,7 @@ namespace StatsCompanion
         public List<string> knownSwdTechs { get; set; }
         public List<string> knownBlitzes { get; set; }
         public List<string> knownLores { get; set; }
-        public List<string> mapsVisited { get; set; }
+        public List<string> route { get; set; }
 
         public Arguments(Run run)
         {
@@ -98,7 +98,7 @@ namespace StatsCompanion
             checksCompleted = run.ChecksCompleted;
             checksPeeked = run.ChecksPeeked;
             finalBattleCharacters = run.FinalBattleCharacters;
-            mapsVisited = run.MapsVisitedJson;
+            route = run.RouteJson;
             knownSwdTechs = run.KnownSwdTechs;
             knownBlitzes = run.KnownBlitzes;
             knownLores = run.KnownLores;

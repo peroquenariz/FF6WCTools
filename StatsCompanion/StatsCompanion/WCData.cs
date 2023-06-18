@@ -8,6 +8,22 @@ namespace StatsCompanion
     /// </summary>
     internal static class WCData
     {
+        public const string BattleKey = "battle";
+        public const string MenuKey = "menu";
+        public const string WorldKey = "world";
+        public const string FieldKey = "field";
+        
+        /// <summary>
+        /// Address that can be used to determine game mode. Size: 3 bytes.
+        /// </summary>
+        public const uint NMIJumpCode = 0x7E1501;
+
+        /// <summary>
+        /// Address that points to the start of the monster indexes.
+        /// 6 monsters, 2 bytes each: 12 bytes total.
+        /// </summary>
+        public const uint MonsterIndexStart = 0x7E2001;
+        
         /// <summary>
         /// Address that contains the start of the character skill data.
         /// </summary>
@@ -129,10 +145,17 @@ namespace StatsCompanion
         public const uint FieldObjectStartAddress = 0x7E0867;
 
         /// <summary>
-        /// Menu number address (value is 9 when the custom FF6WC new game screen is up).
+        /// Menu number address. Doesn't get cleared on menu close.
+        /// 9 = pregame custom menu, 3 = shop, 2 = restore save game.
         /// </summary>
         public const uint MenuNumber = 0x7E0200;
 
+        /// <summary>
+        /// Address that contains the "next menu state". Value changes depending on which menu is active.
+        /// Values 19-22 are for the save menu ingame (NOT the load screen on reset).
+        /// </summary>
+        public const uint NextMenuState = 0x7E0027;
+        
         /// <summary>
         /// Address that changes value from 0 to 1 on the new game screen, but also changes if you select a save game.
         /// Combined with MenuNumber, should be easy to determine when a new game has been started.
@@ -192,14 +215,20 @@ namespace StatsCompanion
         public const int CharacterDataSize = 519;
 
         /// <summary>
-        /// Address that contains the start of the inventory. Ends at 0x7E1967 (254 bytes).
+        /// Address that contains the start of the inventory. Size: 255 bytes.
         /// </summary>
         public const uint InventoryStart = 0x7E1869;
 
         /// <summary>
+        /// Address that contains the start of the inventory item count. Size: 255 bytes.
+        /// </summary>
+        public const uint InventoryCountStart = 0x7E1969;
+        
+        /// <summary>
         /// Size of the inventory in memory.
         /// </summary>
-        public const byte InventorySize = 254;
+        public const byte InventorySize = 255;
+        
 
         /// <summary>
         /// Memory address that contains which character has been found.
@@ -247,11 +276,14 @@ namespace StatsCompanion
         
         // These are used to avoid false positives with frame counters stopping and resuming too fast.
         static public readonly TimeSpan TimeBattleFalsePositives = new(0, 0, 3);
-        static public readonly TimeSpan TimeMenuFalsePositives = new(0, 0, 0, 0, 500);
+        static public readonly TimeSpan TimeBattleFormationFalsePositives = new(0, 0, 2);
+        //static public readonly TimeSpan TimeMenuFalsePositives = new(0, 0, 0, 0, 500);
 
         static public readonly TimeSpan TimeFromFadeToBattle = new(0, 0, 0, 0, 617);
         static public readonly TimeSpan TimeFromMenuToOverworld = new(0, 0, 0, 0, 750);
         static public readonly TimeSpan TimeFromBattleToOverworld = new(0, 0, 0, 2, 500);
+
+        static public readonly TimeSpan TimeZero = new(0);
 
 
         /// <summary>
@@ -260,9 +292,19 @@ namespace StatsCompanion
         public static readonly List<int> AirshipMapIds = new() { 0x000, 0x001, 0x006, 0x00B, 0x00A, 0x011 };
 
         /// <summary>
+        /// List containing the overworld maps.
+        /// </summary>
+        public static readonly List<int> OverworldMapIds = new() { 0x000, 0x001 };
+
+        /// <summary>
+        /// List containing the airship deck maps.
+        /// </summary>
+        public static readonly List<int> AirshipDeckMapIds = new() { 0x006, 0x00B, 0x00A, 0x011 };
+
+        /// <summary>
         /// List with maps that are excluded in the airship check.
         /// </summary>
-        public static readonly List<int> AirshipFalsePositives = new() { 0x161, 0x0BB };
+        public static readonly List<int> AirshipFalsePositives = new() { 0x161, 0x0BB, 0x046, 0x195 };
 
         /// <summary>
         /// Dictionary holding the bit offsets of every check event.
@@ -1427,6 +1469,397 @@ namespace StatsCompanion
             { 0xD0, " " },
             { 0xD1, " " },
             { 0xD2, "=" }
+        };
+
+        /// <summary>
+        /// Monster index dictionary.
+        /// </summary>
+        public static readonly Dictionary<int, string> MonsterDict = new()
+        {
+            {0, "Guard"},
+            {1, "Soldier"},
+            {2, "Templar"},
+            {3, "Ninja"},
+            {4, "Samurai"},
+            {5, "Orog"},
+            {6, "Mag Roader"},
+            {7, "Retainer"},
+            {8, "Hazer"},
+            {9, "Dahling"},
+            {10, "Rain Man"},
+            {11, "Brawler"},
+            {12, "Apokryphos"},
+            {13, "Dark Force"},
+            {14, "Whisper"},
+            {15, "Over-Mind"},
+            {16, "Osteosaur"},
+            {17, "Commander"},
+            {18, "Rhodox"},
+            {19, "Were-Rat"},
+            {20, "Ursus"},
+            {21, "Rhinotaur"},
+            {22, "Steroidite"},
+            {23, "Leafer"},
+            {24, "Stray Cat"},
+            {25, "Lobo"},
+            {26, "Doberman"},
+            {27, "Vomammoth"},
+            {28, "Fidor"},
+            {29, "Baskervor"},
+            {30, "Suriander"},
+            {31, "Chimera"},
+            {32, "Behemoth"},
+            {33, "Mesosaur"},
+            {34, "Pterodon"},
+            {35, "FossilFang"},
+            {36, "White Drgn"},
+            {37, "Doom Drgn"},
+            {38, "Brachosaur"},
+            {39, "Tyranosaur"},
+            {40, "Dark Wind"},
+            {41, "Beakor"},
+            {42, "Vulture"},
+            {43, "Harpy"},
+            {44, "HermitCrab"},
+            {45, "Trapper"},
+            {46, "Hornet"},
+            {47, "CrassHoppr"},
+            {48, "Delta Bug"},
+            {49, "Gilomantis"},
+            {50, "Trilium"},
+            {51, "Nightshade"},
+            {52, "TumbleWeed"},
+            {53, "Bloompire"},
+            {54, "Trilobiter"},
+            {55, "Siegfried"},
+            {56, "Nautiloid"},
+            {57, "Exocite"},
+            {58, "Anguiform"},
+            {59, "Reach Frog"},
+            {60, "Lizard"},
+            {61, "ChickenLip"},
+            {62, "Hoover"},
+            {63, "Rider"},
+            {64, "Chupon"},
+            {65, "Pipsqueak"},
+            {66, "M-TekArmor"},
+            {67, "Sky Armor"},
+            {68, "Telstar"},
+            {69, "Lethal Wpn"},
+            {70, "Vaporite"},
+            {71, "Flan"},
+            {72, "Ing"},
+            {73, "Humpty"},
+            {74, "Brainpan"},
+            {75, "Cruller"},
+            {76, "Cactrot"},
+            {77, "Repo Man"},
+            {78, "Harvester"},
+            {79, "Bomb"},
+            {80, "Still Life"},
+            {81, "Boxed Set"},
+            {82, "SlamDancer"},
+            {83, "HadesGigas"},
+            {84, "Pug"},
+            {85, "Magic Urn"},
+            {86, "Mover"},
+            {87, "Figaliz"},
+            {88, "Buffalax"},
+            {89, "Aspik"},
+            {90, "Ghost"},
+            {91, "Crawler"},
+            {92, "Sand Ray"},
+            {93, "Areneid"},
+            {94, "Actaneon"},
+            {95, "Sand Horse"},
+            {96, "Dark Side"},
+            {97, "Mad Oscar"},
+            {98, "Crawly"},
+            {99, "Bleary"},
+            {100, "Marshal"},
+            {101, "Trooper"},
+            {102, "General"},
+            {103, "Covert"},
+            {104, "Ogor"},
+            {105, "Warlock"},
+            {106, "Madam"},
+            {107, "Joker"},
+            {108, "Iron Fist"},
+            {109, "Goblin"},
+            {110, "Apparite"},
+            {111, "PowerDemon"},
+            {112, "Displayer"},
+            {113, "Vector Pup"},
+            {114, "Peepers"},
+            {115, "Sewer Rat"},
+            {116, "Slatter"},
+            {117, "Rhinox"},
+            {118, "Rhobite"},
+            {119, "Wild Cat"},
+            {120, "Red Fang"},
+            {121, "Bounty Man"},
+            {122, "Tusker"},
+            {123, "Ralph"},
+            {124, "Chitonid"},
+            {125, "Wart Puck"},
+            {126, "Rhyos"},
+            {127, "SrBehemoth"},
+            {128, "Vectaur"},
+            {129, "Wyvern"},
+            {130, "Zombone"},
+            {131, "Dragon"},
+            {132, "Brontaur"},
+            {133, "Allosaurus"},
+            {134, "Cirpius"},
+            {135, "Sprinter"},
+            {136, "Gobbler"},
+            {137, "Harpiai"},
+            {138, "GloomShell"},
+            {139, "Drop"},
+            {140, "Mind Candy"},
+            {141, "WeedFeeder"},
+            {142, "Luridan"},
+            {143, "Toe Cutter"},
+            {144, "Over Grunk"},
+            {145, "Exoray"},
+            {146, "Crusher"},
+            {147, "Uroburos"},
+            {148, "Primordite"},
+            {149, "Sky Cap"},
+            {150, "Cephaler"},
+            {151, "Maliga"},
+            {152, "Gigan Toad"},
+            {153, "Geckorex"},
+            {154, "Cluck"},
+            {155, "Land Worm"},
+            {156, "Test Rider"},
+            {157, "PlutoArmor"},
+            {158, "Tomb Thumb"},
+            {159, "HeavyArmor"},
+            {160, "Chaser"},
+            {161, "Scullion"},
+            {162, "Poplium"},
+            {163, "Intangir"},
+            {164, "Misfit"},
+            {165, "Eland"},
+            {166, "Enuo"},
+            {167, "Deep Eye"},
+            {168, "GreaseMonk"},
+            {169, "NeckHunter"},
+            {170, "Grenade"},
+            {171, "Critic"},
+            {172, "Pan Dora"},
+            {173, "SoulDancer"},
+            {174, "Gigantos"},
+            {175, "Mag Roader"},
+            {176, "Spek Tor"},
+            {177, "Parasite"},
+            {178, "EarthGuard"},
+            {179, "Coelecite"},
+            {180, "Anemone"},
+            {181, "Hipocampus"},
+            {182, "Spectre"},
+            {183, "Evil Oscar"},
+            {184, "Slurm"},
+            {185, "Latimeria"},
+            {186, "StillGoing"},
+            {187, "Allo Ver"},
+            {188, "Phase"},
+            {189, "Outsider"},
+            {190, "Barb-e"},
+            {191, "Parasoul"},
+            {192, "Pm Stalker"},
+            {193, "Hemophyte"},
+            {194, "Sp Forces"},
+            {195, "Nohrabbit"},
+            {196, "Wizard"},
+            {197, "Scrapper"},
+            {198, "Ceritops"},
+            {199, "Commando"},
+            {200, "Opinicus"},
+            {201, "Poppers"},
+            {202, "Lunaris"},
+            {203, "Garm"},
+            {204, "Vindr"},
+            {205, "Kiwok"},
+            {206, "Nastidon"},
+            {207, "Rinn"},
+            {208, "Insecare"},
+            {209, "Vermin"},
+            {210, "Mantodea"},
+            {211, "Bogy"},
+            {212, "Prussian"},
+            {213, "Black Drgn"},
+            {214, "Adamanchyt"},
+            {215, "Dante"},
+            {216, "Wirey Drgn"},
+            {217, "Dueller"},
+            {218, "Psychot"},
+            {219, "Muus"},
+            {220, "Karkass"},
+            {221, "Punisher"},
+            {222, "Balloon"},
+            {223, "Gabbldegak"},
+            {224, "GtBehemoth"},
+            {225, "Scorpion"},
+            {226, "Chaos Drgn"},
+            {227, "Spit Fire"},
+            {228, "Vectagoyle"},
+            {229, "Lich"},
+            {230, "Osprey"},
+            {231, "Mag Roader"},
+            {232, "Bug"},
+            {233, "Sea Flower"},
+            {234, "Fortis"},
+            {235, "Abolisher"},
+            {236, "Aquila"},
+            {237, "Junk"},
+            {238, "Mandrake"},
+            {239, "1st Class"},
+            {240, "Tap Dancer"},
+            {241, "Necromancr"},
+            {242, "Borras"},
+            {243, "Mag Roader"},
+            {244, "Wild Rat"},
+            {245, "Gold Bear"},
+            {246, "Innoc"},
+            {247, "Trixter"},
+            {248, "Red Wolf"},
+            {249, "Didalos"},
+            {250, "Woolly"},
+            {251, "Veteran"},
+            {252, "Sky Base"},
+            {253, "IronHitman"},
+            {254, "Io"},
+            {255, "Pugs"},
+            {256, "Whelk"},
+            {257, "Presenter"},
+            {258, "Mega Armor"},
+            {259, "Vargas"},
+            {260, "TunnelArmr"},
+            {261, "Prometheus"},
+            {262, "GhostTrain"},
+            {263, "Dadaluma"},
+            {264, "Shiva"},
+            {265, "Ifrit"},
+            {266, "Number 024"},
+            {267, "Number 128"},
+            {268, "Inferno"},
+            {269, "Crane"},
+            {270, "Crane"},
+            {271, "Umaro"},
+            {272, "Umaro"},
+            {273, "Guardian (Vector)"},
+            {274, "Guardian (Kefka's Tower)"},
+            {275, "Air Force"},
+            {276, "Tritoch (Intro)"},
+            {277, "Tritoch (Terra Transforms)"},
+            {278, "FlameEater"},
+            {279, "AtmaWeapon"},
+            {280, "Nerapa"},
+            {281, "SrBehemoth"},
+            {282, "Final Battle Script (Unused)"},
+            {283, "Tentacle"},
+            {284, "Dullahan"},
+            {285, "Doom Gaze"},
+            {286, "Chadarnook"},
+            {287, "Curley"},
+            {288, "Larry"},
+            {289, "Moe"},
+            {290, "Wrexsoul"},
+            {291, "Hidon"},
+            {292, "KatanaSoul"},
+            {293, "L.30 Magic"},
+            {294, "Hidonite"},
+            {295, "Doom"},
+            {296, "Goddess"},
+            {297, "Poltrgeist"},
+            {298, "Kefka"},
+            {299, "L.40 Magic"},
+            {300, "Ultros (Lete River)"},
+            {301, "Ultros (Opera House)"},
+            {302, "Ultros (Esper Mountain)"},
+            {303, "Chupon"},
+            {304, "L.20 Magic"},
+            {305, "Siegfried"},
+            {306, "L.10 Magic"},
+            {307, "L.50 Magic"},
+            {308, "Head"},
+            {309, "Whelk Head"},
+            {310, "Colossus"},
+            {311, "CzarDragon"},
+            {312, "Master Pug"},
+            {313, "L.60 Magic"},
+            {314, "Merchant"},
+            {315, "B.Day Suit"},
+            {316, "Tentacle"},
+            {317, "Tentacle"},
+            {318, "Tentacle"},
+            {319, "RightBlade"},
+            {320, "Left Blade"},
+            {321, "Rough"},
+            {322, "Striker"},
+            {323, "L.70 Magic"},
+            {324, "Tritoch (WoR)"},
+            {325, "Laser Gun"},
+            {326, "Speck"},
+            {327, "MissileBay"},
+            {328, "Chadarnook"},
+            {329, "Ice Dragon"},
+            {330, "Kefka (Hills Maze)"},
+            {331, "Storm Drgn"},
+            {332, "Dirt Drgn"},
+            {333, "Ipooh"},
+            {334, "Leader"},
+            {335, "Grunt"},
+            {336, "Gold Drgn"},
+            {337, "Skull Drgn"},
+            {338, "Blue Drgn"},
+            {339, "Red Dragon"},
+            {340, "Piranha"},
+            {341, "Rizopas"},
+            {342, "Specter"},
+            {343, "Short Arm"},
+            {344, "Long Arm"},
+            {345, "Face"},
+            {346, "Tiger"},
+            {347, "Tools"},
+            {348, "Magic"},
+            {349, "Hit"},
+            {350, "Girl"},
+            {351, "Sleep"},
+            {352, "Hidonite"},
+            {353, "Hidonite"},
+            {354, "Hidonite"},
+            {355, "L.80 Magic"},
+            {356, "L.90 Magic"},
+            {357, "ProtoArmor"},
+            {358, "MagiMaster"},
+            {359, "SoulSaver"},
+            {360, "Ultros (Airship)"},
+            {361, "Naughty"},
+            {362, "Phunbaba"},
+            {363, "Phunbaba"},
+            {364, "Phunbaba"},
+            {365, "Phunbaba"},
+            {366, "Terra's Flashback"},
+            {367, "Kefka (Imperial Camp)"},
+            {368, "Cyan (Imperial Camp)"},
+            {369, "Zone Eater"},
+            {370, "Gau (Veldt)"},
+            {371, "Kefka vs. Leo"},
+            {372, "Kefka (Esper Gate)"},
+            {373, "Officer"},
+            {374, "Cadet"},
+            {375, "&nbsp;"},
+            {376, "&nbsp;"},
+            {377, "Soldier"},
+            {378, "Kefka vs. Esper"},
+            {379, "Battle Event"},
+            {380, "&nbsp;"},
+            {381, "Atma"},
+            {382, "Shadow (Colosseum)"},
+            {383, "Colosseum"}
         };
     }
 }

@@ -56,15 +56,18 @@ namespace StatsCompanion
         public List<string> knownBlitzes { get; set; }
         public List<string> knownLores { get; set; }
         public List<string> route { get; set; }
+        
+        private const string TIME_FORMAT = "hh\\:mm\\:ss";
+        private const string DATE_FORMAT = "yyyy-MM-ddTHH:mm:ss";
 
         public Arguments(Run run)
         {
-            runTime = (run.EndTime - run.StartTime - WCData.TimeFromKefkaFlashToAnimation).ToString(@"hh\:mm\:ss\.ff");
-            runDate = run.StartTime.ToString("yyyy-MM-ddTHH:mm:ss");
+            runTime = (run.EndTime - run.StartTime - WCData.TimeFromKefkaFlashToAnimation).ToString(@TIME_FORMAT);
+            runDate = run.StartTime.ToString(DATE_FORMAT);
             flagset = "";
             otherFlagset = "";
-            ktStartTime = (run.KefkaTowerStartTime - run.StartTime).ToString(@"hh\:mm\:ss\.ff");
-            kefkaTime = (run.KefkaStartTime - run.StartTime).ToString(@"hh\:mm\:ss\.ff");
+            ktStartTime = (run.KefkaTowerStartTime - run.StartTime).ToString(@TIME_FORMAT);
+            kefkaTime = (run.KefkaStartTime - run.StartTime).ToString(@TIME_FORMAT);
             userId = "";
             startingChars = run.StartingCharacters;
             startingAbilities = run.StartingCommands;
@@ -75,7 +78,7 @@ namespace StatsCompanion
             numOfPeekedChecks = run.ChecksPeeked.Count;
             numOfBosses = run.BossCount;
             numOfChests = run.ChestCount;
-            kefkaTowerUnlockTime = (run.KefkaTowerUnlockTime - run.StartTime).ToString(@"hh\:mm\:ss\.ff");
+            kefkaTowerUnlockTime = (run.KefkaTowerUnlockTime - run.StartTime).ToString(@TIME_FORMAT);
             skip = run.IsKTSkipUnlocked;
             ktSkipUnlockTime = run.KtSkipUnlockTimeString;
             dragons = run.DragonsKilled;
@@ -92,14 +95,14 @@ namespace StatsCompanion
             seed = "";
             raceId = "";
             countResets = run.ResetCount;
-            timeSpentOnMenus = run.TimeSpentOnMenus.ToString(@"hh\:mm\:ss\.ff");
+            timeSpentOnMenus = run.TimeSpentOnMenus.ToString(@TIME_FORMAT);
             countTimesMenuWasOpened = run.MenuOpenCounter;
-            timeSpentOnShops = run.TimeSpentOnShops.ToString(@"hh\:mm\:ss\.ff");
+            timeSpentOnShops = run.TimeSpentOnShops.ToString(@TIME_FORMAT);
             countTimesShopsWereVisited = run.ShopOpenCounter;
-            totalMenuTime = (run.TimeSpentOnMenus + run.TimeSpentOnShops).ToString(@"hh\:mm\:ss\.ff");
-            timeSpentDrivingAirship = run.TimeSpentOnAirship.ToString(@"hh\:mm\:ss\.ff");
+            totalMenuTime = (run.TimeSpentOnMenus + run.TimeSpentOnShops).ToString(@TIME_FORMAT);
+            timeSpentDrivingAirship = run.TimeSpentOnAirship.ToString(@TIME_FORMAT);
             countTimesAirshipWasUsed = run.AirshipCounter;
-            timeSpentonBattles = run.TimeSpentOnBattles.ToString(@"hh\:mm\:ss\.ff");
+            timeSpentonBattles = run.TimeSpentOnBattles.ToString(@TIME_FORMAT);
             countBattlesFought = run.BattlesFought;
             gpSpent = run.GPSpent;
             checksCompleted = run.ChecksCompleted;

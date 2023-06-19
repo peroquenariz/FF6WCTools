@@ -447,20 +447,11 @@ namespace StatsCompanion
         {
             if (MapId <= 0x19E)
             {
-                if (MapsVisited.Count == 0)
+                if (MapsVisited.Count == 0 || (MapsVisited[MapsVisited.Count - 1] != MapId && !IsMenuTimerRunning))
                 {
                     MapsVisited.Add(MapId);
                     LastMapTimestamp = DateTime.Now;
-                    MapsVisitedWithTimestamps.Add((WCData.MapsDict[(uint)MapId], (LastMapTimestamp - StartTime).ToString(@"hh\:mm\:ss")));
-                }
-                else if (MapsVisited[MapsVisited.Count - 1] != MapId && !IsMenuTimerRunning)
-                {
-                    if (DateTime.Now - LastMapTimestamp > WCData.TimeBetweenMapChanges)
-                    {
-                        MapsVisited.Add(MapId);
-                        LastMapTimestamp = DateTime.Now;
-                        MapsVisitedWithTimestamps.Add((WCData.MapsDict[(uint)MapId], (LastMapTimestamp - StartTime).ToString(@"hh\:mm\:ss")));
-                    }
+                    Route.Add((WCData.MapsDict[(uint)MapId], (LastMapTimestamp - StartTime).ToString(@"hh\:mm\:ss")));
                 }
             }
         }

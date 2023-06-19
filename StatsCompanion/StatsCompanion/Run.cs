@@ -394,20 +394,20 @@ namespace StatsCompanion
         {
             if (!IsAirshipTimerRunning)
             {
-                if ((Character1Graphic == 6 || Character1Graphic == 1) && 
-                    !CheckAirshipFalsePositives() && // ignore Cave in the Veldt, Serpent Trench
+                if ((Character1Graphic == 6 || // value when taking off from overworld
+                    Character1Graphic == 1 && !CheckAirshipFalsePositives()) && // ignore Cave in the Veldt, Serpent Trench, South Figaro cave, Ebot's Rock
                     !IsBattleTimerRunning &&
                     DateTime.Now - BattleEnd > WCData.TimeBattleFalsePositives) // don't start timer after Search the Skies cutscene
                 {
                     AirshipStart = DateTime.Now;
                     IsAirshipTimerRunning = true;
                     AirshipCounter++;
-                } 
+                }
             }
             else
             {
                 if ((Character1Graphic == 3 && Character1GraphicPrevious == 9) ||
-                    (Character1Graphic == 0 && (MapId == 0x006 || MapId == 0x00B || MapId == 0x00A || MapId == 0x011)) ||
+                    (Character1Graphic == 0 && WCData.AirshipDeckMapIds.Contains(MapId)) ||
                     IsMenuTimerRunning || IsBattleTimerRunning)
                 {
                     AirshipStop = DateTime.Now;

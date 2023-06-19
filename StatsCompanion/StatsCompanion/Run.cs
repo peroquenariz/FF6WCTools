@@ -35,11 +35,7 @@ namespace StatsCompanion
         byte _characterMaxLevel;
         byte _dragonCount;
         byte _isKefkaDead;
-        byte _isMenuActive;
-        byte _isMenuActivePrevious;
         byte _nextMenuState;
-        byte _battleCounter;
-        byte _battleCounterPrevious;
         byte _enableDialogWindow;
         byte _character1Graphic;
         byte _character1GraphicPrevious;
@@ -62,6 +58,7 @@ namespace StatsCompanion
         byte[] _finalBattleLineup;
         byte[] _monsterBytes;
         byte[] _monsterBytesPrevious;
+        byte[] _gameStatusData;
         Character[] _finalBattleCharacters;
         int _chestCount;
         int _characterCount;
@@ -72,7 +69,6 @@ namespace StatsCompanion
         int _battlesFought;
         int _mapId;
         int _dialogIndex;
-        int _dialogIndexPrevious;
         int _gpCurrent;
         int _gpPrevious;
         int _gpSpent;
@@ -106,6 +102,7 @@ namespace StatsCompanion
         string _auctionHouseEsperCountText;
         string _ktSkipUnlockTimeString;
         string _battleFormation;
+        string _gameStatus;
         List<string> _startingCharacters;
         List<string> _startingCommands;
         List<string> _dragonsKilled;
@@ -130,9 +127,8 @@ namespace StatsCompanion
             _menuOpenCounter = 0;
             _isMenuTimerRunning = false;
             _isBattleTimerRunning = false;
-            _timeSpentOnMenus = new(0, 0, 0);
-            _timeSpentOnBattles = new(0, 0, 0);
-            _timeSpentOnAirship = new(0, 0, 0);
+            _menuOpen = _menuClose = _airshipStart = _airshipStop = _battleStart = _battleEnd = DateTime.Now;
+            _timeSpentOnMenus = _timeSpentOnShops = _timeSpentOnBattles = _timeSpentOnAirship = new(0, 0, 0);
             _isAirshipTimerRunning = false;
             _airshipCounter = 0;
             _isWhelkPeeked = false;
@@ -154,6 +150,7 @@ namespace StatsCompanion
             _coliseumVisit = "Did not visit";
             _auctionHouseEsperCount = 0;
             _auctionHouseEsperCountText = "Zero";
+            _gameStatus = "field";
             _startingCharacters = new();
             _startingCommands = new();
             _dragonsKilled = new();
@@ -177,6 +174,7 @@ namespace StatsCompanion
             _finalBattleLineup = Array.Empty<byte>();
             _monsterBytes = Array.Empty<byte>();
             _monsterBytesPrevious = Array.Empty<byte>();
+            _gameStatusData = Array.Empty<byte>();
             _finalBattleCharacters = new Character[4];
         }
 
@@ -202,8 +200,6 @@ namespace StatsCompanion
         public byte CharacterMaxLevel { get => _characterMaxLevel; set => _characterMaxLevel = value; }
         public byte DragonCount { get => _dragonCount; set => _dragonCount = value; }
         public byte IsKefkaDead { get => _isKefkaDead; set => _isKefkaDead = value; }
-        public byte IsMenuActive { get => _isMenuActive; set => _isMenuActive = value; }
-        public byte IsMenuActivePrevious { get => _isMenuActivePrevious; set => _isMenuActivePrevious = value; }
         public byte Character1Graphic { get => _character1Graphic; set => _character1Graphic = value; }
         public byte DialogWaitingForInput { get => _dialogWaitingForInput; set => _dialogWaitingForInput = value; }
         public byte DialogPointer { get => _dialogPointer; set => _dialogPointer = value; }
@@ -274,8 +270,6 @@ namespace StatsCompanion
         public List<string> FinalBattlePrep { get => _finalBattlePrep; set => _finalBattlePrep = value; }
         public bool IsBattleTimerRunning { get => _isBattleTimerRunning; set => _isBattleTimerRunning = value; }
         public TimeSpan TimeSpentOnBattles { get => _timeSpentOnBattles; set => _timeSpentOnBattles = value; }
-        public byte BattleCounter { get => _battleCounter; set => _battleCounter = value; }
-        public byte BattleCounterPrevious { get => _battleCounterPrevious; set => _battleCounterPrevious = value; }
         public DateTime BattleStart { get => _battleStart; set => _battleStart = value; }
         public DateTime BattleEnd { get => _battleEnd; set => _battleEnd = value; }
         public int BattlesFought { get => _battlesFought; set => _battlesFought = value; }
@@ -289,6 +283,8 @@ namespace StatsCompanion
         public TimeSpan TimeSpentOnMenus { get => _timeSpentOnMenus; set => _timeSpentOnMenus = value; }
         public TimeSpan TimeSpentOnShops { get => _timeSpentOnShops; set => _timeSpentOnShops = value; }
         public int ShopOpenCounter { get => _shopOpenCounter; set => _shopOpenCounter = value; }
+        public byte[] GameStatusData { get => _gameStatusData; set => _gameStatusData = value; }
+        public string GameStatus { get => _gameStatus; set => _gameStatus = value; }
 
         public bool CheckIfRunStarted()
         {
@@ -300,13 +296,11 @@ namespace StatsCompanion
             return false;
         }
         
-        public void CheckIfMenuOpen()
+        public void CheckIfMenuIsOpen()
         {
             if (!IsMenuTimerRunning)
             {
-                if (IsMenuActive - IsMenuActivePrevious > 0 &&
-                    IsMenuActive - IsMenuActivePrevious < 10 &&
-                    EnableDialogWindow == 0)
+                if (GameStatus == WCData.MenuKey)
                 {
                     MenuOpen = DateTime.Now;
                     IsMenuTimerRunning = true;
@@ -314,9 +308,7 @@ namespace StatsCompanion
             }
             else
             {
-                if (IsMenuActive == IsMenuActivePrevious &&
-                     ScreenDisplayRegister == 0 &&
-                     DateTime.Now - MenuOpen > WCData.TimeMenuFalsePositives)
+                if (GameStatus != WCData.MenuKey)
                 {
                     MenuClose = DateTime.Now;
                     IsMenuTimerRunning = false;
@@ -332,32 +324,22 @@ namespace StatsCompanion
                     }
                 }
             }
-            IsMenuActivePrevious = IsMenuActive;
         }
 
         public void CheckIfInBattle()
         {
             if (!IsBattleTimerRunning)
             {
-                if (BattleCounter > 30 && // values 0-30 are used for flashes, buckets and certain animations
-                    BattleCounterPrevious != 0 && // sets to zero when in town
-                    BattleCounter - BattleCounterPrevious > 0 && // only account for small increments
-                    BattleCounter - BattleCounterPrevious < 45 &&
-                    BattleCounter - BattleCounterPrevious != 4 && // Cursor false positive
-                    MenuClose - DateTime.Now < WCData.TimeFromMenuToOverworld && // Menu exit false positive
-                    BattleEnd - DateTime.Now < WCData.TimeFromBattleToOverworld && // Battle end false positive
-                    !IsMenuTimerRunning) // && MapId != 0x150) // False positive on Kefka's cinematic before final battle
-
+                if (GameStatus == WCData.BattleKey)
                 {
-                    BattleStart = DateTime.Now - WCData.TimeFromFadeToBattle;
+                    BattleStart = DateTime.Now;
                     BattlesFought++;
                     IsBattleTimerRunning = true;
                 }
             }
             else
             {
-                if ((BattleCounter == BattleCounterPrevious || HasFinished == true) &&
-                    DateTime.Now - BattleStart > WCData.TimeBattleFalsePositives)
+                if (GameStatus != WCData.BattleKey || HasFinished == true)
                 {
                     BattleEnd = DateTime.Now;
                     MonsterBytesPrevious = Array.Empty<byte>();
@@ -367,8 +349,6 @@ namespace StatsCompanion
                     TimeSpentOnBattles += BattleEnd - BattleStart;
                 }
             }
-            // Console.WriteLine(BattleCounter - BattleCounterPrevious); // For debugging the battle counter
-            BattleCounterPrevious = BattleCounter;
         }
 
         /// <summary>
@@ -837,6 +817,32 @@ namespace StatsCompanion
         private bool IsInSaveMenu()
         {
             return MapId == 3 || (IsMenuTimerRunning && NextMenuState >= 19 && NextMenuState <= 22);
+        }
+
+        /// <summary>
+        /// Takes the 3 bytes array and gets the game status.
+        /// </summary>
+        internal void GetGameStatus()
+        {
+            int firstTwoBytes = DataHandler.ConcatenateByteArray(GameStatusData[0..2]);
+            byte lastByte = GameStatusData[2];
+
+            if (firstTwoBytes == 0x0ba7 && lastByte == 0xC1)
+            {
+                GameStatus = WCData.BattleKey;
+            }
+            else if (firstTwoBytes == 0x0182 && lastByte == 0xC0)
+            {
+                GameStatus = WCData.FieldKey;
+            }
+            else if (firstTwoBytes == 0xa728 && lastByte == 0xEE)
+            {
+                GameStatus = WCData.WorldKey;
+            }
+            else if (firstTwoBytes == 0x1387 && lastByte == 0xC3)
+            {
+                GameStatus = WCData.MenuKey;
+            }
         }
     }
 }

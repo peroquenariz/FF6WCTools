@@ -79,8 +79,9 @@ namespace StatsCompanion
                         {
                             // Check if the player is in a menu or shop, track time spent menuing and times they opened a menu.
                             run.EnableDialogWindow = sniConnection.ReadMemory(WCData.EnableDialogWindow, 1)[0];
-                            run.IsMenuActive = sniConnection.ReadMemory(WCData.MenuCounter, 1)[0];
-                            run.CheckIfMenuOpen(); 
+                            run.GameStatusData = sniConnection.ReadMemory(WCData.NMIJumpCode, 3);
+                            run.GetGameStatus();
+                            run.CheckIfMenuIsOpen();
                         }
                         
                         // Check if the player is flying the airship, track time spent flying and times they drove it.
@@ -139,7 +140,6 @@ namespace StatsCompanion
                         if (requestTimer % 10 == 0 || run.HasFinished)
                         {
                             // Check if the player is in a battle, track time spent battling.
-                            run.BattleCounter = sniConnection.ReadMemory(WCData.BattleCounter, 1)[0];
                             run.CheckIfInBattle();
 
                             // If in battle, log encounter in event list.

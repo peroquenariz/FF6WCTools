@@ -635,22 +635,39 @@ namespace StatsCompanion
 
         public void WriteDebugInformation()
         {
+            Console.ForegroundColor = ConsoleColor.White;
             Console.Clear();
             Console.WriteLine("Stats Companion is now tracking your run...");
+            Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine("*** DO NOT close this window! ***");
             Console.WriteLine();
+
+            bool isInAShop = IsMenuTimerRunning && MenuNumber == 3;
+            bool isInAMenu = IsMenuTimerRunning && MenuNumber != 3;
+            Console.ForegroundColor = isInAMenu ? ConsoleColor.Blue : ConsoleColor.White;
             Console.WriteLine($"In a menu: {IsMenuTimerRunning && MenuNumber != 3}");
+            Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine($"Time spent in a menu: {TimeSpentOnMenus}");
             Console.WriteLine($"Times you entered a menu: {MenuOpenCounter}");
             Console.WriteLine();
+
+            Console.ForegroundColor = isInAShop ? ConsoleColor.Cyan : ConsoleColor.White;
             Console.WriteLine($"In a shop: {IsMenuTimerRunning && MenuNumber == 3}");
+            Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine($"Time spent in a shop: {TimeSpentOnShops}");
             Console.WriteLine($"Times you visited a shop: {ShopOpenCounter}");
+            Console.WriteLine();
+
+            Console.ForegroundColor = IsAirshipTimerRunning ? ConsoleColor.DarkYellow : ConsoleColor.White;
             Console.WriteLine($"Flying the airship: {IsAirshipTimerRunning}");
+            Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine($"Time spent flying the airship: {TimeSpentOnAirship}");
             Console.WriteLine($"Times you used the airship: {AirshipCounter}");
             Console.WriteLine();
+
+            Console.ForegroundColor = IsBattleTimerRunning ? ConsoleColor.Red : ConsoleColor.White;
             Console.WriteLine($"In battle: {IsBattleTimerRunning}");
+            Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine($"Time spent battling: {TimeSpentOnBattles}");
             Console.WriteLine($"Battles fought: {BattlesFought}");
             Console.WriteLine();

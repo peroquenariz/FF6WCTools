@@ -22,10 +22,12 @@ namespace StatsCompanion
                     if (run.SeedHasBeenAbandoned == true)
                     {
                         Console.Clear();
+                        Console.ForegroundColor = ConsoleColor.Yellow;
                         Console.WriteLine("It seems like you've abandoned your run! Better luck next time!");
                     }
                     else
                     {
+                        Console.ForegroundColor = ConsoleColor.White;
                         Console.WriteLine("Welcome to Stats Companion!");
                         Console.WriteLine($"v{Assembly.GetEntryAssembly()!.GetName().Version}");
                     }
@@ -37,6 +39,7 @@ namespace StatsCompanion
                     // Start a new run.
                     run = new();
 
+                    Console.ForegroundColor = ConsoleColor.DarkCyan;
                     Console.WriteLine("Waiting for new game...");
                     Console.WriteLine();
 
@@ -54,7 +57,9 @@ namespace StatsCompanion
                         }
                     }
                     Console.Clear();
+                    Console.ForegroundColor = ConsoleColor.White;
                     Console.WriteLine("Stats Companion is now tracking your run...");
+                    Console.ForegroundColor = ConsoleColor.Yellow;
                     Console.WriteLine("*** DO NOT close this window! ***");
 
                     Thread.Sleep(3500); 
@@ -355,8 +360,10 @@ namespace StatsCompanion
                     File.WriteAllText(jsonFilename, runArgumentsStr);
 
                     Console.Clear();
+                    Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine($"The clown is dead, GG! Final time is {(run.EndTime - run.StartTime - WCData.TimeFromKefkaFlashToAnimation).ToString(@"hh\:mm\:ss\.ff")}");
                     Console.WriteLine($"Run successfully saved at {jsonFilename}");
+                    Console.ForegroundColor = ConsoleColor.White;
                     Console.WriteLine();
                     Console.WriteLine("-------------------------------------------------------------");
                     Console.WriteLine();

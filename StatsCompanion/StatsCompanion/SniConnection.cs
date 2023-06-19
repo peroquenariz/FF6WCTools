@@ -52,20 +52,26 @@ namespace StatsCompanion
                 var devicesList = devicesClient.ListDevices(new DevicesRequest { }).Devices[0];
                 singleReadMemoryRequest.Uri = devicesList.Uri;
                 readMemoryRequest.RequestAddressSpace = AddressSpace.SnesAbus;
+                Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("Connection to SNI successful!");
+                Console.ForegroundColor = ConsoleColor.White;
                 Console.WriteLine($"Tracking device URI: {singleReadMemoryRequest.Uri}");
                 Console.WriteLine($"Address space: {readMemoryRequest.RequestAddressSpace}");
             }
             catch (ArgumentOutOfRangeException)
             {
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Device not found or connection lost! Make sure your device/emulator is correctly connected to SNI.");
+                Console.ForegroundColor = ConsoleColor.White;
                 Console.WriteLine("Retrying in 10 seconds...");
                 Thread.Sleep(10000);
                 ResetConnection();
             }
             catch (Grpc.Core.RpcException)
             {
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Error - SNI not found! Make sure it's open and connected to your device/emulator.");
+                Console.ForegroundColor = ConsoleColor.White;
                 Console.WriteLine("Retrying in 10 seconds...");
                 Thread.Sleep(10000);
                 ResetConnection();
@@ -89,6 +95,7 @@ namespace StatsCompanion
             }
             catch
             {
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Error while reading memory! Attempting reconnection.");
                 ResetConnection();
                 return ReadMemory(address, size);

@@ -159,14 +159,17 @@ namespace StatsCompanion
                             
                             run.MapId = DataHandler.ConcatenateByteArray(sniConnection.ReadMemory(WCData.MapId, 2)) & 0x1FF;
                             run.Inventory = sniConnection.ReadMemory(WCData.InventoryStart, WCData.InventorySize);
+
+                            // Read KT unlock and skip status only if the bits haven't been set.
                             if (!run.IsKTSkipUnlocked || !run.IsKefkaTowerUnlocked)
                             {
                                 run.KefkaTowerEventByte = sniConnection.ReadMemory(WCData.EventBitStartAddress + 0x093 / 8, 1)[0];
                             }
+                            
                             if (run.IsMenuTimerRunning)
                             {
-                                run.ScreenDisplayRegister = sniConnection.ReadMemory(WCData.ScreenDisplayRegister, 1)[0];
                                 run.MenuNumber = sniConnection.ReadMemory(WCData.MenuNumber, 1)[0];
+                                run.ScreenDisplayRegister = sniConnection.ReadMemory(WCData.ScreenDisplayRegister, 1)[0]; // Menu fades
                                 run.NextMenuState = sniConnection.ReadMemory(WCData.NextMenuState, 1)[0]; // Next menu state
                             }
 

@@ -152,9 +152,6 @@ namespace StatsCompanion
                         
                         if (requestTimer > 10)
                         {
-#if DEBUG
-                            run.WriteDebugInformation();
-#endif
                             requestTimer = 0;
                             
                             run.MapId = DataHandler.ConcatenateByteArray(sniConnection.ReadMemory(WCData.MapId, 2)) & 0x1FF;
@@ -278,6 +275,11 @@ namespace StatsCompanion
                             // Check if the player has entered Kefka tower and KT is unlocked, log the time.
                             // Either skip or regular KT is logged, whatever happens first.
                             run.CheckKefkaTowerStart();
+
+                            if (true) // TODO: toggle depending on config file
+                            {
+                                run.WriteDebugInformation(); 
+                            }
                         }
                     }
 

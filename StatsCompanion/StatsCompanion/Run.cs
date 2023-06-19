@@ -639,10 +639,13 @@ namespace StatsCompanion
             Console.WriteLine("Stats Companion is now tracking your run...");
             Console.WriteLine("*** DO NOT close this window! ***");
             Console.WriteLine();
-            Console.WriteLine($"In a menu: {IsMenuTimerRunning}");
+            Console.WriteLine($"In a menu: {IsMenuTimerRunning && MenuNumber != 3}");
             Console.WriteLine($"Time spent in a menu: {TimeSpentOnMenus}");
             Console.WriteLine($"Times you entered a menu: {MenuOpenCounter}");
             Console.WriteLine();
+            Console.WriteLine($"In a shop: {IsMenuTimerRunning && MenuNumber == 3}");
+            Console.WriteLine($"Time spent in a shop: {TimeSpentOnShops}");
+            Console.WriteLine($"Times you visited a shop: {ShopOpenCounter}");
             Console.WriteLine($"Flying the airship: {IsAirshipTimerRunning}");
             Console.WriteLine($"Time spent flying the airship: {TimeSpentOnAirship}");
             Console.WriteLine($"Times you used the airship: {AirshipCounter}");
@@ -651,14 +654,16 @@ namespace StatsCompanion
             Console.WriteLine($"Time spent battling: {TimeSpentOnBattles}");
             Console.WriteLine($"Battles fought: {BattlesFought}");
             Console.WriteLine();
-            Console.WriteLine($"Current map: {WCData.MapsDict[(uint)MapId]}");
+            
+            Console.WriteLine($"GP spent: {GPSpent} GP");
             Console.WriteLine();
-            Console.WriteLine("Last 5 maps visited:");
+
+            Console.WriteLine("Last 5 route events:");
             for (int i = 0; i < 5; i++)
             {
-                if (MapsVisitedWithTimestamps.Count -1 -i >= 0)
+                if (Route.Count -1 -i >= 0)
                 {
-                    Console.WriteLine(MapsVisitedWithTimestamps[MapsVisitedWithTimestamps.Count -1 -i]);
+                    Console.WriteLine(Route[Route.Count -1 -i]);
                 }
             }
         }

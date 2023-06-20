@@ -1,7 +1,5 @@
 ﻿using System;
-using System.IO;
 using System.Threading;
-using System.Text.Json;
 using System.Reflection;
 
 namespace StatsCompanion
@@ -10,6 +8,8 @@ namespace StatsCompanion
     {
         static void Main(string[] args)
         {
+            FileHandler fileHandler = new();
+            
             try
             {
                 SniConnection sniConnection = new();
@@ -344,24 +344,18 @@ namespace StatsCompanion
 
                     // Create JSON string with the run data.
                     Arguments runArguments = new(run);
-                    string runArgumentsStr = JsonSerializer.Serialize(runArguments, jsonOptions);
-
-                    // Create a runs directory if it doesn't exist.
-                    if (!Directory.Exists($"{Directory.GetCurrentDirectory()}\\runs"))
-                    {
-                        Directory.CreateDirectory($"{Directory.GetCurrentDirectory()}\\runs");
-                    }
+                    string jsonRunData = fileHandler.SerializeJson(runArguments);
 
                     // Create a timestamped filename.
-                    string jsonFilename = $"{Directory.GetCurrentDirectory()}\\runs\\{run.EndTime.ToString("yyyy_MM_dd - HH_mm_ss")}.json";
+                    string jsonPath = $"{fileHandler.RunsDirectory}\\{run.EndTime.ToString("yyyy_MM_dd - HH_mm_ss")}.json";
 
                     // Write to a .json file.
-                    File.WriteAllText(jsonFilename, runArgumentsStr);
+                    FileHandler.WriteStringToFile(jsonPath, jsonRunData);
 
                     Console.Clear();
                     Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine($"The clown is dead, GG! Final time is {(run.EndTime - run.StartTime - WCData.TimeFromKefkaFlashToAnimation).ToString(@"hh\:mm\:ss\.ff")}");
-                    Console.WriteLine($"Run successfully saved at {jsonFilename}");
+                    Console.WriteLine($"Run successfully saved at {jsonPath}");
                     Console.ForegroundColor = ConsoleColor.White;
                     Console.WriteLine();
                     Console.WriteLine("-------------------------------------------------------------");
@@ -370,18 +364,15 @@ namespace StatsCompanion
             }
             catch (Exception e)
             {
-                // Create a crashlog directory if it doesn't exist.
-                if (!Directory.Exists($"{Directory.GetCurrentDirectory()}\\crashlog"))
-                {
-                    Directory.CreateDirectory($"{Directory.GetCurrentDirectory()}\\crashlog");
-                }
-                
                 // Crash log path.
-                string crashlogPath = $"{Directory.GetCurrentDirectory()}\\crashlog\\crashlog - {DateTime.Now.ToString("yyyy_MM_dd - HH_mm_ss")}.txt";
+                string crashlogPath = $"{fileHandler.CrashlogDirectory}\\crashlog - {DateTime.Now.ToString("yyyy_MM_dd - HH_mm_ss")}.txt";
+                
                 // Print exception to console.
                 Console.WriteLine(e);
                 Console.WriteLine();
-                File.WriteAllText(crashlogPath, e.ToString());
+
+                FileHandler.WriteStringToFile(crashlogPath, e.ToString());
+                
                 Console.WriteLine();
                 Console.WriteLine($"Crash log saved at {crashlogPath}");
                 Console.WriteLine();

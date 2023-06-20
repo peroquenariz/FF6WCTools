@@ -15,7 +15,6 @@ namespace StatsCompanion
                 SniConnection sniConnection = new();
                 Run run = new();
                 var jsonOptions = new JsonSerializerOptions { WriteIndented = true };
-                int requestTimer = 0;
 
                 while (true)
                 {
@@ -80,7 +79,7 @@ namespace StatsCompanion
                     // Loop while run is in progress.
                     while (run.HasFinished == false)
                     {
-                        if (requestTimer % 2 != 0)
+                        if (sniConnection.RequestTimer % 2 != 0)
                         {
                             // Check if the player is in a menu or shop, track time spent menuing and times they opened a menu.
                             run.EnableDialogWindow = sniConnection.ReadMemory(WCData.EnableDialogWindow, 1)[0];
@@ -140,9 +139,9 @@ namespace StatsCompanion
                             }
                         }
 
-                        // All the reads that don't need to happen every frame are checked against requestTimer, to avoid spamming SNI.
-                        requestTimer++;
-                        if (requestTimer % 10 == 0 || run.HasFinished)
+                        // All the reads that don't need to happen every frame are checked against RequestTimer, to avoid spamming SNI.
+                        sniConnection.RequestTimer++;
+                        if (sniConnection.RequestTimer % 10 == 0 || run.HasFinished)
                         {
                             // Check if the player is in a battle, track time spent battling.
                             run.CheckIfInBattle();
@@ -155,9 +154,9 @@ namespace StatsCompanion
                             }
                         }
                         
-                        if (requestTimer > 10)
+                        if (sniConnection.RequestTimer > 10)
                         {
-                            requestTimer = 0;
+                            sniConnection.RequestTimer = 0;
                             
                             run.MapId = DataHandler.ConcatenateByteArray(sniConnection.ReadMemory(WCData.MapId, 2)) & 0x1FF;
                             run.Inventory = sniConnection.ReadMemory(WCData.InventoryStart, WCData.InventorySize);

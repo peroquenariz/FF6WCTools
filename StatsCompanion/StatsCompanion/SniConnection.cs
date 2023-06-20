@@ -22,6 +22,10 @@ namespace StatsCompanion
         private readonly ReadMemoryRequest _readMemoryRequest;
         private readonly SingleReadMemoryRequest _singleReadMemoryRequest;
 
+        private int _requestTimer;
+
+        public int RequestTimer { get; set; }
+
         public SniConnection()
         {
             _devicesClient = new Devices.DevicesClient(_sniChannel);
@@ -38,6 +42,8 @@ namespace StatsCompanion
                 Uri = "",
                 Request = _readMemoryRequest
             };
+            
+            RequestTimer = 0;
         }
 
         /// <summary>

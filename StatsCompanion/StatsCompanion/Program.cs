@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Specialized;
+using System.Configuration;
 using System.Threading;
 using System.Reflection;
 
@@ -10,6 +12,7 @@ namespace StatsCompanion
         {
             FileHandler fileHandler = new();
             
+            NameValueCollection config = ConfigurationManager.AppSettings;
             try
             {
                 SniConnection sniConnection = new();

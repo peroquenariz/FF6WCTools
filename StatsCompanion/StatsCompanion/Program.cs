@@ -13,6 +13,8 @@ namespace StatsCompanion
             FileHandler fileHandler = new();
             
             NameValueCollection config = ConfigurationManager.AppSettings;
+            bool debugMode = Convert.ToBoolean(config.Get("debugMode"));
+
             try
             {
                 SniConnection sniConnection = new();
@@ -283,7 +285,7 @@ namespace StatsCompanion
                             // Either skip or regular KT is logged, whatever happens first.
                             run.CheckKefkaTowerStart();
 
-                            if (true) // TODO: toggle depending on config file
+                            if (debugMode)
                             {
                                 run.WriteDebugInformation(); 
                             }

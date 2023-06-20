@@ -297,7 +297,7 @@ namespace StatsCompanion
                     // If KT skip was unlocked, format a string with the time.
                     if (run.IsKTSkipUnlocked)
                     {
-                        run.KtSkipUnlockTimeString = (run.KtSkipUnlockTime - run.StartTime).ToString(@"hh\:mm\:ss\.ff");
+                        run.KtSkipUnlockTimeString = (run.KtSkipUnlockTime - run.StartTime).ToString(@"hh\:mm\:ss");
                     }
 
                     // Add Kefka kill time to event list.

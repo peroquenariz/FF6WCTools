@@ -60,6 +60,7 @@ namespace StatsCompanion
         byte[] _monsterBytesPrevious;
         byte[] _gameStatusData;
         Character[] _finalBattleCharacters;
+        public string[] seedInfo;
         int _chestCount;
         int _characterCount;
         int _isKefkaFight;
@@ -176,6 +177,7 @@ namespace StatsCompanion
             _monsterBytesPrevious = Array.Empty<byte>();
             _gameStatusData = Array.Empty<byte>();
             _finalBattleCharacters = new Character[4];
+            seedInfo = Array.Empty<string>();
         }
 
         public bool IsMenuTimerRunning { get => _isMenuTimerRunning; set => _isMenuTimerRunning = value; }

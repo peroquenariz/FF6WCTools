@@ -149,6 +149,7 @@ namespace StatsCompanion
 
                 // Compare replacing underscores with spaces
                 // Thanks Seedbot :)
+                // Nvm, it's Discord's fault lmao
                 foreach (var entry in seedZip.Entries)
                 {
                     string entryNoSpaces = entry.Name.Replace("_", " ");

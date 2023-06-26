@@ -34,6 +34,7 @@ namespace StatsCompanion
         public string RunsDirectory { get => _runsDirectory; }
         public string CrashlogDirectory { get => _crashlogDirectory; }
         public string LastLoadedSeed { get => _lastLoadedSeed; }
+        public string SeedDirectory { get => _seedDirectory; }
         public DateTime LastDirectoryRefresh { get => _lastDirectoryRefresh; }
         public TimeSpan RefreshInterval { get => _refreshInterval; }
 
@@ -87,6 +88,8 @@ namespace StatsCompanion
         /// Scans the seed folder and looks for the zip file with the last creation date that matches WC naming.
         /// Opens the txt inside the seed zip file and gets seed information.
         /// </summary>
+        /// <param name="seedInfo">The first lines of the seed txt. If no file is found, array will have empty strings.</param>
+        /// <returns>true if the directory is valid, otherwise false.</returns>
         public bool UpdateLastSeed(out string[] seedInfo)
         {
             _lastDirectoryRefresh = DateTime.Now;
@@ -105,21 +108,21 @@ namespace StatsCompanion
             }
 
             // Scan directory
-            DirectoryInfo directory = new(@_seedDirectory);
+            DirectoryInfo directory = new(_seedDirectory);
             FileInfo[] files = directory.GetFiles("*.zip").OrderBy(f => f.CreationTime).ToArray();
 
             if (files.Length == 0)
             {
-                Log.NoSeedsFound(_seedDirectory);
+                Log.NoSeedsFound();
                 _lastLoadedSeed = "";
-                return false;
+                return true;
             }
             
             FileInfo lastCreatedZip = files[0];
-            for (int i = files.Length-1; i >= 0 && seedFound == false; i--)
+            for (int i = files.Length-1; i >= 0 && !seedFound; i--)
             {
                 string filename = files[i].Name;
-                foreach (var prefix in _validSeedPrefixes)
+                foreach (string prefix in _validSeedPrefixes)
                 {
                     if (filename.StartsWith(prefix))
                     {
@@ -132,16 +135,31 @@ namespace StatsCompanion
 
             if (!seedFound)
             {
-                Log.NoSeedsFound(_seedDirectory);
+                Log.NoSeedsFound();
                 _lastLoadedSeed = "";
-                return false;
+                return true;
             }
 
             if (lastCreatedZip.Name != _lastLoadedSeed)
             {
                 _lastLoadedSeed = lastCreatedZip.Name;
                 ZipArchive seedZip = ZipFile.OpenRead(lastCreatedZip.FullName);
-                ZipArchiveEntry seedTxt = seedZip.GetEntry(lastCreatedZip.Name.Remove(lastCreatedZip.Name.Length - 3, 3) + "txt")!;
+                string filenameNoSpaces = (lastCreatedZip.Name.Remove(lastCreatedZip.Name.Length - 3, 3) + "txt").Replace("_", " ");
+                string entryName = "";
+
+                // Compare replacing underscores with spaces
+                // Thanks Seedbot :)
+                foreach (var entry in seedZip.Entries)
+                {
+                    string entryNoSpaces = entry.Name.Replace("_", " ");
+                    if (entryNoSpaces == filenameNoSpaces)
+                    {
+                        entryName = entry.Name;
+                        break;
+                    }
+                }
+                
+                ZipArchiveEntry? seedTxt = seedZip.GetEntry(entryName);
 
                 if (seedTxt != null)
                 {
@@ -154,11 +172,10 @@ namespace StatsCompanion
                         }
                         reader.Close();
                     }
+                    Log.SeedInformation(lastCreatedZip, seedInfo, _seedInfoLines);
                 }
 
                 seedZip.Dispose();
-
-                Log.SeedInformation(lastCreatedZip, seedInfo, _seedInfoLines);
             }
             return true;
         }

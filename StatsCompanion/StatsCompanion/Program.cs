@@ -24,6 +24,7 @@ namespace StatsCompanion
                 while (true)
                 {
                     Log.cursorTopPosition = 3;
+                    bool isValidDirectory = true;
                     
                     // Open a connection to SNI
                     sniConnection.ResetConnection();
@@ -40,14 +41,15 @@ namespace StatsCompanion
                     // Only exit the loop if current menu is FF6WC custom pre-game menu and new game has been selected.
                     while (true)
                     {
-                        bool hasSeedInfo;
                         if (Console.CursorTop == 6)
                         {
                             Log.WaitingForNewGame();
                         }
-                        if (DateTime.Now - fileHandler.LastDirectoryRefresh > fileHandler.RefreshInterval)
+
+                        if (isValidDirectory == true &&
+                            DateTime.Now - fileHandler.LastDirectoryRefresh > fileHandler.RefreshInterval)
                         {
-                            hasSeedInfo = fileHandler.UpdateLastSeed(out run.seedInfo);
+                            isValidDirectory = fileHandler.UpdateLastSeed(out run.seedInfo);
                         }
                         run.MapId = DataHandler.ConcatenateByteArray(sniConnection.ReadMemory(WCData.MapId, 2)) & 0x1FF;
                         run.MenuNumber = sniConnection.ReadMemory(WCData.MenuNumber, 1)[0];

@@ -92,7 +92,18 @@ namespace StatsCompanion
             _lastDirectoryRefresh = DateTime.Now;
             seedInfo = new string[9];
             bool seedFound = false;
-            
+
+            if (_seedDirectory.Length == 0)
+            {
+                Log.NoSeedDirectory();
+                return false;
+            }
+            if (!Directory.Exists(_seedDirectory))
+            {
+                Log.InvalidSeedDirectory();
+                return false;
+            }
+
             // Scan directory
             DirectoryInfo directory = new(@_seedDirectory);
             FileInfo[] files = directory.GetFiles("*.zip").OrderBy(f => f.CreationTime).ToArray();

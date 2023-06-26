@@ -49,12 +49,12 @@ namespace StatsCompanion
             ClearLines(1);
         }
 
-        public static void NoSeedsFound(string seedDirectory)
+        public static void NoSeedsFound()
         {
             Console.CursorLeft = 0;
             Console.CursorTop = 8;
             Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.Write($"No seeds found in the seed directory: {seedDirectory}".PadRight(60));
+            Console.Write($"No seeds found in the seed directory.".PadRight(60));
             ClearLines(10);
         }
 
@@ -190,6 +190,18 @@ namespace StatsCompanion
             {
                 Console.WriteLine("".PadRight(RightPadding));
             }
+        }
+
+        public static void InvalidSeedDirectory()
+        {
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine($"Invalid/non-existant seed directory - not collecting seed information!");
+        }
+
+        public static void NoSeedDirectory()
+        {
+            Console.ForegroundColor = ConsoleColor.DarkGray;
+            Console.WriteLine("No seed directory provided in the config file - not collecting seed information!");
         }
     }
 }

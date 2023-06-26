@@ -353,8 +353,8 @@ namespace StatsCompanion
 
                     // Write to a .json file.
                     FileHandler.WriteStringToFile(jsonPath, jsonRunData);
-
-                    Log.RunSuccessful((run.EndTime - run.StartTime - WCData.TimeFromKefkaFlashToAnimation).ToString(@"hh\:mm\:ss\.ff)"));
+                    
+                    Log.RunSuccessful((run.EndTime - run.StartTime - WCData.TimeFromKefkaFlashToAnimation).ToString(@"hh\:mm\:ss\.ff"));
                 }
             }
             catch (Exception e)

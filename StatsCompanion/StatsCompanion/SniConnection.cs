@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading;
-using Grpc.Net.Client;
+﻿using Grpc.Net.Client;
 
 namespace StatsCompanion
 {
@@ -58,28 +56,18 @@ namespace StatsCompanion
                 var devicesList = _devicesClient.ListDevices(new DevicesRequest { }).Devices[0];
                 _singleReadMemoryRequest.Uri = devicesList.Uri;
                 _readMemoryRequest.RequestAddressSpace = AddressSpace.SnesAbus;
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("Connection to SNI successful!");
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine($"Tracking device URI: {_singleReadMemoryRequest.Uri}");
-                Console.WriteLine($"Address space: {_readMemoryRequest.RequestAddressSpace}");
+                Log.ConnectionSuccessful(_singleReadMemoryRequest.Uri, _readMemoryRequest.RequestAddressSpace.ToString());
             }
-            catch (ArgumentOutOfRangeException)
+            catch (System.ArgumentOutOfRangeException)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Device not found or connection lost! Make sure your device/emulator is correctly connected to SNI.");
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine("Retrying in 10 seconds...");
-                Thread.Sleep(10000);
+                string message = "Device not found! Make sure your device/emulator is correctly connected to SNI.";
+                Log.ConnectionError(message);
                 ResetConnection();
             }
             catch (Grpc.Core.RpcException)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Error - SNI not found! Make sure it's open and connected to your device/emulator.");
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine("Retrying in 10 seconds...");
-                Thread.Sleep(10000);
+                string message = "Error - SNI not found! Make sure it's open and connected to your device/emulator.";
+                Log.ConnectionError(message);
                 ResetConnection();
             }
         }
@@ -101,8 +89,6 @@ namespace StatsCompanion
             }
             catch
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Error while reading memory! Attempting reconnection.");
                 ResetConnection();
                 return ReadMemory(address, size);
             }

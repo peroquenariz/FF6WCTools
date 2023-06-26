@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -26,7 +27,7 @@ namespace StatsCompanion
             "chaos_",
             "true_chaos_"
         };
-        private readonly int[] _seedInfoLines = { 0, 1, 6, 8 };
+        private readonly List<string> _seedInfoLines = new(){ "Version", "Generated", "Seed", "Hash" };
         private DateTime _lastDirectoryRefresh;
 
         public string AppDirectory { get => _appDirectory; }
@@ -98,14 +99,7 @@ namespace StatsCompanion
 
             if (files.Length == 0)
             {
-                Console.CursorLeft = 0;
-                Console.CursorTop = 7;
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.Write($"No seeds found in the seed directory: {_seedDirectory}".PadRight(60));
-                for (int i = 0; i < 10; i++)
-                {
-                    Console.WriteLine("".PadRight(60));
-                }
+                Log.NoSeedsFound(_seedDirectory);
                 _lastLoadedSeed = "";
                 return false;
             }
@@ -127,14 +121,7 @@ namespace StatsCompanion
 
             if (!seedFound)
             {
-                Console.CursorLeft = 0;
-                Console.CursorTop = 7;
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.Write($"No seeds found in the seed directory: {_seedDirectory}".PadRight(60));
-                for (int i = 0; i < 10; i++)
-                {
-                    Console.WriteLine("".PadRight(60));
-                }
+                Log.NoSeedsFound(_seedDirectory);
                 _lastLoadedSeed = "";
                 return false;
             }
@@ -159,19 +146,15 @@ namespace StatsCompanion
                 }
 
                 seedZip.Dispose();
-                
-                Console.CursorLeft = 0;
-                Console.CursorTop = 7;
-                Console.ForegroundColor = ConsoleColor.Cyan;
-                Console.WriteLine($"Loaded seed: {lastCreatedZip.Name}".PadRight(60));
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine();
-                for (int i = 0; i < _seedInfoLines.Length; i++)
-                {
-                    Console.WriteLine(seedInfo[_seedInfoLines[i]]); // TODO: check the beginning of each string instead
-                }
+
+                Log.SeedInformation(lastCreatedZip, seedInfo, _seedInfoLines);
             }
             return true;
+        }
+
+        public void ResetLastLoadedSeed()
+        {
+            _lastLoadedSeed = "";
         }
     }
 }

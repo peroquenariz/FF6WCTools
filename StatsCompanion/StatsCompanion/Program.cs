@@ -10,50 +10,41 @@ namespace StatsCompanion
     {
         static void Main(string[] args)
         {
-            FileHandler fileHandler = new();
-            
+            string appVersion = Assembly.GetEntryAssembly()!.GetName().Version!.ToString();
             NameValueCollection config = ConfigurationManager.AppSettings;
             FileHandler fileHandler = new(config.Get("seedDirectory")!);
+            Log log = new(appVersion);
             bool debugMode = Convert.ToBoolean(config.Get("debugMode"));
 
             try
             {
                 SniConnection sniConnection = new();
                 Run run = new();
-                
 
                 while (true)
                 {
-                    if (run.SeedHasBeenAbandoned == true)
-                    {
-                        Console.Clear();
-                        Console.ForegroundColor = ConsoleColor.Yellow;
-                        Console.WriteLine("It seems like you've abandoned your run! Better luck next time!");
-                    }
-                    else
-                    {
-                        Console.ForegroundColor = ConsoleColor.White;
-                        Console.WriteLine("Welcome to Stats Companion!");
-                        Console.WriteLine($"v{Assembly.GetEntryAssembly()!.GetName().Version}");
-                    }
-                    Console.WriteLine();
-
+                    Log.cursorTopPosition = 3;
+                    
                     // Open a connection to SNI
                     sniConnection.ResetConnection();
 
+                    if (run.SeedHasBeenAbandoned)
+                    {
+                        Log.SeedAbandoned();
+                    }
+
                     // Start a new run.
                     run = new();
-
-                    Console.ForegroundColor = ConsoleColor.DarkCyan;
-                    Console.WriteLine("Waiting for new game...");
-                    Console.WriteLine();
-
 #if RELEASE
                     // Wait for the player to start a new game.
                     // Only exit the loop if current menu is FF6WC custom pre-game menu and new game has been selected.
                     while (true)
                     {
                         bool hasSeedInfo;
+                        if (Console.CursorTop == 6)
+                        {
+                            Log.WaitingForNewGame();
+                        }
                         if (DateTime.Now - fileHandler.LastDirectoryRefresh > fileHandler.RefreshInterval)
                         {
                             hasSeedInfo = fileHandler.UpdateLastSeed(out run.seedInfo);
@@ -66,13 +57,11 @@ namespace StatsCompanion
                             break;
                         }
                     }
-                    Console.Clear();
-                    Console.ForegroundColor = ConsoleColor.White;
-                    Console.WriteLine("Stats Companion is now tracking your run...");
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine("*** DO NOT close this window! ***");
 
-                    Thread.Sleep(3500); 
+                    Log.TrackingRun();
+                    Log.cursorTopPosition = 6;
+                    fileHandler.ResetLastLoadedSeed();
+                    Thread.Sleep(3500);
 #endif
 
                     // Read character data.
@@ -293,7 +282,7 @@ namespace StatsCompanion
 
                             if (debugMode)
                             {
-                                run.WriteDebugInformation(); 
+                                Log.DebugInformation(run);
                             }
                         }
                     }
@@ -363,31 +352,17 @@ namespace StatsCompanion
                     // Write to a .json file.
                     FileHandler.WriteStringToFile(jsonPath, jsonRunData);
 
-                    Console.Clear();
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine($"The clown is dead, GG! Final time is {(run.EndTime - run.StartTime - WCData.TimeFromKefkaFlashToAnimation).ToString(@"hh\:mm\:ss\.ff")}");
-                    Console.WriteLine($"Run successfully saved at {jsonPath}");
-                    Console.ForegroundColor = ConsoleColor.White;
-                    Console.WriteLine();
-                    Console.WriteLine("-------------------------------------------------------------");
-                    Console.WriteLine();
+                    Log.RunSuccessful((run.EndTime - run.StartTime - WCData.TimeFromKefkaFlashToAnimation).ToString(@"hh\:mm\:ss\.ff)"));
                 }
             }
             catch (Exception e)
             {
                 // Crash log path.
-                string crashlogPath = $"{fileHandler.CrashlogDirectory}\\crashlog - {DateTime.Now.ToString("yyyy_MM_dd - HH_mm_ss")}.txt";
+                string crashlogPath = $"{ fileHandler.CrashlogDirectory}\\crashlog - {DateTime.Now.ToString("yyyy_MM_dd - HH_mm_ss")}.txt";
                 
-                // Print exception to console.
-                Console.WriteLine(e);
-                Console.WriteLine();
-
                 FileHandler.WriteStringToFile(crashlogPath, e.ToString());
-                
-                Console.WriteLine();
-                Console.WriteLine($"Crash log saved at {crashlogPath}");
-                Console.WriteLine();
-                Console.Write("Press enter to exit.");
+
+                Log.CrashInformation(e, crashlogPath);
                 Console.ReadLine();
             }
         }

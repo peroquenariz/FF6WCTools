@@ -339,7 +339,6 @@ namespace StatsCompanion
                     run.CheckForMute();
                     run.CheckForInstantDeath();
                     run.CheckForCalmnessProtection();
-
                     // Make a timestamped route that is usable in JSON format.
                     // Get reset count.
                     run.CreateTimestampedRoute();
@@ -347,10 +346,11 @@ namespace StatsCompanion
                     // Create JSON string with the run data.
                     Arguments runArguments = new(run);
                     string jsonRunData = fileHandler.SerializeJson(runArguments);
-
+                    jsonRunData = Arguments.ReplaceCharacters(jsonRunData);
+                    
                     // Create a timestamped filename.
                     string jsonPath = $"{fileHandler.RunsDirectory}\\{run.EndTime.ToString("yyyy_MM_dd - HH_mm_ss")}.json";
-
+                    
                     // Write to a .json file.
                     FileHandler.WriteStringToFile(jsonPath, jsonRunData);
                     

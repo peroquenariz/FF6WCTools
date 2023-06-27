@@ -90,10 +90,10 @@ namespace StatsCompanion
         /// </summary>
         /// <param name="seedInfo">The first lines of the seed txt. If no file is found, array will have empty strings.</param>
         /// <returns>true if the directory is valid, otherwise false.</returns>
-        public bool UpdateLastSeed(out string[] seedInfo)
+        public bool UpdateLastSeed(string[] seedInfoPrevious, out string[] seedInfo)
         {
             _lastDirectoryRefresh = DateTime.Now;
-            seedInfo = new string[9];
+            seedInfo = seedInfoPrevious;
             bool seedFound = false;
 
             if (_seedDirectory.Length == 0)
@@ -139,7 +139,7 @@ namespace StatsCompanion
                 _lastLoadedSeed = "";
                 return true;
             }
-
+            
             if (lastCreatedZip.Name != _lastLoadedSeed)
             {
                 _lastLoadedSeed = lastCreatedZip.Name;

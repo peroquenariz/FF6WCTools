@@ -177,7 +177,7 @@ namespace StatsCompanion
             _monsterBytesPrevious = Array.Empty<byte>();
             _gameStatusData = Array.Empty<byte>();
             _finalBattleCharacters = new Character[4];
-            seedInfo = Array.Empty<string>();
+            seedInfo = new string[9];
         }
 
         public bool IsMenuTimerRunning { get => _isMenuTimerRunning; set => _isMenuTimerRunning = value; }

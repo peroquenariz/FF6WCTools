@@ -49,7 +49,7 @@ namespace StatsCompanion
                         if (isValidDirectory == true &&
                             DateTime.Now - fileHandler.LastDirectoryRefresh > fileHandler.RefreshInterval)
                         {
-                            isValidDirectory = fileHandler.UpdateLastSeed(out run.seedInfo);
+                            isValidDirectory = fileHandler.UpdateLastSeed(run.seedInfo, out run.seedInfo);
                         }
                         run.MapId = DataHandler.ConcatenateByteArray(sniConnection.ReadMemory(WCData.MapId, 2)) & 0x1FF;
                         run.MenuNumber = sniConnection.ReadMemory(WCData.MenuNumber, 1)[0];

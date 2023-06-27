@@ -174,19 +174,31 @@ namespace StatsCompanion
             {
                 if (CheckBitSet(charactersBytes[0], WCData.BitFlags[i]))
                 {
-                    startingCommands.Add(WCData.CommandDict[characterCommands[i]]);
+                    string command = WCData.CommandDict[characterCommands[i]];
+                    if (!startingCommands.Contains(command))
+                    {
+                        startingCommands.Add(command);
+                    }
                 }
             }
             for (int i = 0; i < 4; i++) // Second byte check. Skip Gogo and Umaro (they don't have commands).
             {
                 if (CheckBitSet(charactersBytes[1], WCData.BitFlags[i]))
                 {
-                    startingCommands.Add(WCData.CommandDict[characterCommands[i + 8]]);
+                    string command = WCData.CommandDict[characterCommands[i + 8]];
+                    if (!startingCommands.Contains(command))
+                    {
+                        startingCommands.Add(command);
+                    }
                 }
             }
             if (CheckBitSet(charactersBytes[1], WCData.BitFlags[3])) // If Gau is in the party, get his 2nd command.
             {
-                startingCommands.Add(WCData.CommandDict[characterCommands[12]]);
+                string command = WCData.CommandDict[characterCommands[12]];
+                if (!startingCommands.Contains(command))
+                {
+                    startingCommands.Add(command);
+                }
             }
             return startingCommands;
         }

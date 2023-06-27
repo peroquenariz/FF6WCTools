@@ -114,8 +114,50 @@ namespace StatsCompanion
             knownBlitzes = run.KnownBlitzes;
             knownLores = run.KnownLores;
             seed = "";
+            GetSeedInfo(run.seedInfo);
         }
 
+        /// <summary>
+        /// Extracts the seed ID and flagset from the given file.
+        /// If the seed folder is not setup properly, seedInfo will be null and no info will be collected.
+        /// </summary>
+        /// <param name="seedInfo">String array containing the first 9 lines of the seed txt file.</param>
+        private void GetSeedInfo(string[] seedInfo)
+        {
+            for (int i = 0; i < 9; i++)
+            {
+                if (seedInfo[i] == null)
+                {
+                    return;
+                }
+                else if (seedInfo[i].StartsWith("Seed"))
+                {
+                    seed = seedInfo[i].Substring(10);
+                }
+                else if (seedInfo[i].StartsWith("Flags"))
+                {
+                    string flags = seedInfo[i].Substring(10);
+                    GetFlagset(flags);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the flagset from the seed flags.
+        /// </summary>
+        /// <param name="flags">The flags of the seed.</param>
+        private void GetFlagset(string flags)
+        {
+            foreach (var flagsetValue in WCData.FlagsetDict)
+            {
+                if (flags == flagsetValue.Value)
+                {
+                    flagset = flagsetValue.Key;
+                    return;
+                }
+            }
+            flagset = "Other";
+        }
 
         /// <summary>
         /// Replaces certain characters for the JSON to be compatible with StatsCollide.

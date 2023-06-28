@@ -60,19 +60,29 @@ namespace StatsCompanion
 
         public static void SeedInformation(FileInfo lastCreatedZip, string[] seedInfo, List<string> seedInfoLines)
         {
+            string flags = "";
+            string flagset;
             Console.CursorLeft = 0;
             Console.CursorTop = 8;
             Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine($"Loaded seed: {lastCreatedZip.Name}".PadRight(60));
+            Console.WriteLine($"Loaded seed: {lastCreatedZip.Name}".PadRight(RightPadding));
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine();
             for (int i = 0; i < seedInfo.Length; i++)
             {
-                if (seedInfoLines.Contains(seedInfo[i].Split(" ")[0]))
+                string lineStart = seedInfo[i].Split(" ")[0];
+                if (seedInfoLines.Contains(lineStart))
                 {
                     Console.WriteLine(seedInfo[i]);
                 }
+                if (lineStart == "Flags")
+                {
+                    flags = seedInfo[i].Substring(10);
+                }
             }
+            flagset = Arguments.GetFlagset(flags);
+            Console.WriteLine();
+            Console.WriteLine($"Detected flagset: {flagset}".PadRight(RightPadding));
         }
 
         public static void TrackingRun()

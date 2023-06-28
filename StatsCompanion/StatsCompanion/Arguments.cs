@@ -66,7 +66,7 @@ namespace StatsCompanion
         {
             runTime = (run.EndTime - run.StartTime - WCData.TimeFromKefkaFlashToAnimation).ToString(@TIME_FORMAT);
             runDate = run.StartTime.ToString(DATE_FORMAT);
-            flagset = "";
+            flagset = "Other";
             otherFlagset = "";
             ktStartTime = (run.KefkaTowerStartTime - run.StartTime).ToString(@TIME_FORMAT);
             kefkaTime = (run.KefkaStartTime - run.StartTime).ToString(@TIME_FORMAT);
@@ -137,7 +137,7 @@ namespace StatsCompanion
                 else if (seedInfo[i].StartsWith("Flags"))
                 {
                     string flags = seedInfo[i].Substring(10);
-                    GetFlagset(flags);
+                    flagset = GetFlagset(flags);
                 }
             }
         }
@@ -146,17 +146,37 @@ namespace StatsCompanion
         /// Gets the flagset from the seed flags.
         /// </summary>
         /// <param name="flags">The flags of the seed.</param>
-        private void GetFlagset(string flags)
+        public static string GetFlagset(string flags)
         {
+            string flagset = "Other";
+            string flagsReplaced = flags;
+            List<string> patterns = new() {
+                @"(-cpal [0123456789\.]* )",
+                @"(-cpor [0123456789\.]* )",
+                @"(-cspr [0123456789\.]* )"
+            };
+            
+            // Regex replace palette, portrait and sprite swaps.
+            foreach (var pattern in patterns)
+            {
+                flagsReplaced = Regex.Replace(flags, pattern, match =>
+                    {
+                        string value = match.Value;
+                        string replacedValue = value.Replace(value, "");
+                        return replacedValue;
+                    }); 
+            }
+            
+            // Find a matching flagset.
             foreach (var flagsetValue in WCData.FlagsetDict)
             {
-                if (flags == flagsetValue.Value)
+                if (flagsReplaced == flagsetValue.Value)
                 {
                     flagset = flagsetValue.Key;
-                    return;
+                    return flagset;
                 }
             }
-            flagset = "Other";
+            return flagset;
         }
 
         /// <summary>

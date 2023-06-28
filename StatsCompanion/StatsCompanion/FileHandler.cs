@@ -28,6 +28,8 @@ namespace StatsCompanion
             "true_chaos_"
         };
         private readonly List<string> _seedInfoLines = new(){ "Version", "Generated", "Seed", "Hash" };
+        private readonly List<string> _directoryList;
+        
         private DateTime _lastDirectoryRefresh;
 
         public string AppDirectory { get => _appDirectory; }
@@ -45,21 +47,25 @@ namespace StatsCompanion
             _crashlogDirectory = $"{_appDirectory}\\crashlog";
             _seedDirectory = seedDirectory;
 
+            _directoryList = new() { _runsDirectory, _crashlogDirectory };
+            
             _lastLoadedSeed = "";
             _lastDirectoryRefresh = DateTime.Now;
 
-            CheckDirectory(RunsDirectory);
-            CheckDirectory(CrashlogDirectory);
+            CheckDirectory(_directoryList);
         }
 
         /// <summary>
         /// Checks if the directories exist, if not, create them.
         /// </summary>
-        private void CheckDirectory (string directory)
+        private void CheckDirectory (List<string> directoryList)
         {
-            if (!Directory.Exists(directory))
+            foreach (var directory in directoryList)
             {
-                Directory.CreateDirectory(directory);
+                if (!Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                } 
             }
         }
 

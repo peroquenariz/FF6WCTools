@@ -30,8 +30,12 @@ namespace StatsCompanion
         private void AssemblyVersion()
         {
             Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine($"Stats Companion v{_appVersion}".PadRight(RightPadding));
-            Console.WriteLine("------------------------");
+            string version = $"Stats Companion v{_appVersion}";
+            Console.WriteLine(version);
+            for (int i = 0; i < version.Length; i++)
+            {
+                Console.Write("-");
+            }
             Console.WriteLine();
         }
 

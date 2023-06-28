@@ -36,7 +36,7 @@ namespace StatsCompanion
 
                     // Start a new run.
                     run = new();
-#if RELEASE
+
                     // Wait for the player to start a new game.
                     // Only exit the loop if current menu is FF6WC custom pre-game menu and new game has been selected.
                     while (true)
@@ -64,7 +64,7 @@ namespace StatsCompanion
                     Log.cursorTopPosition = 6;
                     fileHandler.ResetLastLoadedSeed();
                     Thread.Sleep(3500);
-#endif
+
 
                     // Read character data.
                     run.CharacterData = sniConnection.ReadMemory(WCData.CharacterDataStart, WCData.CharacterDataSize);
@@ -286,6 +286,9 @@ namespace StatsCompanion
                             {
                                 Log.DebugInformation(run);
                             }
+#if JSON_DEBUG
+                            run.HasFinished = true; 
+#endif
                         }
                     }
 
@@ -328,7 +331,11 @@ namespace StatsCompanion
 
                     // Get Coliseum data.
                     run.CheckColiseumVisit();
-
+#if JSON_DEBUG
+                    run.CharacterData = sniConnection.ReadMemory(WCData.CharacterDataStart, WCData.CharacterDataSize);
+                    run.CharacterSkillData = sniConnection.ReadMemory(WCData.CharacterSkillData, WCData.CharacterSkillDataSize);
+                    run.FinalBattleLineup = sniConnection.ReadMemory(WCData.FinalBattleCharacterListStart, 12);
+#endif
                     // Get final 4-character lineup and skills data.
                     run.GetFinalLineup();
                     run.GetSwdTechList();
@@ -355,6 +362,9 @@ namespace StatsCompanion
                     FileHandler.WriteStringToFile(jsonPath, jsonRunData);
                     
                     Log.RunSuccessful((run.EndTime - run.StartTime - WCData.TimeFromKefkaFlashToAnimation).ToString(@"hh\:mm\:ss\.ff"));
+#if JSON_DEBUG
+                    Console.ReadKey(); 
+#endif
                 }
             }
             catch (Exception e)

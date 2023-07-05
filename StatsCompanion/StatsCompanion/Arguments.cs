@@ -47,7 +47,9 @@ namespace StatsCompanion
         public string userId { get; set; }
         public string race { get; set; }
         public string mood { get; set; }
-        public string seed { get; set; }
+        public string? seed { get; set; }
+        public string? seedRaw { get; set; }
+        public string? flagsetRaw { get; set; }
         public string raceId { get; set; }
         public string flagset { get; set; }
         public string otherFlagset { get; set; }
@@ -113,7 +115,9 @@ namespace StatsCompanion
             knownSwdTechs = run.KnownSwdTechs;
             knownBlitzes = run.KnownBlitzes;
             knownLores = run.KnownLores;
-            seed = "";
+            seed = null;
+            seedRaw = null;
+            flagsetRaw = null;
             GetSeedInfo(run.seedInfo);
         }
 
@@ -126,18 +130,24 @@ namespace StatsCompanion
         {
             for (int i = 0; i < 9; i++)
             {
-                if (seedInfo[i] == null)
+                string line = seedInfo[i];
+                if (line == null)
                 {
                     return;
                 }
-                else if (seedInfo[i].StartsWith("Seed"))
+                else if (line.StartsWith("Seed"))
                 {
-                    seed = seedInfo[i].Substring(10);
+                    seedRaw = seedInfo[i].Substring(10);
                 }
-                else if (seedInfo[i].StartsWith("Flags"))
+                else if (line.StartsWith("Flags"))
                 {
                     string flags = seedInfo[i].Substring(10);
+                    flagsetRaw = flags;
                     flagset = GetFlagset(flags);
+                }
+                else if (line.StartsWith("Website"))
+                {
+                    seed = line.Substring(line.Length - 12);
                 }
             }
         }
@@ -187,7 +197,7 @@ namespace StatsCompanion
         public static string ReplaceCharacters(string jsonString)
         {
             // Replace " - " with "__" in values
-            string replacedCharacters = Regex.Replace(jsonString, @"""(.*?)""", match =>
+            string replacedCharacters = Regex.Replace(jsonString, @"""([^-].*?)""", match =>
             {
                 string value = match.Groups[1].Value;
                 string replacedValue = value.Replace(" - ", "__");

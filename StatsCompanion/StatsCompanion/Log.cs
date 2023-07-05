@@ -58,18 +58,18 @@ namespace StatsCompanion
             Console.CursorLeft = 0;
             Console.CursorTop = 8;
             Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.Write($"No seeds found in the seed directory.".PadRight(60));
+            Console.Write($"No seeds found in the seed directory.".PadRight(RightPadding));
             ClearLines(10);
         }
 
-        public static void SeedInformation(FileInfo lastCreatedZip, string[] seedInfo, List<string> seedInfoLines)
+        public static void SeedInformation(string filename, string[] seedInfo, List<string> seedInfoLines)
         {
             string flags = "";
             string flagset;
             Console.CursorLeft = 0;
             Console.CursorTop = 8;
             Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine($"Loaded seed: {lastCreatedZip.Name}".PadRight(RightPadding));
+            Console.WriteLine($"Loaded seed: {filename}".PadRight(RightPadding));
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine();
             for (int i = 0; i < seedInfo.Length; i++)
@@ -96,7 +96,7 @@ namespace StatsCompanion
             Console.WriteLine("Now tracking your run...".PadRight(RightPadding));
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine("*** DO NOT close this window! ***".PadRight(RightPadding));
-            ClearLines(10);
+            ClearLines(15);
         }
 
         public static void RunSuccessful(string finalTime)
@@ -209,13 +209,20 @@ namespace StatsCompanion
         public static void InvalidSeedDirectory()
         {
             Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine($"Invalid/non-existant seed directory - not collecting seed information!");
+            Console.WriteLine($"Invalid/non-existant seed directory - not collecting seed information!".PadRight(RightPadding));
         }
 
         public static void NoSeedDirectory()
         {
             Console.ForegroundColor = ConsoleColor.DarkGray;
-            Console.WriteLine("No seed directory provided in the config file - not collecting seed information!");
+            Console.WriteLine("No seed directory provided in the config file - not collecting seed information!".PadRight(RightPadding));
+        }
+        public static void NoMatchingSeedInfoFound(string filename)
+        {
+            Console.CursorLeft = 0;
+            Console.CursorTop = 8;
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine($"No matching .txt found for {filename} - not collecting seed information!".PadRight(RightPadding));
         }
     }
 }

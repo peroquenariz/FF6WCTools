@@ -19,17 +19,24 @@ namespace StatsCompanion
         private readonly string _crashlogDirectory;
         private readonly string _seedDirectory;
 
-        private string _lastLoadedSeed;
-        private string[] _validSeedPrefixes = {
+        private readonly string[] _validSeedPrefixes = {
             "ff6wc_",
             "preset_",
+            "manually",
             "standard_",
             "chaos_",
-            "true_chaos_"
+            "true_chaos_",
+            "blamethebot"
         };
-        private readonly List<string> _seedInfoLines = new(){ "Version", "Generated", "Seed", "Hash" };
+        private readonly List<string> _seedInfoLines = new(){
+            "Version",
+            "Generated",
+            "Seed",
+            "Hash"
+        };
         private readonly List<string> _directoryList;
         
+        private string _lastLoadedSeed;
         private DateTime _lastDirectoryRefresh;
 
         public string AppDirectory { get => _appDirectory; }
@@ -91,10 +98,10 @@ namespace StatsCompanion
         }
 
         /// <summary>
-        /// Scans the seed folder and looks for the zip file with the last creation date that matches WC naming.
-        /// Opens the txt inside the seed zip file and gets seed information.
+        /// Scans the seed folder and looks for the zip or text file with the last creation date that matches WC naming.
+        /// Reads the txt and gets seed information.
         /// </summary>
-        /// <param name="seedInfo">The first lines of the seed txt. If no file is found, array will have empty strings.</param>
+        /// <param name="seedInfo">The first lines of the seed txt. If no file is found, array will have null strings.</param>
         /// <returns>true if the directory is valid, otherwise false.</returns>
         public bool UpdateLastSeed(string[] seedInfoPrevious, out string[] seedInfo)
         {
@@ -115,7 +122,7 @@ namespace StatsCompanion
 
             // Scan directory
             DirectoryInfo directory = new(_seedDirectory);
-            FileInfo[] files = directory.GetFiles("*.zip").OrderBy(f => f.CreationTime).ToArray();
+            FileInfo[] files = directory.GetFiles("*.*").OrderBy(f => f.CreationTime).ToArray();
 
             if (files.Length == 0)
             {
@@ -124,15 +131,15 @@ namespace StatsCompanion
                 return true;
             }
             
-            FileInfo lastCreatedZip = files[0];
+            FileInfo lastCreatedFile = files[0];
             for (int i = files.Length-1; i >= 0 && !seedFound; i--)
             {
-                string filename = files[i].Name;
+                FileInfo file = files[i];
                 foreach (string prefix in _validSeedPrefixes)
                 {
-                    if (filename.StartsWith(prefix))
+                    if (file.Name.StartsWith(prefix))
                     {
-                        lastCreatedZip = files[i];
+                        lastCreatedFile = file;
                         seedFound = true;
                         break;
                     }
@@ -146,45 +153,81 @@ namespace StatsCompanion
                 return true;
             }
             
-            if (lastCreatedZip.Name != _lastLoadedSeed)
+            if (lastCreatedFile.Name != _lastLoadedSeed)
             {
-                _lastLoadedSeed = lastCreatedZip.Name;
-                ZipArchive seedZip = ZipFile.OpenRead(lastCreatedZip.FullName);
-                string filenameNoSpaces = (lastCreatedZip.Name.Remove(lastCreatedZip.Name.Length - 3, 3) + "txt").Replace("_", " ");
+                _lastLoadedSeed = lastCreatedFile.Name;
+                Stream seedTextStream;
                 string entryName = "";
+                string filenameWithoutExtension = Path.GetFileNameWithoutExtension(lastCreatedFile.Name);
 
-                // Compare replacing underscores with spaces
-                // Thanks Seedbot :)
-                // Nvm, it's Discord's fault lmao
-                foreach (var entry in seedZip.Entries)
+                if (lastCreatedFile.Extension == ".zip")
                 {
-                    string entryNoSpaces = entry.Name.Replace("_", " ");
-                    if (entryNoSpaces == filenameNoSpaces)
+                    ZipArchive seedZip = ZipFile.OpenRead(lastCreatedFile.FullName);
+                    // Compare replacing underscores with spaces
+                    // Thanks Seedbot :)
+                    // Nvm, it's Discord's fault lmao
+                    foreach (var entry in seedZip.Entries)
                     {
-                        entryName = entry.Name;
-                        break;
-                    }
-                }
-                
-                ZipArchiveEntry? seedTxt = seedZip.GetEntry(entryName);
-
-                if (seedTxt != null)
-                {
-                    using (Stream seedTextStream = seedTxt.Open())
-                    {
-                        StreamReader reader = new(seedTextStream);
-                        for (int i = 0; i < 9; i++)
+                        string filenameNoSpaces = (filenameWithoutExtension + ".txt").Replace("_", " ");
+                        string entryNoSpaces = entry.Name.Replace("_", " ");
+                        if (entryNoSpaces == filenameNoSpaces)
                         {
-                            seedInfo[i] = reader.ReadLine()!;
+                            entryName = entry.Name;
+                            break;
                         }
-                        reader.Close();
                     }
-                    Log.SeedInformation(lastCreatedZip, seedInfo, _seedInfoLines);
-                }
 
-                seedZip.Dispose();
+                    ZipArchiveEntry? seedTxt = seedZip.GetEntry(entryName);
+
+                    if (seedTxt != null)
+                    {
+                        using (seedTextStream = seedTxt.Open())
+                        {
+                            ReadSeedTextFile(seedTextStream, seedInfo);
+                        }
+                        Log.SeedInformation(filenameWithoutExtension, seedInfo, _seedInfoLines);
+                    }
+
+                    seedZip.Dispose();
+                }
+                else if (lastCreatedFile.Extension == ".txt")
+                {
+                    using (seedTextStream = File.OpenRead(lastCreatedFile.FullName))
+                    {
+                        ReadSeedTextFile(seedTextStream, seedInfo);
+                    }
+                    Log.SeedInformation(filenameWithoutExtension, seedInfo, _seedInfoLines);
+                }
+                else if (lastCreatedFile.Extension == ".smc")
+                {
+                    string txtPath = $"{lastCreatedFile.DirectoryName}\\{filenameWithoutExtension}.txt";
+                    bool hasTxt = File.Exists(txtPath);
+                    if (hasTxt)
+                    {
+                        using (seedTextStream = File.OpenRead(txtPath))
+                        {
+                            ReadSeedTextFile(seedTextStream, seedInfo);
+                        }
+                        Log.SeedInformation(filenameWithoutExtension, seedInfo, _seedInfoLines);
+                    }
+                    else
+                    {
+                        Log.NoMatchingSeedInfoFound(lastCreatedFile.Name);
+                        _lastLoadedSeed = "";
+                    }
+                }
             }
             return true;
+        }
+
+        private static void ReadSeedTextFile(Stream seedTextStream, string[] seedInfo)
+        {
+            StreamReader reader = new(seedTextStream);
+            for (int i = 0; i < 9; i++)
+            {
+                seedInfo[i] = reader.ReadLine()!;
+            }
+            reader.Close();
         }
 
         public void ResetLastLoadedSeed()

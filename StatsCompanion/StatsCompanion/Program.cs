@@ -23,8 +23,15 @@ namespace StatsCompanion
 
                 while (true)
                 {
+                    if (debugMode)
+                    {
+                        Console.Clear();
+                        log.AssemblyVersion(debugMode);
+                    }
+
                     Log.cursorTopPosition = 3;
                     bool isValidDirectory = true;
+
                     
                     // Open a connection to SNI
                     sniConnection.ResetConnection();
@@ -36,7 +43,7 @@ namespace StatsCompanion
 
                     // Start a new run.
                     run = new();
-
+#if RELEASE
                     // Wait for the player to start a new game.
                     // Only exit the loop if current menu is FF6WC custom pre-game menu and new game has been selected.
                     while (true)
@@ -59,7 +66,7 @@ namespace StatsCompanion
                             break;
                         }
                     }
-
+#endif
                     Log.TrackingRun();
                     Log.cursorTopPosition = 6;
                     fileHandler.ResetLastLoadedSeed();

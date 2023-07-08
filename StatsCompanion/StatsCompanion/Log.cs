@@ -27,11 +27,16 @@ namespace StatsCompanion
             cursorTopPosition = 3;
         }
 
-        private void AssemblyVersion()
+        public void AssemblyVersion(bool debugMode = false)
         {
             Console.ForegroundColor = ConsoleColor.White;
             string version = $"Stats Companion v{_appVersion}";
-            Console.WriteLine(version);
+            Console.Write(version);
+            if (debugMode)
+            {
+                Console.Write(" - DEBUG MODE"); 
+            }
+            Console.WriteLine();
             for (int i = 0; i < version.Length; i++)
             {
                 Console.Write("-");
@@ -136,7 +141,8 @@ namespace StatsCompanion
         public static void DebugInformation(Run run)
         {
             Console.Clear();
-
+            Console.WriteLine($"Game mode: {run.GameStatus}");
+            Console.WriteLine();
             bool isInAShop = run.IsMenuTimerRunning && run.MenuNumber == 3;
             bool isInAMenu = run.IsMenuTimerRunning && run.MenuNumber != 3;
             Console.ForegroundColor = isInAMenu ? ConsoleColor.Blue : ConsoleColor.White;

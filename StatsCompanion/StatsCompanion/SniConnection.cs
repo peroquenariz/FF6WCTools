@@ -20,8 +20,6 @@ namespace StatsCompanion
         private readonly ReadMemoryRequest _readMemoryRequest;
         private readonly SingleReadMemoryRequest _singleReadMemoryRequest;
 
-        private int _requestTimer;
-
         public int RequestTimer { get; set; }
 
         public SniConnection()

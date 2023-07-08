@@ -74,7 +74,7 @@ namespace StatsCompanion
         /// <returns></returns>
         public static string PeekTzenThiefRewardWob (byte dialogWaitingForInput, byte dialogPointer, byte dialogChoiceSelected)
         {
-            string tzenThiefRewardWob = "Did not check";
+            string tzenThiefRewardWob = "Did_not_check";
             if (dialogWaitingForInput != 0)
             {
                 if ((dialogChoiceSelected == 0 && dialogPointer == 4) || (dialogChoiceSelected == 1 && dialogPointer == 6))
@@ -96,7 +96,7 @@ namespace StatsCompanion
         /// <returns></returns>
         public static string PeekTzenThiefRewardWor(int dialogIndex)
         {
-            string tzenThiefRewardWor = "Did not check";
+            string tzenThiefRewardWor = "Did_not_check";
             
             if (dialogIndex == 1570)
             {
@@ -177,7 +177,9 @@ namespace StatsCompanion
                     string command = WCData.CommandDict[characterCommands[i]];
                     if (!startingCommands.Contains(command))
                     {
-                        startingCommands.Add(command);
+                        string commandReplaced = command.Replace(" - ", "__");
+                        commandReplaced = command.Replace(" ", "_");
+                        startingCommands.Add(commandReplaced);
                     }
                 }
             }
@@ -188,7 +190,9 @@ namespace StatsCompanion
                     string command = WCData.CommandDict[characterCommands[i + 8]];
                     if (!startingCommands.Contains(command))
                     {
-                        startingCommands.Add(command);
+                        string commandReplaced = command.Replace(" - ", "__");
+                        commandReplaced = command.Replace(" ", "_");
+                        startingCommands.Add(commandReplaced);
                     }
                 }
             }
@@ -197,7 +201,9 @@ namespace StatsCompanion
                 string command = WCData.CommandDict[characterCommands[12]];
                 if (!startingCommands.Contains(command))
                 {
-                    startingCommands.Add(command);
+                    string commandReplaced = command.Replace(" - ", "__");
+                    commandReplaced = command.Replace(" ", "_");
+                    startingCommands.Add(commandReplaced);
                 }
             }
             return startingCommands;
@@ -215,14 +221,20 @@ namespace StatsCompanion
             {
                 if (CheckBitSet(dragonsBytes[0], WCData.DragonFlags1[i]))
                 {
-                    dragonsKilled.Add(WCData.DragonDict[WCData.DragonFlags1[i]]);
+                    string dragon = WCData.DragonDict[WCData.DragonFlags1[i]];
+                    dragon = dragon.Replace(" - ", "__");
+                    dragon = dragon.Replace(" ", "_");
+                    dragonsKilled.Add(dragon);
                 }
             }
             for (int i = 0; i < 2; i++)
             {
                 if (CheckBitSet(dragonsBytes[1], WCData.DragonFlags2[i]))
                 {
-                    dragonsKilled.Add(WCData.DragonDict[WCData.DragonFlags2[i]]);
+                    string dragon = WCData.DragonDict[WCData.DragonFlags2[i]];
+                    dragon = dragon.Replace(" - ", "__");
+                    dragon = dragon.Replace(" ", "_");
+                    dragonsKilled.Add(dragon);
                 }
             }
             return dragonsKilled;

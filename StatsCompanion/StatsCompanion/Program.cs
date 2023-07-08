@@ -353,7 +353,6 @@ namespace StatsCompanion
                     // Create JSON string with the run data.
                     Arguments runArguments = new(run);
                     string jsonRunData = fileHandler.SerializeJson(runArguments);
-                    jsonRunData = Arguments.ReplaceCharacters(jsonRunData);
                     
                     // Create a timestamped filename.
                     string jsonPath = $"{fileHandler.RunsDirectory}\\{run.EndTime.ToString("yyyy_MM_dd - HH_mm_ss")}.json";

@@ -188,24 +188,5 @@ namespace StatsCompanion
             }
             return flagset;
         }
-
-        /// <summary>
-        /// Replaces certain characters for the JSON to be compatible with StatsCollide.
-        /// </summary>
-        /// <param name="jsonString">The string to replace.</param>
-        /// <returns>A string with replaced characters for underscores.</returns>
-        public static string ReplaceCharacters(string jsonString)
-        {
-            // Replace " - " with "__" in values
-            string replacedCharacters = Regex.Replace(jsonString, @"""([^-].*?)""", match =>
-            {
-                string value = match.Groups[1].Value;
-                string replacedValue = value.Replace(" - ", "__");
-                replacedValue = replacedValue.Replace(" ", "_");
-                return "\"" + replacedValue + "\"";
-            });
-
-            return replacedCharacters;
-        }
     }
 }

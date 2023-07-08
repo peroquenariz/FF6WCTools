@@ -141,14 +141,15 @@ namespace StatsCompanion
             _isFinalBattle = false;
             _tzenThiefBit = false;
             _inTzenThiefArea = false;
+            _isReset = false;
             _ktSkipUnlockTimeString = "";
             _battleFormation = "";
-            _tzenThiefPeekWob = "Did not check";
-            _tzenThiefPeekWor = "Did not check";
+            _tzenThiefPeekWob = "Did_not_check";
+            _tzenThiefPeekWor = "Did_not_check";
             _tzenThiefBought = "";
-            _tzenThief = "Did not check";
-            _tzenThiefReward = "Did not buy - Unknown";
-            _coliseumVisit = "Did not visit";
+            _tzenThief = "Did_not_check";
+            _tzenThiefReward = "Did_not_buy__Unknown";
+            _coliseumVisit = "Did_not_visit";
             _auctionHouseEsperCount = 0;
             _auctionHouseEsperCountText = "Zero";
             _gameStatus = "field";
@@ -585,41 +586,41 @@ namespace StatsCompanion
         {
             if (TzenThiefBought == "")
             {
-                if (TzenThiefPeekWob != "Did not check")
+                if (TzenThiefPeekWob != "Did_not_check")
                 {
-                    TzenThiefReward = $"Did not buy - {TzenThiefPeekWob}";
+                    TzenThiefReward = $"Did_not_buy__{TzenThiefPeekWob}";
                     ChecksPeeked.Add("Tzen Thief");
                 }
-                else if (TzenThiefPeekWor != "Did not check")
+                else if (TzenThiefPeekWor != "Did_not_check")
                 {
-                    TzenThiefReward = $"Did not buy - {TzenThiefPeekWor}";
+                    TzenThiefReward = $"Did_not_buy__{TzenThiefPeekWor}";
                     ChecksPeeked.Add("Tzen Thief");
                 }
                 else
                 {
-                    TzenThiefReward = $"Did not buy - Unknown";
+                    TzenThiefReward = $"Did_not_buy__Unknown";
                 }
             }
             else
             {
-                TzenThiefReward = $"Bought {TzenThiefBought}";
+                TzenThiefReward = $"Bought_{TzenThiefBought}";
             }
 
-            if (TzenThiefPeekWob == "Did not check" && TzenThiefPeekWor == "Did not check")
+            if (TzenThiefPeekWob == "Did_not_check" && TzenThiefPeekWor == "Did_not_check")
             {
-                TzenThief = "Did not check";
+                TzenThief = "Did_not_check";
             }
-            else if (TzenThiefPeekWob != "Did not check" && TzenThiefPeekWor == "Did not check")
+            else if (TzenThiefPeekWob != "Did_not_check" && TzenThiefPeekWor == "Did_not_check")
             {
-                TzenThief = "Checked WOB only";
+                TzenThief = "Checked_WOB_only";
             }
-            else if (TzenThiefPeekWob == "Did not check" && TzenThiefPeekWor != "Did not check")
+            else if (TzenThiefPeekWob == "Did_not_check" && TzenThiefPeekWor != "Did_not_check")
             {
-                TzenThief = "Checked WOR only";
+                TzenThief = "Checked_WOR_only";
             }
             else
             {
-                TzenThief = "Checked both";
+                TzenThief = "Checked_both";
             }
         }
 
@@ -627,11 +628,11 @@ namespace StatsCompanion
         {
             if (WonColiseumMatch == true && MapsVisited.Contains(0x19D))
             {
-                ColiseumVisit = "Visited and fought";
+                ColiseumVisit = "Visited_and_fought";
             }
             else if (WonColiseumMatch == false && MapsVisited.Contains(0x19D))
             {
-                ColiseumVisit = "Visited but didn't fight";
+                ColiseumVisit = "Visited_but_did_not_fight";
             }
         }
 
@@ -749,7 +750,7 @@ namespace StatsCompanion
                    (character.Commands.Contains("SwdTech") && KnownSwdTechs.Contains("Cleave")) ||
                    (character.Commands.Contains("Tools") && DataHandler.CheckIfItemExistsInInventory(Inventory, 169) == true))
                 {
-                    FinalBattlePrep.Add("Instant death");
+                    FinalBattlePrep.Add("Instant_death");
                     return;
                 }
             }
@@ -762,7 +763,7 @@ namespace StatsCompanion
                 if (character.Esper == "Fenrir" || character.Esper == "Golem" || 
                     character.Esper == "Phantom" || character.Spells.Contains("Life3"))
                 {
-                    FinalBattlePrep.Add("Calmness protection");
+                    FinalBattlePrep.Add("Calmness_protection");
                     return;
                 }
             }

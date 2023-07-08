@@ -203,7 +203,12 @@ namespace StatsCompanion
                                     run.SeedHasBeenAbandoned = true;
                                     break;
                                 }
+                                run.IsReset = true;
                                 run.IsFinalBattle = false; // In the case a player resets final Kefka and character data changes.
+                            }
+                            else if (run.IsReset)
+                            {
+                                run.CheckResetFalsePositive();
                             }
 
                             // Count espers that were bought at the Auction House.

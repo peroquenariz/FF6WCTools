@@ -25,6 +25,7 @@ namespace StatsCompanion
         bool _tzenThiefBit;
         bool _inTzenThiefArea;
         bool _inAuctionHouse;
+        bool _isReset;
         byte _auctionHouseEsperCount;
         byte _menuNumber;
         byte _newGameSelected;
@@ -288,6 +289,7 @@ namespace StatsCompanion
         public int ShopOpenCounter { get => _shopOpenCounter; set => _shopOpenCounter = value; }
         public byte[] GameStatusData { get => _gameStatusData; set => _gameStatusData = value; }
         public string GameStatus { get => _gameStatus; set => _gameStatus = value; }
+        public bool IsReset { get => _isReset; set => _isReset = value; }
 
         public bool CheckIfRunStarted()
         {
@@ -807,6 +809,18 @@ namespace StatsCompanion
             {
                 GameStatus = WCData.MenuKey;
             }
+        }
+
+        public void CheckResetFalsePositive()
+        {
+            if (Route.Count > 1 && MenuNumber != 2)
+            {
+                for (int i = 0; i < 2; i++)
+                {
+                    Route.RemoveAt(Route.Count - 1);
+                }
+            }
+            IsReset = false;
         }
     }
 }

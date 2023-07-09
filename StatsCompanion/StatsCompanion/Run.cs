@@ -748,7 +748,7 @@ namespace StatsCompanion
                    (character.Commands.Contains("SwdTech") && KnownSwdTechs.Contains("Cleave")) ||
                    (character.Commands.Contains("Tools") && DataHandler.CheckIfItemExistsInInventory(Inventory, 169) == true))
                 {
-                    FinalBattlePrep.Add("Instant_death");
+                    FinalBattlePrep.Add("Instant_Death");
                     return;
                 }
             }
@@ -761,7 +761,7 @@ namespace StatsCompanion
                 if (character.Esper == "Fenrir" || character.Esper == "Golem" || 
                     character.Esper == "Phantom" || character.Spells.Contains("Life3"))
                 {
-                    FinalBattlePrep.Add("Calmness_protection");
+                    FinalBattlePrep.Add("Calmness_Protection");
                     return;
                 }
             }

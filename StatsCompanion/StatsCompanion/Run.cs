@@ -574,10 +574,6 @@ namespace StatsCompanion
             {
                 ChecksPeeked.Add("Whelk Gate");
             }
-            if (!ChecksCompleted.Contains("Umaro's Cave") && (MapsVisited.Contains(0x11B) || MapsVisited.Contains(0x015)))
-            {
-                ChecksPeeked.Add("Umaro's Cave");
-            }
             if (!ChecksCompleted.Contains("Auction House 1") && !ChecksCompleted.Contains("Auction House 2") && MapsVisited.Contains(0x0C8))
             {
                 ChecksPeeked.Add("Auction House");

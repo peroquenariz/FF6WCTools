@@ -909,7 +909,8 @@ namespace StatsCompanion
             {0x023, "Tritoch Cliff"},
             {0x0E2, "Zozo Tower"},
             {0x032, "Narshe Moogle Defense"},
-            {0x116, "Zone Eater"}
+            {0x116, "Zone Eater"},
+            {0x11B, "Umaro's Cave"}
         };
 
         /// <summary>

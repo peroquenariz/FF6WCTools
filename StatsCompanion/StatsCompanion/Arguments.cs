@@ -143,7 +143,7 @@ namespace StatsCompanion
                 {
                     string flags = seedInfo[i].Substring(10);
                     flagsetRaw = flags;
-                    flagset = GetFlagset(flags);
+                    flagset = ReplaceCharacters(GetFlagset(flags));
                 }
                 else if (line.StartsWith("Website"))
                 {
@@ -187,6 +187,18 @@ namespace StatsCompanion
                 }
             }
             return flagset;
+        }
+
+        /// <summary>
+        /// Replaces characters from a given string.
+        /// </summary>
+        /// <param name="input">The string to replace.</param>
+        /// <returns>a string with replaced characters.</returns>
+        public static string ReplaceCharacters (string input)
+        {
+            string output;
+            output = input.Replace(" - ", "__").Replace(" ", "_");
+            return output;
         }
     }
 }

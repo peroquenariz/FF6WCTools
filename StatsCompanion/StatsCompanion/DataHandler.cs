@@ -177,8 +177,7 @@ namespace StatsCompanion
                     string command = WCData.CommandDict[characterCommands[i]];
                     if (!startingCommands.Contains(command))
                     {
-                        string commandReplaced = command.Replace(" - ", "__");
-                        commandReplaced = command.Replace(" ", "_");
+                        string commandReplaced = Arguments.ReplaceCharacters(command);
                         startingCommands.Add(commandReplaced);
                     }
                 }
@@ -190,8 +189,7 @@ namespace StatsCompanion
                     string command = WCData.CommandDict[characterCommands[i + 8]];
                     if (!startingCommands.Contains(command))
                     {
-                        string commandReplaced = command.Replace(" - ", "__");
-                        commandReplaced = command.Replace(" ", "_");
+                        string commandReplaced = Arguments.ReplaceCharacters(command);
                         startingCommands.Add(commandReplaced);
                     }
                 }
@@ -201,8 +199,7 @@ namespace StatsCompanion
                 string command = WCData.CommandDict[characterCommands[12]];
                 if (!startingCommands.Contains(command))
                 {
-                    string commandReplaced = command.Replace(" - ", "__");
-                    commandReplaced = command.Replace(" ", "_");
+                    string commandReplaced = Arguments.ReplaceCharacters(command);
                     startingCommands.Add(commandReplaced);
                 }
             }
@@ -221,9 +218,7 @@ namespace StatsCompanion
             {
                 if (CheckBitSet(dragonsBytes[0], WCData.DragonFlags1[i]))
                 {
-                    string dragon = WCData.DragonDict[WCData.DragonFlags1[i]];
-                    dragon = dragon.Replace(" - ", "__");
-                    dragon = dragon.Replace(" ", "_");
+                    string dragon = Arguments.ReplaceCharacters(WCData.DragonDict[WCData.DragonFlags1[i]]);
                     dragonsKilled.Add(dragon);
                 }
             }
@@ -231,9 +226,7 @@ namespace StatsCompanion
             {
                 if (CheckBitSet(dragonsBytes[1], WCData.DragonFlags2[i]))
                 {
-                    string dragon = WCData.DragonDict[WCData.DragonFlags2[i]];
-                    dragon = dragon.Replace(" - ", "__");
-                    dragon = dragon.Replace(" ", "_");
+                    string dragon = Arguments.ReplaceCharacters(WCData.DragonDict[WCData.DragonFlags2[i]]);
                     dragonsKilled.Add(dragon);
                 }
             }

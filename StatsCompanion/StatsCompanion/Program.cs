@@ -136,7 +136,7 @@ namespace StatsCompanion
                         }
                         
                         // Tzen thief peek WoB.
-                        if (run.MapId == 0x132 && run.TzenThiefPeekWob == "Did not check")
+                        if (run.MapId == 0x132 && run.TzenThiefPeekWob == "Did_not_check")
                         {
                             run.DialogIndex = DataHandler.ConcatenateByteArray(sniConnection.ReadMemory(WCData.DialogIndex, 2));
                             if (run.DialogIndex == 1569)
@@ -253,7 +253,7 @@ namespace StatsCompanion
                             }
 
                             // Tzen thief peek WoR.
-                            if (run.MapId == 0x131 && run.TzenThiefPeekWor == "Did not check")
+                            if (run.MapId == 0x131 && run.TzenThiefPeekWor == "Did_not_check")
                             {
                                 run.DialogIndex = DataHandler.ConcatenateByteArray(sniConnection.ReadMemory(WCData.DialogIndex, 2));
                                 run.TzenThiefPeekWor = DataHandler.PeekTzenThiefRewardWor(run.DialogIndex);

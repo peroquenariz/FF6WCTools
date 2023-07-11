@@ -12,6 +12,7 @@ namespace StatsCompanion
         public const string MenuKey = "menu";
         public const string WorldKey = "world";
         public const string FieldKey = "field";
+        public const string Mode7Key = "mode7";
         
         /// <summary>
         /// Address that can be used to determine game mode. Size: 3 bytes.

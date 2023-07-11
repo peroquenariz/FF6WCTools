@@ -805,6 +805,11 @@ namespace StatsCompanion
             {
                 GameStatus = WCData.MenuKey;
             }
+            else if ((firstTwoBytes == 0xa509 && lastByte == 0xEE) ||
+                     (firstTwoBytes == 0xa94d && lastByte == 0xEE))
+            {
+                GameStatus = WCData.Mode7Key;
+            }
         }
 
         public void CheckResetFalsePositive()

@@ -1379,7 +1379,7 @@ namespace StatsCompanion
             [26] = "Health",
             [27] = "Shock",
             [28] = "Possess",
-            [29] = "Magitek",
+            [29] = "MagiTek",
             [255] = "Empty"
         };
 

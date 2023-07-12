@@ -69,9 +69,7 @@ namespace StatsCompanion
 #endif
                     Log.TrackingRun();
                     Log.cursorTopPosition = 6;
-                    fileHandler.ResetLastLoadedSeed();
                     Thread.Sleep(3500);
-
 
                     // Read character data.
                     run.CharacterData = sniConnection.ReadMemory(WCData.CharacterDataStart, WCData.CharacterDataSize);
@@ -294,6 +292,19 @@ namespace StatsCompanion
                             // Either skip or regular KT is logged, whatever happens first.
                             run.CheckKefkaTowerStart();
 
+                            // If a new seed is found in the directory, abandon the seed.
+                            if (isValidDirectory == true &&
+                                DateTime.Now - fileHandler.LastDirectoryRefresh > fileHandler.RefreshInterval)
+                            {
+                                string previousSeed = fileHandler.LastLoadedSeed;
+                                isValidDirectory = fileHandler.UpdateLastSeed(run.seedInfo, out run.seedInfo, false);
+                                if (fileHandler.LastLoadedSeed != previousSeed)
+                                {
+                                    run.SeedHasBeenAbandoned = true;
+                                    break;
+                                }
+                            }
+                            
                             if (debugMode)
                             {
                                 Log.DebugInformation(run);
@@ -303,6 +314,8 @@ namespace StatsCompanion
 #endif
                         }
                     }
+
+                    fileHandler.ResetLastLoadedSeed();
 
                     // If the seed has been abandoned, start tracking the new run.
                     if (run.SeedHasBeenAbandoned == true)

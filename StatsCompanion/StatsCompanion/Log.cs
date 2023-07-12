@@ -101,6 +101,9 @@ namespace StatsCompanion
             Console.WriteLine("Now tracking your run...".PadRight(RightPadding));
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine("*** DO NOT close this window! ***".PadRight(RightPadding));
+            Console.WriteLine();
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine("Press ESCAPE to reset this run and start tracking a new seed");
             ClearLines(15);
         }
 

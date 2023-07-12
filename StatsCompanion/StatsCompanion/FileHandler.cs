@@ -103,7 +103,7 @@ namespace StatsCompanion
         /// </summary>
         /// <param name="seedInfo">The first lines of the seed txt. If no file is found, array will have null strings.</param>
         /// <returns>true if the directory is valid, otherwise false.</returns>
-        public bool UpdateLastSeed(string[] seedInfoPrevious, out string[] seedInfo)
+        public bool UpdateLastSeed(string[] seedInfoPrevious, out string[] seedInfo, bool writeSeedInfo = true)
         {
             _lastDirectoryRefresh = DateTime.Now;
             seedInfo = seedInfoPrevious;
@@ -111,12 +111,12 @@ namespace StatsCompanion
 
             if (_seedDirectory.Length == 0)
             {
-                Log.NoSeedDirectory();
+                if (writeSeedInfo) Log.NoSeedDirectory();
                 return false;
             }
             if (!Directory.Exists(_seedDirectory))
             {
-                Log.InvalidSeedDirectory();
+                if (writeSeedInfo) Log.InvalidSeedDirectory();
                 return false;
             }
 
@@ -126,7 +126,7 @@ namespace StatsCompanion
 
             if (files.Length == 0)
             {
-                Log.NoSeedsFound();
+                if (writeSeedInfo) Log.NoSeedsFound();
                 _lastLoadedSeed = "";
                 return true;
             }
@@ -148,7 +148,7 @@ namespace StatsCompanion
 
             if (!seedFound)
             {
-                Log.NoSeedsFound();
+                if (writeSeedInfo) Log.NoSeedsFound();
                 _lastLoadedSeed = "";
                 return true;
             }
@@ -185,7 +185,7 @@ namespace StatsCompanion
                         {
                             ReadSeedTextFile(seedTextStream, seedInfo);
                         }
-                        Log.SeedInformation(filenameWithoutExtension, seedInfo, _seedInfoLines);
+                        if (writeSeedInfo) Log.SeedInformation(filenameWithoutExtension, seedInfo, _seedInfoLines);
                     }
 
                     seedZip.Dispose();
@@ -196,7 +196,7 @@ namespace StatsCompanion
                     {
                         ReadSeedTextFile(seedTextStream, seedInfo);
                     }
-                    Log.SeedInformation(filenameWithoutExtension, seedInfo, _seedInfoLines);
+                    if (writeSeedInfo) Log.SeedInformation(filenameWithoutExtension, seedInfo, _seedInfoLines);
                 }
                 else if (lastCreatedFile.Extension == ".smc")
                 {
@@ -208,11 +208,11 @@ namespace StatsCompanion
                         {
                             ReadSeedTextFile(seedTextStream, seedInfo);
                         }
-                        Log.SeedInformation(filenameWithoutExtension, seedInfo, _seedInfoLines);
+                        if (writeSeedInfo) Log.SeedInformation(filenameWithoutExtension, seedInfo, _seedInfoLines);
                     }
                     else
                     {
-                        Log.NoMatchingSeedInfoFound(lastCreatedFile.Name);
+                        if (writeSeedInfo) Log.NoMatchingSeedInfoFound(lastCreatedFile.Name);
                         _lastLoadedSeed = "";
                     }
                 }

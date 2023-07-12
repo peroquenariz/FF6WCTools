@@ -194,13 +194,6 @@ namespace StatsCompanion
                             // Only execute on game reset.
                             if (run.MapId == 3)
                             {
-                                // Check if the seed has been abandoned.
-                                run.NewGameSelected = sniConnection.ReadMemory(WCData.NewGameSelected, 1)[0];
-                                if (run.MenuNumber == 9 && run.NewGameSelected == 0)
-                                {
-                                    run.SeedHasBeenAbandoned = true;
-                                    break;
-                                }
                                 run.IsReset = true;
                                 run.IsFinalBattle = false; // In the case a player resets final Kefka and character data changes.
                             }

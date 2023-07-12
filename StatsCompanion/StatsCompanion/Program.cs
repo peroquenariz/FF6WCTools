@@ -292,6 +292,22 @@ namespace StatsCompanion
                             // Either skip or regular KT is logged, whatever happens first.
                             run.CheckKefkaTowerStart();
 
+                            // If escape key is pressed, abandon the seed.
+                            if (Console.KeyAvailable)
+                            {
+                                ConsoleKeyInfo cki = Console.ReadKey(true);
+                                while (Console.KeyAvailable)
+                                {
+                                    Console.ReadKey(true);
+                                }
+
+                                if (cki.Key == ConsoleKey.Escape)
+                                {
+                                    run.SeedHasBeenAbandoned = true;
+                                    break;
+                                }
+                            }
+
                             // If a new seed is found in the directory, abandon the seed.
                             if (isValidDirectory == true &&
                                 DateTime.Now - fileHandler.LastDirectoryRefresh > fileHandler.RefreshInterval)

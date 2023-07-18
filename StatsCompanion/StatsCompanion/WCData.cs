@@ -8,6 +8,23 @@ namespace StatsCompanion
     /// </summary>
     internal static class WCData
     {
+        public const string BattleKey = "battle";
+        public const string MenuKey = "menu";
+        public const string WorldKey = "world";
+        public const string FieldKey = "field";
+        public const string Mode7Key = "mode7";
+        
+        /// <summary>
+        /// Address that can be used to determine game mode. Size: 3 bytes.
+        /// </summary>
+        public const uint NMIJumpCode = 0x7E1501;
+
+        /// <summary>
+        /// Address that points to the start of the monster indexes.
+        /// 6 monsters, 2 bytes each: 12 bytes total.
+        /// </summary>
+        public const uint MonsterIndexStart = 0x7E2001;
+        
         /// <summary>
         /// Address that contains the start of the character skill data.
         /// </summary>
@@ -129,10 +146,17 @@ namespace StatsCompanion
         public const uint FieldObjectStartAddress = 0x7E0867;
 
         /// <summary>
-        /// Menu number address (value is 9 when the custom FF6WC new game screen is up).
+        /// Menu number address. Doesn't get cleared on menu close.
+        /// 9 = pregame custom menu, 3 = shop, 2 = restore save game.
         /// </summary>
         public const uint MenuNumber = 0x7E0200;
 
+        /// <summary>
+        /// Address that contains the "next menu state". Value changes depending on which menu is active.
+        /// Values 19-22 are for the save menu ingame (NOT the load screen on reset).
+        /// </summary>
+        public const uint NextMenuState = 0x7E0027;
+        
         /// <summary>
         /// Address that changes value from 0 to 1 on the new game screen, but also changes if you select a save game.
         /// Combined with MenuNumber, should be easy to determine when a new game has been started.
@@ -192,14 +216,20 @@ namespace StatsCompanion
         public const int CharacterDataSize = 519;
 
         /// <summary>
-        /// Address that contains the start of the inventory. Ends at 0x7E1967 (254 bytes).
+        /// Address that contains the start of the inventory. Size: 255 bytes.
         /// </summary>
         public const uint InventoryStart = 0x7E1869;
 
         /// <summary>
+        /// Address that contains the start of the inventory item count. Size: 255 bytes.
+        /// </summary>
+        public const uint InventoryCountStart = 0x7E1969;
+        
+        /// <summary>
         /// Size of the inventory in memory.
         /// </summary>
-        public const byte InventorySize = 254;
+        public const byte InventorySize = 255;
+        
 
         /// <summary>
         /// Memory address that contains which character has been found.
@@ -247,11 +277,14 @@ namespace StatsCompanion
         
         // These are used to avoid false positives with frame counters stopping and resuming too fast.
         static public readonly TimeSpan TimeBattleFalsePositives = new(0, 0, 3);
-        static public readonly TimeSpan TimeMenuFalsePositives = new(0, 0, 0, 0, 500);
+        static public readonly TimeSpan TimeBattleFormationFalsePositives = new(0, 0, 2);
+        //static public readonly TimeSpan TimeMenuFalsePositives = new(0, 0, 0, 0, 500);
 
         static public readonly TimeSpan TimeFromFadeToBattle = new(0, 0, 0, 0, 617);
         static public readonly TimeSpan TimeFromMenuToOverworld = new(0, 0, 0, 0, 750);
         static public readonly TimeSpan TimeFromBattleToOverworld = new(0, 0, 0, 2, 500);
+
+        static public readonly TimeSpan TimeZero = new(0);
 
 
         /// <summary>
@@ -260,9 +293,19 @@ namespace StatsCompanion
         public static readonly List<int> AirshipMapIds = new() { 0x000, 0x001, 0x006, 0x00B, 0x00A, 0x011 };
 
         /// <summary>
+        /// List containing the overworld maps.
+        /// </summary>
+        public static readonly List<int> OverworldMapIds = new() { 0x000, 0x001 };
+
+        /// <summary>
+        /// List containing the airship deck maps.
+        /// </summary>
+        public static readonly List<int> AirshipDeckMapIds = new() { 0x006, 0x00B, 0x00A, 0x011 };
+
+        /// <summary>
         /// List with maps that are excluded in the airship check.
         /// </summary>
-        public static readonly List<int> AirshipFalsePositives = new() { 0x161, 0x0BB };
+        public static readonly List<int> AirshipFalsePositives = new() { 0x161, 0x0BB, 0x046, 0x195 };
 
         /// <summary>
         /// Dictionary holding the bit offsets of every check event.
@@ -867,7 +910,8 @@ namespace StatsCompanion
             {0x023, "Tritoch Cliff"},
             {0x0E2, "Zozo Tower"},
             {0x032, "Narshe Moogle Defense"},
-            {0x116, "Zone Eater"}
+            {0x116, "Zone Eater"},
+            {0x11B, "Umaro's Cave"}
         };
 
         /// <summary>
@@ -1336,7 +1380,7 @@ namespace StatsCompanion
             [26] = "Health",
             [27] = "Shock",
             [28] = "Possess",
-            [29] = "Magitek",
+            [29] = "MagiTek",
             [255] = "Empty"
         };
 
@@ -1427,6 +1471,420 @@ namespace StatsCompanion
             { 0xD0, " " },
             { 0xD1, " " },
             { 0xD2, "=" }
+        };
+
+        /// <summary>
+        /// Monster index dictionary.
+        /// </summary>
+        public static readonly Dictionary<int, string> MonsterDict = new()
+        {
+            {0, "Guard"},
+            {1, "Soldier"},
+            {2, "Templar"},
+            {3, "Ninja"},
+            {4, "Samurai"},
+            {5, "Orog"},
+            {6, "Mag Roader"},
+            {7, "Retainer"},
+            {8, "Hazer"},
+            {9, "Dahling"},
+            {10, "Rain Man"},
+            {11, "Brawler"},
+            {12, "Apokryphos"},
+            {13, "Dark Force"},
+            {14, "Whisper"},
+            {15, "Over-Mind"},
+            {16, "Osteosaur"},
+            {17, "Commander"},
+            {18, "Rhodox"},
+            {19, "Were-Rat"},
+            {20, "Ursus"},
+            {21, "Rhinotaur"},
+            {22, "Steroidite"},
+            {23, "Leafer"},
+            {24, "Stray Cat"},
+            {25, "Lobo"},
+            {26, "Doberman"},
+            {27, "Vomammoth"},
+            {28, "Fidor"},
+            {29, "Baskervor"},
+            {30, "Suriander"},
+            {31, "Chimera"},
+            {32, "Behemoth"},
+            {33, "Mesosaur"},
+            {34, "Pterodon"},
+            {35, "FossilFang"},
+            {36, "White Drgn"},
+            {37, "Doom Drgn"},
+            {38, "Brachosaur"},
+            {39, "Tyranosaur"},
+            {40, "Dark Wind"},
+            {41, "Beakor"},
+            {42, "Vulture"},
+            {43, "Harpy"},
+            {44, "HermitCrab"},
+            {45, "Trapper"},
+            {46, "Hornet"},
+            {47, "CrassHoppr"},
+            {48, "Delta Bug"},
+            {49, "Gilomantis"},
+            {50, "Trilium"},
+            {51, "Nightshade"},
+            {52, "TumbleWeed"},
+            {53, "Bloompire"},
+            {54, "Trilobiter"},
+            {55, "Siegfried"},
+            {56, "Nautiloid"},
+            {57, "Exocite"},
+            {58, "Anguiform"},
+            {59, "Reach Frog"},
+            {60, "Lizard"},
+            {61, "ChickenLip"},
+            {62, "Hoover"},
+            {63, "Rider"},
+            {64, "Chupon"},
+            {65, "Pipsqueak"},
+            {66, "M-TekArmor"},
+            {67, "Sky Armor"},
+            {68, "Telstar"},
+            {69, "Lethal Wpn"},
+            {70, "Vaporite"},
+            {71, "Flan"},
+            {72, "Ing"},
+            {73, "Humpty"},
+            {74, "Brainpan"},
+            {75, "Cruller"},
+            {76, "Cactrot"},
+            {77, "Repo Man"},
+            {78, "Harvester"},
+            {79, "Bomb"},
+            {80, "Still Life"},
+            {81, "Boxed Set"},
+            {82, "SlamDancer"},
+            {83, "HadesGigas"},
+            {84, "Pug"},
+            {85, "Magic Urn"},
+            {86, "Mover"},
+            {87, "Figaliz"},
+            {88, "Buffalax"},
+            {89, "Aspik"},
+            {90, "Ghost"},
+            {91, "Crawler"},
+            {92, "Sand Ray"},
+            {93, "Areneid"},
+            {94, "Actaneon"},
+            {95, "Sand Horse"},
+            {96, "Dark Side"},
+            {97, "Mad Oscar"},
+            {98, "Crawly"},
+            {99, "Bleary"},
+            {100, "Marshal"},
+            {101, "Trooper"},
+            {102, "General"},
+            {103, "Covert"},
+            {104, "Ogor"},
+            {105, "Warlock"},
+            {106, "Madam"},
+            {107, "Joker"},
+            {108, "Iron Fist"},
+            {109, "Goblin"},
+            {110, "Apparite"},
+            {111, "PowerDemon"},
+            {112, "Displayer"},
+            {113, "Vector Pup"},
+            {114, "Peepers"},
+            {115, "Sewer Rat"},
+            {116, "Slatter"},
+            {117, "Rhinox"},
+            {118, "Rhobite"},
+            {119, "Wild Cat"},
+            {120, "Red Fang"},
+            {121, "Bounty Man"},
+            {122, "Tusker"},
+            {123, "Ralph"},
+            {124, "Chitonid"},
+            {125, "Wart Puck"},
+            {126, "Rhyos"},
+            {127, "SrBehemoth"},
+            {128, "Vectaur"},
+            {129, "Wyvern"},
+            {130, "Zombone"},
+            {131, "Dragon"},
+            {132, "Brontaur"},
+            {133, "Allosaurus"},
+            {134, "Cirpius"},
+            {135, "Sprinter"},
+            {136, "Gobbler"},
+            {137, "Harpiai"},
+            {138, "GloomShell"},
+            {139, "Drop"},
+            {140, "Mind Candy"},
+            {141, "WeedFeeder"},
+            {142, "Luridan"},
+            {143, "Toe Cutter"},
+            {144, "Over Grunk"},
+            {145, "Exoray"},
+            {146, "Crusher"},
+            {147, "Uroburos"},
+            {148, "Primordite"},
+            {149, "Sky Cap"},
+            {150, "Cephaler"},
+            {151, "Maliga"},
+            {152, "Gigan Toad"},
+            {153, "Geckorex"},
+            {154, "Cluck"},
+            {155, "Land Worm"},
+            {156, "Test Rider"},
+            {157, "PlutoArmor"},
+            {158, "Tomb Thumb"},
+            {159, "HeavyArmor"},
+            {160, "Chaser"},
+            {161, "Scullion"},
+            {162, "Poplium"},
+            {163, "Intangir"},
+            {164, "Misfit"},
+            {165, "Eland"},
+            {166, "Enuo"},
+            {167, "Deep Eye"},
+            {168, "GreaseMonk"},
+            {169, "NeckHunter"},
+            {170, "Grenade"},
+            {171, "Critic"},
+            {172, "Pan Dora"},
+            {173, "SoulDancer"},
+            {174, "Gigantos"},
+            {175, "Mag Roader"},
+            {176, "Spek Tor"},
+            {177, "Parasite"},
+            {178, "EarthGuard"},
+            {179, "Coelecite"},
+            {180, "Anemone"},
+            {181, "Hipocampus"},
+            {182, "Spectre"},
+            {183, "Evil Oscar"},
+            {184, "Slurm"},
+            {185, "Latimeria"},
+            {186, "StillGoing"},
+            {187, "Allo Ver"},
+            {188, "Phase"},
+            {189, "Outsider"},
+            {190, "Barb-e"},
+            {191, "Parasoul"},
+            {192, "Pm Stalker"},
+            {193, "Hemophyte"},
+            {194, "Sp Forces"},
+            {195, "Nohrabbit"},
+            {196, "Wizard"},
+            {197, "Scrapper"},
+            {198, "Ceritops"},
+            {199, "Commando"},
+            {200, "Opinicus"},
+            {201, "Poppers"},
+            {202, "Lunaris"},
+            {203, "Garm"},
+            {204, "Vindr"},
+            {205, "Kiwok"},
+            {206, "Nastidon"},
+            {207, "Rinn"},
+            {208, "Insecare"},
+            {209, "Vermin"},
+            {210, "Mantodea"},
+            {211, "Bogy"},
+            {212, "Prussian"},
+            {213, "Black Drgn"},
+            {214, "Adamanchyt"},
+            {215, "Dante"},
+            {216, "Wirey Drgn"},
+            {217, "Dueller"},
+            {218, "Psychot"},
+            {219, "Muus"},
+            {220, "Karkass"},
+            {221, "Punisher"},
+            {222, "Balloon"},
+            {223, "Gabbldegak"},
+            {224, "GtBehemoth"},
+            {225, "Scorpion"},
+            {226, "Chaos Drgn"},
+            {227, "Spit Fire"},
+            {228, "Vectagoyle"},
+            {229, "Lich"},
+            {230, "Osprey"},
+            {231, "Mag Roader"},
+            {232, "Bug"},
+            {233, "Sea Flower"},
+            {234, "Fortis"},
+            {235, "Abolisher"},
+            {236, "Aquila"},
+            {237, "Junk"},
+            {238, "Mandrake"},
+            {239, "1st Class"},
+            {240, "Tap Dancer"},
+            {241, "Necromancr"},
+            {242, "Borras"},
+            {243, "Mag Roader"},
+            {244, "Wild Rat"},
+            {245, "Gold Bear"},
+            {246, "Innoc"},
+            {247, "Trixter"},
+            {248, "Red Wolf"},
+            {249, "Didalos"},
+            {250, "Woolly"},
+            {251, "Veteran"},
+            {252, "Sky Base"},
+            {253, "IronHitman"},
+            {254, "Io"},
+            {255, "Pugs"},
+            {256, "Whelk"},
+            {257, "Presenter"},
+            {258, "Mega Armor"},
+            {259, "Vargas"},
+            {260, "TunnelArmr"},
+            {261, "Prometheus"},
+            {262, "GhostTrain"},
+            {263, "Dadaluma"},
+            {264, "Shiva"},
+            {265, "Ifrit"},
+            {266, "Number 024"},
+            {267, "Number 128"},
+            {268, "Inferno"},
+            {269, "Crane"},
+            {270, "Crane"},
+            {271, "Umaro"},
+            {272, "Umaro"},
+            {273, "Guardian (Vector)"},
+            {274, "Guardian (Kefka's Tower)"},
+            {275, "Air Force"},
+            {276, "Tritoch (Intro)"},
+            {277, "Tritoch (Terra Transforms)"},
+            {278, "FlameEater"},
+            {279, "AtmaWeapon"},
+            {280, "Nerapa"},
+            {281, "SrBehemoth"},
+            {282, "Final Battle Script (Unused)"},
+            {283, "Tentacle"},
+            {284, "Dullahan"},
+            {285, "Doom Gaze"},
+            {286, "Chadarnook"},
+            {287, "Curley"},
+            {288, "Larry"},
+            {289, "Moe"},
+            {290, "Wrexsoul"},
+            {291, "Hidon"},
+            {292, "KatanaSoul"},
+            {293, "L.30 Magic"},
+            {294, "Hidonite"},
+            {295, "Doom"},
+            {296, "Goddess"},
+            {297, "Poltrgeist"},
+            {298, "Kefka"},
+            {299, "L.40 Magic"},
+            {300, "Ultros (Lete River)"},
+            {301, "Ultros (Opera House)"},
+            {302, "Ultros (Esper Mountain)"},
+            {303, "Chupon"},
+            {304, "L.20 Magic"},
+            {305, "Siegfried"},
+            {306, "L.10 Magic"},
+            {307, "L.50 Magic"},
+            {308, "Head"},
+            {309, "Whelk Head"},
+            {310, "Colossus"},
+            {311, "CzarDragon"},
+            {312, "Master Pug"},
+            {313, "L.60 Magic"},
+            {314, "Merchant"},
+            {315, "B.Day Suit"},
+            {316, "Tentacle"},
+            {317, "Tentacle"},
+            {318, "Tentacle"},
+            {319, "RightBlade"},
+            {320, "Left Blade"},
+            {321, "Rough"},
+            {322, "Striker"},
+            {323, "L.70 Magic"},
+            {324, "Tritoch (WoR)"},
+            {325, "Laser Gun"},
+            {326, "Speck"},
+            {327, "MissileBay"},
+            {328, "Chadarnook"},
+            {329, "Ice Dragon"},
+            {330, "Kefka (Hills Maze)"},
+            {331, "Storm Drgn"},
+            {332, "Dirt Drgn"},
+            {333, "Ipooh"},
+            {334, "Leader"},
+            {335, "Grunt"},
+            {336, "Gold Drgn"},
+            {337, "Skull Drgn"},
+            {338, "Blue Drgn"},
+            {339, "Red Dragon"},
+            {340, "Piranha"},
+            {341, "Rizopas"},
+            {342, "Specter"},
+            {343, "Short Arm"},
+            {344, "Long Arm"},
+            {345, "Face"},
+            {346, "Tiger"},
+            {347, "Tools"},
+            {348, "Magic"},
+            {349, "Hit"},
+            {350, "Girl"},
+            {351, "Sleep"},
+            {352, "Hidonite"},
+            {353, "Hidonite"},
+            {354, "Hidonite"},
+            {355, "L.80 Magic"},
+            {356, "L.90 Magic"},
+            {357, "ProtoArmor"},
+            {358, "MagiMaster"},
+            {359, "SoulSaver"},
+            {360, "Ultros (Airship)"},
+            {361, "Naughty"},
+            {362, "Phunbaba"},
+            {363, "Phunbaba"},
+            {364, "Phunbaba"},
+            {365, "Phunbaba"},
+            {366, "Terra's Flashback"},
+            {367, "Kefka (Imperial Camp)"},
+            {368, "Cyan (Imperial Camp)"},
+            {369, "Zone Eater"},
+            {370, "Gau (Veldt)"},
+            {371, "Kefka vs. Leo"},
+            {372, "Kefka (Esper Gate)"},
+            {373, "Officer"},
+            {374, "Cadet"},
+            {375, "&nbsp;"},
+            {376, "&nbsp;"},
+            {377, "Soldier"},
+            {378, "Kefka vs. Esper"},
+            {379, "Battle Event"},
+            {380, "&nbsp;"},
+            {381, "Atma"},
+            {382, "Shadow (Colosseum)"},
+            {383, "Colosseum"}
+        };
+
+        /// <summary>
+        /// Flagset dictionary.
+        /// </summary>
+        public static readonly Dictionary<string, string> FlagsetDict = new()
+        {
+            { "Ultros League - Season 4", "-cg -oa 2.2.2.2.6.6.4.9.9 -ob 3.1.1.2.9.9.4.12.12 -oc 30.8.8.1.1.11.8 -od 59.1.1.11.31 -sc1 random -sc2 random -sc3 random -sal -eu -csrp 80 125 -fst -brl -slr 3 5 -lmprp 75 125 -lel -srr 25 35 -rnl -rnc -sdr 1 2 -das -dda -dns -sch -scis -com 98989898989898989898989898 -rec1 28 -rec2 27 -xpm 3 -mpm 5 -gpm 5 -nxppd -lsced 2 -hmced 2 -xgced 2 -ase 2 -msl 40 -sed -bbs -drloc shuffle -stloc mix -be -bnu -res -fer 0 -escr 100 -dgne -wnz -mmnu -cmd -esr 2 5 -ebr 82 -emprp 75 125 -nm1 random -rnl1 -rns1 -nm2 random -rnl2 -rns2 -nmmi -mmprp 75 125 -gp 5000 -smc 3 -sto 1 -ieor 33 -ieror 33 -csb 3 14 -mca -stra -saw -sisr 20 -sprp 75 125 -sdm 5 -npi -sebr -sesb -ccsr 20 -chrm 0 0 -cms -frw -wmhc -cor 100 -crr 100 -crvr 80 100 -crm -ari -anca -adeh -ame 1 -nmc -noshoes -nu -nfps -fs -fe -fvd -fr -fj -fbs -fedc -fc -ond -rr -etn" },
+            { "Moogles First Tournament", "-cg -oa 2.2.2.2.6.6.4.9.9 -ob 3.1.1.2.9.9.4.12.12 -oc 58.1.1.12.4 -od 58.1.1.12.7 -oe 58.1.1.12.5.12.2 -sc1 random -sc2 random -sc3 random -sal -eu -csrp 100 125 -fst -brl -slr 5 8 -lmprp 75 125 -lel -srr 15 30 -rnl -sdr 1 1 -das -dda -dns -sch -com 98989898989898989898989898 -rec1 28 -xpm 3 -mpm 5 -gpm 5 -nxppd -lsced 2 -hmced 2 -xgced 2.5 -ase 2 -msl 40 -sed -bbs -be -res -fer 0 -escr 100 -dgne -wnz -mmnu -cmd -esr 1 5 -ebr 80 -emprp 75 125 -ems -nm1 random -rnl1 -rns1 -nm2 random -rnl2 -rns2 -nmmi -gp 5000 -smc 3 -sws 3 -sfd 3 -sto 1 -ieor 33 -ieror 33 -csb 1 16 -mca -stra -saw -sisr 35 -sprp 75 125 -sdm 5 -npi -ccsr 35 -cms -cor -crr -crvr 75 128 -crm -ari -anca -adeh -nmc -nfps -fs -fe -fvd -fr -fj -fbs -fedc -ond -rr -as -etn" },
+            { "Coliseum - Terra", "-cg -oa 2.2.2.2.6.6.4.9.9 -ob 3.1.1.8.12.12 -oc 30.3.3.1.1.11.8 -od 31.10.10.1.1.12.9 -oe 33.1.1.12.9 -of 40.2.2.11.26.11.51 -og 45.10.10.0.0 -sc1 terra -sc2 random -sc3 random -sal -eu -csrp 80 125 -fst -brl -slr 3 5 -lmprp 75 125 -lel -srr 25 35 -rnl -rnc -sdr 1 2 -das -dda -dns -sch -com 03989898989898989898989898 -rec1 28 -rec2 27 -xpm 3 -mpm 7 -gpm 5 -nxppd -lsced 2.5 -hmced 2.5 -xgced 2 -ase 2 -msl 50 -sed -bbs -be -bnu -res -fer 0 -escr 100 -dgne -wnz -mmnu -cmd -esrt -ebr 82 -emprp 30 50 -ems -nm1 terra -rnl1 -rns1 -nm2 random -rnl2 -rns2 -nmmi -gp 5000 -smc 3 -sto 1 -ieor 33 -ieror 33 -csb 3 14 -mca -stra -saw -sisr 20 -sprp 75 125 -sdm 5 -npi -snbr -snsb -ccsr 20 -cms -frw -cor -crr -crvr 120 120 -crm -ari -anca -adeh -nmc -nu -nfps -fs -fe -fvd -fr -fj -fbs -fedc -ond -rr -as -etn" },
+            { "Coliseum - Locke", "-cg -oa 2.2.2.2.6.6.4.9.9 -ob 3.1.1.8.12.12 -oc 30.3.3.1.1.11.8 -od 8.1.1.12.9 -oe 46.10.10.0.0 -of 48.5.5.0.0 -og 45.-5.-5.0.0 -sc1 locke -sc2 random -sc3 random -sal -eu -csrp 80 125 -fst -brl -slr 3 5 -lmprp 75 125 -lel -srr 25 35 -rnl -rnc -sdr 1 2 -das -dda -dns -sca -com 98059898989898989898989898 -rec1 28 -rec2 27 -rec3 29 -xpm 3 -mpm 5 -gpm 5 -nxppd -lsced 2.5 -hmced 2.5 -xgced 2 -ase 2 -msl 50 -sed -bbs -be -bnu -res -fer 0 -escr 100 -dgne -wnz -mmnu -cmd -esr 2 5 -ebr 82 -emprp 75 125 -nm1 random -rnl1 -rns1 -nm2 random -rnl2 -rns2 -nmmi -smc 3 -sfd 10 -sto 1 -ieor 33 -ieror 33 -csb 3 14 -mca -stra -saw -sirt -sprp 150 200 -ssf4 -sdm 5 -npi -snbr -ccsr 100 -cms -frw -cor -crr -crvr 120 120 -crm -ari -anca -adeh -nmc -nu -nfps -fs -fe -fvd -fr -fj -fbs -fedc -ond -rr -as -etn" },
+            { "Coliseum - Edgar", "-cg -oa 2.2.2.2.6.6.4.9.9 -ob 3.1.1.8.12.12 -oc 30.3.3.1.1.11.8 -od 43.1.1.12.6 -oe 48.5.5.0.0 -of 45.5.5.0.0 -og 45.10.10.1.1.12.9 -oh 46.10.10.1.1.12.9 -oi 47.10.10.1.1.12.9 -oj 48.10.10.1.1.12.9 -ok 58.1.1.12.6 -sc1 edgar -sc2 random -sc3 random -sal -eu -csrp 80 125 -fst -brl -slr 3 5 -lmprp 75 125 -lel -srr 25 35 -rnl -rnc -sdr 1 2 -das -dda -dns -sch -com 98989898099898989898989898 -rec1 28 -rec2 27 -rec3 29 -xpm 3 -mpm 5 -nxppd -lsced 2.5 -hmced 2.5 -xgced 2 -ase 2 -msl 50 -sed -bbs -be -bnu -res -fer 0 -escr 100 -dgne -wnz -mmnu -cmd -esr 2 5 -ebr 82 -emprp 75 125 -nm1 random -rnl1 -rns1 -nm2 random -rnl2 -rns2 -nmmi -gp 3000 -smc 3 -sws 3 -sfd 3 -sto 1 -ieor 33 -ieror 33 -csb 3 14 -mca -stra -saw -sisr 100 -sprv 2000 2000 -ssf4 -sdm 5 -npi -snbr -snsb -ccsr 20 -cms -frw -cor -crr -crvr 120 120 -crm -ari -anca -adeh -nmc -nu -nfps -fs -fe -fvd -fr -fj -fbs -fedc -ond -rr -rc -as -etn" },
+            { "Coliseum - Sabin", "-open -oa 2.2.2.2.6.6.4.9.9 -ob 3.1.1.8.12.12 -oc 30.3.3.1.1.11.8 -od 14.1.1.12.9 -oe 47.20.20.1.1.12.9 -of 38.1.1.12.7 -og 48.5.5.0.0 -oh 47.5.5.0.0 -oi 13.3.3.11.34.11.11.11.33 -sc1 sabin -sc2 random -sc3 random -sal -eu -csrp 80 125 -fst -brl -slr 3 5 -lmprp 75 125 -lel -srr 25 35 -rnl -rnc -sdr 1 2 -das -dda -dns -sch -com 98989898981098989898989898 -rec1 28 -rec2 27 -rec3 29 -xpm 3 -mpm 5 -gpm 5 -nxppd -lsced 2.5 -hmced 2.5 -xgced 2 -ase 2 -msl 50 -sed -bbs -be -bnu -res -fer 0 -escr 100 -dgne -wnz -mmnu -cmd -esr 0 2 -ebr 100 -emprp 75 125 -nm1 random -rnl1 -rns1 -nm2 random -rnl2 -rns2 -nmmi -smc 3 -sto 1 -ieor 33 -ieror 33 -csb 3 14 -mca -stra -saw -sisr 20 -sprp 75 125 -ssf4 -sdm 5 -npi -snbr -snsb -snee -ccsr 20 -cms -frw -cor -crr -crvr 120 120 -crm -cnee -ari -anca -adeh -nmc -nee -nu -nfps -nfce -fs -fe -fvd -fr -fj -fbs -fedc -ond -rr -as -etn" },
+            { "Coliseum - Cyan", "-cg -oa 2.2.2.2.6.6.4.9.9 -ob 3.1.1.8.12.12 -oc 30.8.8.1.1.11.8 -od 48.20.20.1.1.12.9 -oe 48.10.10.0.0 -of 47.5.5.0.0 -og 45.-5.-5.0.0 -sc1 cyan -sc2 random -sc3 random -sal -eu -csrp 80 125 -fst -brl -slr 3 5 -lmprp 75 125 -lel -srr 25 35 -rnl -rnc -sdr 1 2 -das -dda -dns -com 98980798989898989898989898 -rec1 28 -rec2 27 -rec3 29 -rec4 9 -xpm 4 -mpm 5 -gpm 5 -nxppd -lsced 2.5 -hmced 2.5 -xgced 2 -msl 50 -sed -be -bnu -res -fer 0 -escr 100 -dgne -wnz -mmnu -cmd -emprp 75 125 -nm1 random -rnl1 -rns1 -nm2 random -rnl2 -rns2 -nmmi -gp 5000 -smc 3 -sfd 3 -sto 1 -ieor 33 -ieror 33 -csb 3 14 -mca -stra -saw -sisr 20 -sprp 75 125 -sdm 5 -npi -snbr -snsb -ccsr 20 -cms -frw -cor -crr -crvr 120 120 -crm -ari -anca -adeh -nmc -nu -nfps -nfce -pd -fs -fe -fvd -fr -fj -fbs -fedc -ond -rr -as -etn" },
+            { "Coliseum - Gau", "-cg -oa 2.2.2.2.6.6.4.9.9 -ob 3.1.1.8.12.12 -oc 30.3.3.1.1.11.8 -od 29.25.25.1.1.12.9 -oe 46.20.20.1.1.12.9 -of 37.1.1.11.48 -og 48.5.5.0.0 -oh 46.5.5.0.0 -sc1 gau -sc2 random -sc3 random -sal -sn -eu -csrp 50 175 -fst -brl -slr 3 5 -lmprp 75 125 -lel -srr 25 35 -rnl -rnc -sdr 1 2 -das -dda -dns -sch -com 98989898989898989898981697 -rec1 28 -rec2 27 -rec3 29 -xpm 3 -mpm 5 -gpm 5 -nxppd -lsced 2.5 -hmced 2.5 -xgced 2 -ase 2 -msl 50 -sed -bbs -bmbd -be -bnu -res -fer 0 -escr 100 -dgne -wnz -mmnu -cmd -esr 1 3 -ebr 82 -emprp 75 125 -nm1 random -rnl1 -rns1 -nm2 random -rnl2 -rns2 -nmmi -smc 3 -sto 1 -ieor 33 -ieror 33 -csb 3 14 -mca -stra -saw -sisr 20 -sprp 75 125 -sdm 4 -npi -snbr -snsb -ccsr 20 -cms -frw -cor -crr -crvr 120 120 -crm -ari -anca -adeh -nmc -nu -nfps -fs -fe -fvd -fr -fj -fbs -fedc -ond -rr -as -etn -ycreature" },
+            { "Coliseum - Celes", "-cg -oa 2.2.2.2.6.6.4.9.9 -ob 3.1.1.8.12.12 -oc 30.3.3.1.1.11.8 -od 16.1.1.12.9 -oe 31.10.10.1.1.12.9 -of 45.5.5.0.0 -og 46.5.5.0.0 -oh 40.1.1.12.4 -oi 58.1.1.12.5 -sc1 celes -sc2 random -sc3 random -sal -eu -csrp 90 140 -fst -brl -slr 3 5 -lmprp 75 125 -lel -srr 25 35 -rnl -rnc -sdr 1 2 -das -dda -dns -sch -com 98989898989811989898989898 -rec1 28 -rec3 29 -xpm 3 -mpm 5 -gpm 5 -nxppd -lsced 2.5 -hmced 2.5 -xgced 2 -ase 2 -msl 50 -sed -bbs -be -bnu -res -fer 0 -escr 100 -dgne -wnz -mmnu -cmd -esr 5 5 -ebr 33 -emprp 125 150 -eebr 7 -nm1 random -rnl1 -rns1 -nm2 celes -rnl2 -rns2 -nmmi -gp 5000 -smc 3 -sto 1 -ieor 33 -ieror 33 -csb 3 14 -mca -stra -saw -sisr 20 -sprp 75 125 -sdm 5 -npi -snbr -snsb -ccsr 20 -cms -frw -cor -crr -crvr 120 120 -crm -ari -anca -adeh -nmc -nu -nfps -nfce -fs -fe -fvd -fr -fj -fbs -fedc -ond -rr -as -etn -yimperial" },
+            { "Coliseum - Setzer", "-cg -oa 2.2.2.2.6.6.4.9.9 -ob 3.1.1.8.12.12 -oc 30.3.3.1.1.11.8 -od 58.1.1.12.9 -oe 58.1.1.12.9 -of 58.1.1.12.9 -og 48.5.5.0.0 -oh 47.5.5.0.0 -sc1 setzer -sc2 random -sc3 random -sal -eu -csrp 65 140 -fst -brl -slr 3 5 -lmprp 75 125 -lel -srr 25 35 -rnl -rnc -sdr 1 2 -das -dda -dns -sch -com 99999999999999999915999999 -rec1 28 -xpm 3 -mpm 5 -gpm 5 -nxppd -lsced 2.5 -hmced 2.5 -xgced 2 -asr 2 -msl 50 -sed -bbr -be -bnu -rer 0 -fer 0 -escr 100 -dgne -wnz -mmnu -cmd -esr 0 5 -ebr 82 -emprv 1 128 -eer 6 12 -nm1 random -rnl1 -rns1 -nm2 random -rnl2 -rns2 -nmmi -gp 5000 -smc 3 -sto 1 -ieor 33 -ieror 33 -csb 3 14 -mca -stra -saw -sirt -sprv 0 65535 -sdm 5 -npi -snbr -snsb -ccrs -cms -frw -cor -crr -crvr 120 120 -crm -ari -anca -adeh -nmc -nu -nfps -fs -fe -fvd -fr -fj -fbs -fedc -ond -rr -as -etn" },
+            { "Coliseum - Strago", "-cg -oa 2.2.2.2.6.6.4.9.9 -ob 3.1.1.8.12.12 -oc 30.3.3.1.1.11.8 -od 35.1.1.12.9 -oe 45.10.10.0.0 -of 28.24.24.2.2.11.14.11.10 -sc1 strago -sc2 random -sc3 random -sal -eu -csrp 80 125 -fst -brl -slr 6 12 -lmprp 50 100 -lel -srr 25 35 -rnl -rnc -sdr 1 2 -das -dda -dns -sch -com 98989898989898129898989898 -rec1 28 -rec3 29 -rec4 23 -xpm 3 -mpm 5 -gpm 5 -nxppd -lsced 2.5 -hmced 2.5 -xgced 2 -ase 2 -msl 50 -sed -bbs -be -bnu -res -fer 0 -escr 100 -dgne -wnz -mmnu -cmd -esr 1 2 -ebr 82 -emprp 50 100 -ems -nm1 random -rnl1 -rns1 -nm2 random -rnl2 -rns2 -nmmi -gp 5000 -smc 3 -sto 1 -ieor 33 -ieror 33 -csb 3 14 -mca -stra -saw -sisr 40 -sprp 75 125 -sdm 5 -npi -snsb -ccsr 20 -cms -frw -cor -crr -crvr 120 120 -crm -ari -anca -adeh -nmc -nu -nfps -fs -fe -fvd -fr -fj -fbs -fedc -ond -rr -as -etn" },
+            { "Coliseum - Relm", "-cg -oa 2.2.2.2.6.6.4.9.9 -ob 3.1.1.8.12.12 -oc 30.3.3.1.1.11.8 -od 45.15.15.1.1.12.9 -oe 45.5.5.0.0 -of 46.5.5.0.0 -sc1 relm -sc2 random -sc3 random -sal -eu -csrp 80 125 -fst -brl -slr 3 5 -lmprp 75 125 -lel -srr 25 35 -rnl -rnc -sdr 1 2 -das -dda -dns -sch -com 98989898989898981398989898 -rec1 28 -rec2 27 -rec3 29 -xpm 3 -mpm 7 -gpm 5 -nxppd -lsced 2.5 -hmced 2.5 -xgced 2 -ase 2 -msl 50 -sed -bbs -be -bnu -res -fer 0 -escr 100 -dgne -wnz -mmnu -cmd -esr 4 5 -ebr 82 -emprp 75 125 -ems -nm1 random -rnl1 -rns1 -nm2 random -rnl2 -rns2 -nmmi -gp 5000 -smc 3 -sto 1 -ieor 33 -ieror 33 -csb 3 14 -mca -stra -saw -sisr 20 -sprp 75 125 -sdm 5 -npi -snbr -snsb -ccsr 20 -cms -cpal 100.95.20.92.126.41.6 -frw -cor -crr -crvr 120 120 -crm -ari -anca -adeh -nmc -nee -nil -nu -nfps -fs -fe -fvd -fr -fj -fbs -fedc -ond -rr -as -etn -ysketch" },
+            { "Coliseum - Shadow", "-cg -oa 2.2.2.2.6.6.4.9.9 -ob 3.1.1.8.12.12 -oc 30.3.3.1.1.11.8 -od 9.1.1.12.9 -oe 48.5.5.0.0 -of 46.5.5.0.0 -og 58.1.1.12.2 -sc1 shadow -sc2 random -sc3 random -sal -eu -csrp 80 125 -fst -brl -slr 3 5 -lmprp 75 125 -lel -srr 25 35 -rnl -rnc -sdr 1 2 -das -dda -dns -sch -com 98989808989898989898989898 -rec1 28 -rec2 27 -rec3 29 -xpm 8 -mpm 5 -gpm 10 -lsced 2.5 -hmced 2.5 -xgced 2 -ase 2 -msl 50 -sed -bbs -be -bnu -res -fer 0 -escr 100 -dgne -wnz -mmnu -cmd -esr 2 5 -ebr 82 -emprp 75 125 -nm1 random -rnl1 -rns1 -nm2 random -rnl2 -rns2 -nmmi -gp 50000 -smc 3 -sto 1 -ieor 33 -ieror 33 -csb 3 14 -mca -stra -saw -sisr 20 -sprp 75 125 -ssf0 -sdm 5 -npi -snbr -snsb -ccsr 20 -cms -frw -cor -crr -crvr 120 120 -crm -ari -anca -adeh -nmc -nu -nfps -nfce -fs -fe -fvd -fr -fj -fbs -fedc -ond -rr -as -etn -yremove" },
+            { "Coliseum - Mog", "-cg -oa 2.2.2.2.6.6.4.9.9 -ob 3.1.1.8.12.12 -oc 30.3.3.1.1.11.8 -od 36.1.1.12.9 -oe 46.5.5.0.0 -of 48.5.5.0.0 -og 27.8.8.1.1.11.28 -oh 36.1.1.6.2.2 -oi 36.1.1.6.4.4 -sc1 mog -sc2 random -sc3 random -sal -eu -csrp 80 125 -fst -brl -slr 3 5 -lmprp 75 125 -lel -srr 25 35 -rnl -rnc -sdr 1 2 -das -dda -dns -sch -com 98989898989898989898199898 -rec1 28 -rec2 27 -rec3 29 -xpm 3 -mpm 5 -gpm 5 -nxppd -lsced 2.5 -hmced 2.5 -xgced 2 -ase 2 -msl 50 -sed -bbs -be -bnu -res -fer 0 -escr 100 -dgne -wnz -mmnu -cmd -esr 2 5 -ebr 82 -emprp 75 125 -nm1 random -rnl1 -rns1 -nm2 random -rnl2 -rns2 -nmmi -gp 5000 -smc 3 -sto 1 -ieor 100 -ieror 100 -csb 3 14 -mca -stra -saw -sisr 20 -sprp 75 125 -sdm 5 -npi -snbr -snsb -ccsr 20 -cms -name TERRA.LOCKE.KUPEK.KUPOP.KUMAMA.KUKU.KUTAN.KUPAN.KUSHU.KURIN.MOG.KURU.KAMOG.UMARO -cpor 0.1.10.10.10.10.10.10.10.10.10.10.10.13.14 -cspr 0.1.10.10.10.10.10.10.10.10.10.10.10.13.14.15.18.19.20.21 -cspp 2.1.5.5.5.5.5.5.5.5.5.5.5.5.1.0.6.1.0.3 -frw -cor -crr -crvr 120 120 -crm -ari -anca -adeh -nmc -nu -nfps -fs -fe -fvd -fr -fj -fbs -fedc -ond -rr -as -etn -ymascot" },
+            { "Coliseum - Gogo", "-cg -oa 2.2.2.2.6.6.4.9.9 -ob 3.1.1.8.12.12 -oc 30.3.3.1.1.11.8 -od 12.1.1.12.9 -sc1 gogo -sc2 random -sc3 random -sal -eu -csrp 80 125 -fst -brl -slr 3 5 -lmprp 75 125 -lel -srr 25 35 -rnl -rnc -sdr 1 2 -das -dda -dns -sch -com 98989898989898989898989898 -xpm 4 -mpm 5 -gpm 5 -nxppd -lsh 1 -hmh 1 -xgh 1 -ase 2.5 -msl 50 -sed -bbs -be -bnu -res -fer 0 -escr 100 -dgne -wnz -mmnu -cmd -esr 2 5 -ebr 82 -emprp 75 125 -nm1 random -rnl1 -rns1 -nm2 random -rnl2 -rns2 -nmmi -gp 5000 -smc 3 -sto 1 -ieor 33 -ieror 33 -csb 3 14 -mca -stra -saw -sisr 20 -sprp 75 125 -sdm 5 -npi -snbr -snsb -ccsr 20 -cms -frw -cor -crr -crvr 120 120 -crm -ari -anca -adeh -nmc -nfps -fs -fe -fvd -fr -fj -fbs -fedc -ond -rr -as -etn -yreflect" },
+            { "Coliseum - Umaro", "-cg -oa 2.2.2.2.6.6.4.9.9 -ob 3.1.1.8.12.12 -oc 30.3.3.1.1.11.8 -od 5.1.1.12.9 -oe 48.30.30.1.1.12.9 -of 48.10.10.0.0 -sc1 umaro -sc2 random -sc3 random -sal -eu -csrp 100 125 -fst -brl -slr 3 5 -lmprp 75 125 -lel -srr 25 35 -rnl -rnc -sdr 1 2 -das -dda -dns -sch -com 98989898989897979797979897 -scc -rec1 28 -rec2 6 -rec3 11 -rec4 23 -rec5 13 -rec6 14 -xpm 3 -mpm 5 -gpm 5 -nxppd -lsced 2.5 -hmced 2.5 -xgced 2 -ase 2 -msl 50 -sed -bbs -be -bnu -res -fer 0 -escr 100 -dgne -wnz -mmnu -cmd -esr 2 5 -ebr 100 -emprp 75 125 -nm1 random -rnl1 -rns1 -nm2 random -rnl2 -rns2 -nmmi -gp 5000 -smc 3 -sto 1 -ieor 33 -ieror 33 -csb 3 14 -mca -stra -saw -sisr 20 -sprp 75 125 -sdm 5 -npi -snbr -snsb -ccsr 20 -cms -frw -cor -crr -crvr 120 120 -crm -ari -anca -adeh -nmc -nu -nfps -nfce -fs -fe -fvd -fr -fj -fbs -fedc -ond -rr -as -etn" }
         };
     }
 }

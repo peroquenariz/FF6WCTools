@@ -1,7 +1,8 @@
 ﻿using System;
-using System.IO;
+using System.Collections.Specialized;
+using System.Configuration;
 using System.Threading;
-using System.Text.Json;
+using System.Reflection;
 
 namespace StatsCompanion
 {
@@ -9,40 +10,54 @@ namespace StatsCompanion
     {
         static void Main(string[] args)
         {
+            string appVersion = Assembly.GetEntryAssembly()!.GetName().Version!.ToString();
+            NameValueCollection config = ConfigurationManager.AppSettings;
+            FileHandler fileHandler = new(config.Get("seedDirectory")!);
+            Log log = new(appVersion);
+            bool debugMode = Convert.ToBoolean(config.Get("debugMode"));
+
             try
             {
                 SniConnection sniConnection = new();
                 Run run = new();
-                var jsonOptions = new JsonSerializerOptions { WriteIndented = true };
-                int requestTimer = 0;
 
                 while (true)
                 {
-                    if (run.SeedHasBeenAbandoned == true)
+                    if (debugMode)
                     {
                         Console.Clear();
-                        Console.WriteLine("It seems like you've abandoned your run! Better luck next time!");
+                        log.AssemblyVersion(debugMode);
                     }
-                    else
-                    {
-                        Console.WriteLine("Welcome to Stats Companion!");
-                    }
-                    Console.WriteLine();
 
+                    Log.cursorTopPosition = 3;
+                    bool isValidDirectory = true;
+
+                    
                     // Open a connection to SNI
                     sniConnection.ResetConnection();
 
+                    if (run.SeedHasBeenAbandoned)
+                    {
+                        Log.SeedAbandoned();
+                    }
+
                     // Start a new run.
                     run = new();
-
-                    Console.WriteLine("Waiting for new game...");
-                    Console.WriteLine();
-
 #if RELEASE
                     // Wait for the player to start a new game.
                     // Only exit the loop if current menu is FF6WC custom pre-game menu and new game has been selected.
                     while (true)
                     {
+                        if (Console.CursorTop == 6)
+                        {
+                            Log.WaitingForNewGame();
+                        }
+
+                        if (isValidDirectory == true &&
+                            DateTime.Now - fileHandler.LastDirectoryRefresh > fileHandler.RefreshInterval)
+                        {
+                            isValidDirectory = fileHandler.UpdateLastSeed(run.seedInfo, out run.seedInfo);
+                        }
                         run.MapId = DataHandler.ConcatenateByteArray(sniConnection.ReadMemory(WCData.MapId, 2)) & 0x1FF;
                         run.MenuNumber = sniConnection.ReadMemory(WCData.MenuNumber, 1)[0];
                         run.NewGameSelected = sniConnection.ReadMemory(WCData.NewGameSelected, 1)[0];
@@ -51,12 +66,10 @@ namespace StatsCompanion
                             break;
                         }
                     }
-                    Console.Clear();
-                    Console.WriteLine("Stats Companion is now tracking your run...");
-                    Console.WriteLine("*** DO NOT close this window! ***");
-
-                    Thread.Sleep(3500); 
 #endif
+                    Log.TrackingRun();
+                    Log.cursorTopPosition = 6;
+                    Thread.Sleep(3500);
 
                     // Read character data.
                     run.CharacterData = sniConnection.ReadMemory(WCData.CharacterDataStart, WCData.CharacterDataSize);
@@ -67,15 +80,19 @@ namespace StatsCompanion
                     run.StartingCharacters = DataHandler.GetAvailableCharacters(run.CharactersBytes);
                     run.StartingCommands = DataHandler.GetAvailableCommands(run.CharactersBytes, run.CharacterCommands);
 
+                    // Get initial GP count.
+                    run.GPCurrent = run.GPPrevious = DataHandler.ConcatenateByteArray(sniConnection.ReadMemory(WCData.CurrentGP, 3));
+
                     // Loop while run is in progress.
                     while (run.HasFinished == false)
                     {
-                        if (requestTimer % 2 != 0)
+                        if (sniConnection.RequestTimer % 2 != 0)
                         {
                             // Check if the player is in a menu or shop, track time spent menuing and times they opened a menu.
                             run.EnableDialogWindow = sniConnection.ReadMemory(WCData.EnableDialogWindow, 1)[0];
-                            run.IsMenuActive = sniConnection.ReadMemory(WCData.MenuCounter, 1)[0];
-                            run.CheckIfMenuOpen(); 
+                            run.GameStatusData = sniConnection.ReadMemory(WCData.NMIJumpCode, 3);
+                            run.GetGameStatus();
+                            run.CheckIfMenuIsOpen();
                         }
                         
                         // Check if the player is flying the airship, track time spent flying and times they drove it.
@@ -117,7 +134,7 @@ namespace StatsCompanion
                         }
                         
                         // Tzen thief peek WoB.
-                        if (run.MapId == 0x132 && run.TzenThiefPeekWob == "Did not check")
+                        if (run.MapId == 0x132 && run.TzenThiefPeekWob == "Did_not_check")
                         {
                             run.DialogIndex = DataHandler.ConcatenateByteArray(sniConnection.ReadMemory(WCData.DialogIndex, 2));
                             if (run.DialogIndex == 1569)
@@ -129,48 +146,60 @@ namespace StatsCompanion
                             }
                         }
 
-                        // All the reads that don't need to happen every frame are checked against requestTimer, to avoid spamming SNI.
-                        requestTimer++;
-                        if (requestTimer % 10 == 0 || run.HasFinished)
+                        // All the reads that don't need to happen every frame are checked against RequestTimer, to avoid spamming SNI.
+                        sniConnection.RequestTimer++;
+                        if (sniConnection.RequestTimer % 10 == 0 || run.HasFinished)
                         {
                             // Check if the player is in a battle, track time spent battling.
-                            run.BattleCounter = sniConnection.ReadMemory(WCData.BattleCounter, 1)[0];
                             run.CheckIfInBattle();
+
+                            // If in battle, log encounter in event list.
+                            if (run.IsBattleTimerRunning)
+                            {
+                                run.MonsterBytes = sniConnection.ReadMemory(WCData.MonsterIndexStart, 12);
+                                run.LogBattle();
+                            }
                         }
                         
-                        if (requestTimer > 10)
+                        if (sniConnection.RequestTimer > 10)
                         {
-#if DEBUG
-                            run.WriteDebugInformation();
-#endif
-                            requestTimer = 0;
+                            sniConnection.RequestTimer = 0;
                             
                             run.MapId = DataHandler.ConcatenateByteArray(sniConnection.ReadMemory(WCData.MapId, 2)) & 0x1FF;
                             run.Inventory = sniConnection.ReadMemory(WCData.InventoryStart, WCData.InventorySize);
+
+                            // Read KT unlock and skip status only if the bits haven't been set.
                             if (!run.IsKTSkipUnlocked || !run.IsKefkaTowerUnlocked)
                             {
                                 run.KefkaTowerEventByte = sniConnection.ReadMemory(WCData.EventBitStartAddress + 0x093 / 8, 1)[0];
                             }
+                            
                             if (run.IsMenuTimerRunning)
                             {
-                                run.ScreenDisplayRegister = sniConnection.ReadMemory(WCData.ScreenDisplayRegister, 1)[0];
+                                run.MenuNumber = sniConnection.ReadMemory(WCData.MenuNumber, 1)[0];
+                                run.ScreenDisplayRegister = sniConnection.ReadMemory(WCData.ScreenDisplayRegister, 1)[0]; // Menu fades
+                                run.NextMenuState = sniConnection.ReadMemory(WCData.NextMenuState, 1)[0]; // Next menu state
                             }
 
                             // Add visited maps to the list.
                             run.UpdateMapsVisited();
 
+                            // Update GP spent.
+                            if (run.MapId != 3)
+                            {
+                                run.GPCurrent = DataHandler.ConcatenateByteArray(sniConnection.ReadMemory(WCData.CurrentGP, 3));
+                            }
+                            run.UpdateGPSpent();
+
                             // Only execute on game reset.
                             if (run.MapId == 3)
                             {
-                                // Check if the seed has been abandoned.
-                                run.MenuNumber = sniConnection.ReadMemory(WCData.MenuNumber, 1)[0];
-                                run.NewGameSelected = sniConnection.ReadMemory(WCData.NewGameSelected, 1)[0];
-                                if (run.MenuNumber == 9 && run.NewGameSelected == 0)
-                                {
-                                    run.SeedHasBeenAbandoned = true;
-                                    break;
-                                }
+                                run.IsReset = true;
                                 run.IsFinalBattle = false; // In the case a player resets final Kefka and character data changes.
+                            }
+                            else if (run.IsReset)
+                            {
+                                run.CheckResetFalsePositive();
                             }
 
                             // Count espers that were bought at the Auction House.
@@ -215,7 +244,7 @@ namespace StatsCompanion
                             }
 
                             // Tzen thief peek WoR.
-                            if (run.MapId == 0x131 && run.TzenThiefPeekWor == "Did not check")
+                            if (run.MapId == 0x131 && run.TzenThiefPeekWor == "Did_not_check")
                             {
                                 run.DialogIndex = DataHandler.ConcatenateByteArray(sniConnection.ReadMemory(WCData.DialogIndex, 2));
                                 run.TzenThiefPeekWor = DataHandler.PeekTzenThiefRewardWor(run.DialogIndex);
@@ -255,8 +284,47 @@ namespace StatsCompanion
                             // Check if the player has entered Kefka tower and KT is unlocked, log the time.
                             // Either skip or regular KT is logged, whatever happens first.
                             run.CheckKefkaTowerStart();
+
+                            // If escape key is pressed, abandon the seed.
+                            if (Console.KeyAvailable)
+                            {
+                                ConsoleKeyInfo cki = Console.ReadKey(true);
+                                while (Console.KeyAvailable)
+                                {
+                                    Console.ReadKey(true);
+                                }
+
+                                if (cki.Key == ConsoleKey.Escape)
+                                {
+                                    run.SeedHasBeenAbandoned = true;
+                                    break;
+                                }
+                            }
+
+                            // If a new seed is found in the directory, abandon the seed.
+                            if (isValidDirectory == true &&
+                                DateTime.Now - fileHandler.LastDirectoryRefresh > fileHandler.RefreshInterval)
+                            {
+                                string previousSeed = fileHandler.LastLoadedSeed;
+                                isValidDirectory = fileHandler.UpdateLastSeed(run.seedInfo, out run.seedInfo, false);
+                                if (fileHandler.LastLoadedSeed != previousSeed)
+                                {
+                                    run.SeedHasBeenAbandoned = true;
+                                    break;
+                                }
+                            }
+                            
+                            if (debugMode)
+                            {
+                                Log.DebugInformation(run);
+                            }
+#if JSON_DEBUG
+                            run.HasFinished = true; 
+#endif
                         }
                     }
+
+                    fileHandler.ResetLastLoadedSeed();
 
                     // If the seed has been abandoned, start tracking the new run.
                     if (run.SeedHasBeenAbandoned == true)
@@ -267,8 +335,12 @@ namespace StatsCompanion
                     // If KT skip was unlocked, format a string with the time.
                     if (run.IsKTSkipUnlocked)
                     {
-                        run.KtSkipUnlockTimeString = (run.KtSkipUnlockTime - run.StartTime).ToString(@"hh\:mm\:ss\.ff");
+                        run.KtSkipUnlockTimeString = (run.KtSkipUnlockTime - run.StartTime).ToString(@"hh\:mm\:ss");
                     }
+
+                    // Add Kefka kill time to event list.
+                    string kefkaKillTime = (run.EndTime - run.StartTime - WCData.TimeFromKefkaFlashToAnimation).ToString(@"hh\:mm\:ss");
+                    run.Route.Add(("Kefka kill", kefkaKillTime));
 
                     // Get data after Kefka kill.
                     run.CharactersBytes = sniConnection.ReadMemory(WCData.CharactersByte, 2);
@@ -293,7 +365,11 @@ namespace StatsCompanion
 
                     // Get Coliseum data.
                     run.CheckColiseumVisit();
-
+#if JSON_DEBUG
+                    run.CharacterData = sniConnection.ReadMemory(WCData.CharacterDataStart, WCData.CharacterDataSize);
+                    run.CharacterSkillData = sniConnection.ReadMemory(WCData.CharacterSkillData, WCData.CharacterSkillDataSize);
+                    run.FinalBattleLineup = sniConnection.ReadMemory(WCData.FinalBattleCharacterListStart, 12);
+#endif
                     // Get final 4-character lineup and skills data.
                     run.GetFinalLineup();
                     run.GetSwdTechList();
@@ -304,53 +380,34 @@ namespace StatsCompanion
                     run.CheckForMute();
                     run.CheckForInstantDeath();
                     run.CheckForCalmnessProtection();
-
-                    // Make a timestamped visited maps list that is usable in JSON format.
+                    // Make a timestamped route that is usable in JSON format.
                     // Get reset count.
-                    run.CreateTimestampedMapsList();
+                    run.CreateTimestampedRoute();
 
                     // Create JSON string with the run data.
                     Arguments runArguments = new(run);
-                    string runArgumentsStr = JsonSerializer.Serialize(runArguments, jsonOptions);
-
-                    // Create a runs directory if it doesn't exist.
-                    if (!Directory.Exists($"{Directory.GetCurrentDirectory()}\\runs"))
-                    {
-                        Directory.CreateDirectory($"{Directory.GetCurrentDirectory()}\\runs");
-                    }
-
+                    string jsonRunData = fileHandler.SerializeJson(runArguments);
+                    
                     // Create a timestamped filename.
-                    string jsonFilename = $"{Directory.GetCurrentDirectory()}\\runs\\{run.EndTime.ToString("yyyy_MM_dd - HH_mm_ss")}.json";
-
+                    string jsonPath = $"{fileHandler.RunsDirectory}\\{run.EndTime.ToString("yyyy_MM_dd - HH_mm_ss")}.json";
+                    
                     // Write to a .json file.
-                    File.WriteAllText(jsonFilename, runArgumentsStr);
-
-                    Console.Clear();
-                    Console.WriteLine($"The clown is dead, GG! Final time is {(run.EndTime - run.StartTime - WCData.TimeFromKefkaFlashToAnimation).ToString(@"hh\:mm\:ss\.ff")}");
-                    Console.WriteLine($"Run successfully saved at {jsonFilename}");
-                    Console.WriteLine();
-                    Console.WriteLine("-------------------------------------------------------------");
-                    Console.WriteLine();
+                    FileHandler.WriteStringToFile(jsonPath, jsonRunData);
+                    
+                    Log.RunSuccessful((run.EndTime - run.StartTime - WCData.TimeFromKefkaFlashToAnimation).ToString(@"hh\:mm\:ss\.ff"));
+#if JSON_DEBUG
+                    Console.ReadKey(); 
+#endif
                 }
             }
             catch (Exception e)
             {
-                // Create a crashlog directory if it doesn't exist.
-                if (!Directory.Exists($"{Directory.GetCurrentDirectory()}\\crashlog"))
-                {
-                    Directory.CreateDirectory($"{Directory.GetCurrentDirectory()}\\crashlog");
-                }
-                
                 // Crash log path.
-                string crashlogPath = $"{Directory.GetCurrentDirectory()}\\crashlog\\crashlog - {DateTime.Now.ToString("yyyy_MM_dd - HH_mm_ss")}.txt";
-                // Print exception to console.
-                Console.WriteLine(e);
-                Console.WriteLine();
-                File.WriteAllText(crashlogPath, e.ToString());
-                Console.WriteLine();
-                Console.WriteLine($"Crash log saved at {crashlogPath}");
-                Console.WriteLine();
-                Console.Write("Press enter to exit.");
+                string crashlogPath = $"{ fileHandler.CrashlogDirectory}\\crashlog - {DateTime.Now.ToString("yyyy_MM_dd - HH_mm_ss")}.txt";
+                
+                FileHandler.WriteStringToFile(crashlogPath, e.ToString());
+
+                Log.CrashInformation(e, crashlogPath);
                 Console.ReadLine();
             }
         }

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading;
-using Grpc.Net.Client;
+﻿using Grpc.Net.Client;
 
 namespace StatsCompanion
 {
@@ -9,35 +7,39 @@ namespace StatsCompanion
     /// </summary>
     internal class SniConnection
     {
-        private const string Sni_Address = "http://localhost:8191/";
-        private readonly GrpcChannel sniChannel = GrpcChannel.ForAddress(Sni_Address);
+        private const string SniAddress = "http://localhost:8191/";
+        private readonly GrpcChannel _sniChannel = GrpcChannel.ForAddress(SniAddress);
 
         // Devices client.
-        private readonly Devices.DevicesClient devicesClient;
+        private readonly Devices.DevicesClient _devicesClient;
 
         // Memory client
-        private readonly DeviceMemory.DeviceMemoryClient memoryClient;
+        private readonly DeviceMemory.DeviceMemoryClient _memoryClient;
 
         // Reading memory requires passing 2 messages to the service: ReadMemoryRequest and SingleReadMemoryRequest.
-        private readonly ReadMemoryRequest readMemoryRequest;
-        private readonly SingleReadMemoryRequest singleReadMemoryRequest;
+        private readonly ReadMemoryRequest _readMemoryRequest;
+        private readonly SingleReadMemoryRequest _singleReadMemoryRequest;
+
+        public int RequestTimer { get; set; }
 
         public SniConnection()
         {
-            devicesClient = new Devices.DevicesClient(sniChannel);
+            _devicesClient = new Devices.DevicesClient(_sniChannel);
 
-            memoryClient = new DeviceMemory.DeviceMemoryClient(sniChannel);
+            _memoryClient = new DeviceMemory.DeviceMemoryClient(_sniChannel);
 
-            readMemoryRequest = new ReadMemoryRequest
+            _readMemoryRequest = new ReadMemoryRequest
             {
                 RequestMemoryMapping = MemoryMapping.HiRom,
             };
 
-            singleReadMemoryRequest = new SingleReadMemoryRequest
+            _singleReadMemoryRequest = new SingleReadMemoryRequest
             {
                 Uri = "",
-                Request = readMemoryRequest
+                Request = _readMemoryRequest
             };
+            
+            RequestTimer = 0;
         }
 
         /// <summary>
@@ -49,25 +51,21 @@ namespace StatsCompanion
         {
             try
             {
-                var devicesList = devicesClient.ListDevices(new DevicesRequest { }).Devices[0];
-                singleReadMemoryRequest.Uri = devicesList.Uri;
-                readMemoryRequest.RequestAddressSpace = AddressSpace.SnesAbus;
-                Console.WriteLine("Connection to SNI successful!");
-                Console.WriteLine($"Tracking device URI: {singleReadMemoryRequest.Uri}");
-                Console.WriteLine($"Address space: {readMemoryRequest.RequestAddressSpace}");
+                var devicesList = _devicesClient.ListDevices(new DevicesRequest { }).Devices[0];
+                _singleReadMemoryRequest.Uri = devicesList.Uri;
+                _readMemoryRequest.RequestAddressSpace = AddressSpace.SnesAbus;
+                Log.ConnectionSuccessful(_singleReadMemoryRequest.Uri, _readMemoryRequest.RequestAddressSpace.ToString());
             }
-            catch (ArgumentOutOfRangeException)
+            catch (System.ArgumentOutOfRangeException)
             {
-                Console.WriteLine("Device not found or connection lost! Make sure your device/emulator is correctly connected to SNI.");
-                Console.WriteLine("Retrying in 10 seconds...");
-                Thread.Sleep(10000);
+                string message = "Device not found! Make sure your device/emulator is correctly connected to SNI.";
+                Log.ConnectionError(message);
                 ResetConnection();
             }
             catch (Grpc.Core.RpcException)
             {
-                Console.WriteLine("Error - SNI not found! Make sure it's open and connected to your device/emulator.");
-                Console.WriteLine("Retrying in 10 seconds...");
-                Thread.Sleep(10000);
+                string message = "Error - SNI not found! Make sure it's open and connected to your device/emulator.";
+                Log.ConnectionError(message);
                 ResetConnection();
             }
         }
@@ -82,14 +80,13 @@ namespace StatsCompanion
         {
             try
             {
-                readMemoryRequest.RequestAddress = address;
-                readMemoryRequest.Size = size;
-                byte[] response = memoryClient.SingleRead(singleReadMemoryRequest).Response.Data.Memory.ToArray();
+                _readMemoryRequest.RequestAddress = address;
+                _readMemoryRequest.Size = size;
+                byte[] response = _memoryClient.SingleRead(_singleReadMemoryRequest).Response.Data.Memory.ToArray();
                 return response;
             }
             catch
             {
-                Console.WriteLine("Error while reading memory! Attempting reconnection.");
                 ResetConnection();
                 return ReadMemory(address, size);
             }

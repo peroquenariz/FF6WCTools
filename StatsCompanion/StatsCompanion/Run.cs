@@ -25,6 +25,7 @@ namespace StatsCompanion
         bool _tzenThiefBit;
         bool _inTzenThiefArea;
         bool _inAuctionHouse;
+        bool _isReset;
         byte _auctionHouseEsperCount;
         byte _menuNumber;
         byte _newGameSelected;
@@ -35,10 +36,7 @@ namespace StatsCompanion
         byte _characterMaxLevel;
         byte _dragonCount;
         byte _isKefkaDead;
-        byte _isMenuActive;
-        byte _isMenuActivePrevious;
-        byte _battleCounter;
-        byte _battleCounterPrevious;
+        byte _nextMenuState;
         byte _enableDialogWindow;
         byte _character1Graphic;
         byte _character1GraphicPrevious;
@@ -59,18 +57,23 @@ namespace StatsCompanion
         byte[] _chestData;
         byte[] _eventBitData;
         byte[] _finalBattleLineup;
+        byte[] _monsterBytes;
+        byte[] _monsterBytesPrevious;
+        byte[] _gameStatusData;
         Character[] _finalBattleCharacters;
+        public string[] seedInfo;
         int _chestCount;
         int _characterCount;
         int _isKefkaFight;
         int _menuOpenCounter;
+        int _shopOpenCounter;
         int _airshipCounter;
         int _battlesFought;
         int _mapId;
         int _dialogIndex;
-        int _dialogIndexPrevious;
-        int _currentGP;
-        int _currentGPprevious;
+        int _gpCurrent;
+        int _gpPrevious;
+        int _gpSpent;
         int _resetCount;
         DateTime _StartTime;
         DateTime _EndTime;
@@ -85,7 +88,9 @@ namespace StatsCompanion
         DateTime _kefkaTowerStartTime;
         DateTime _kefkaStartTime;
         DateTime _lastMapTimestamp;
+        DateTime _lastAddedBattleFormation;
         TimeSpan _timeSpentOnMenus;
+        TimeSpan _timeSpentOnShops;
         TimeSpan _timeSpentOnBattles;
         TimeSpan _timeSpentOnAirship;
         string _hasExpEgg;
@@ -98,18 +103,20 @@ namespace StatsCompanion
         string _coliseumVisit;
         string _auctionHouseEsperCountText;
         string _ktSkipUnlockTimeString;
+        string _battleFormation;
+        string _gameStatus;
         List<string> _startingCharacters;
         List<string> _startingCommands;
         List<string> _dragonsKilled;
         List<string> _checksCompleted;
         List<string> _checksPeeked;
-        List<string> _mapsVisitedJson;
+        List<string> _routeJson;
         List<string> _knownSwdTechs;
         List<string> _knownBlitzes;
         List<string> _knownLores;
         List<string> _finalBattlePrep;
         List<int> _mapsVisited;
-        List<(string, string)> _mapsVisitedWithTimestamps;
+        List<(string, string)> _route;
 
         public Run()
         {
@@ -122,9 +129,8 @@ namespace StatsCompanion
             _menuOpenCounter = 0;
             _isMenuTimerRunning = false;
             _isBattleTimerRunning = false;
-            _timeSpentOnMenus = new(0, 0, 0);
-            _timeSpentOnBattles = new(0, 0, 0);
-            _timeSpentOnAirship = new(0, 0, 0);
+            _menuOpen = _menuClose = _airshipStart = _airshipStop = _battleStart = _battleEnd = DateTime.Now;
+            _timeSpentOnMenus = _timeSpentOnShops = _timeSpentOnBattles = _timeSpentOnAirship = new(0, 0, 0);
             _isAirshipTimerRunning = false;
             _airshipCounter = 0;
             _isWhelkPeeked = false;
@@ -136,23 +142,26 @@ namespace StatsCompanion
             _isFinalBattle = false;
             _tzenThiefBit = false;
             _inTzenThiefArea = false;
+            _isReset = false;
             _ktSkipUnlockTimeString = "";
-            _tzenThiefPeekWob = "Did not check";
-            _tzenThiefPeekWor = "Did not check";
+            _battleFormation = "";
+            _tzenThiefPeekWob = "Did_not_check";
+            _tzenThiefPeekWor = "Did_not_check";
             _tzenThiefBought = "";
-            _tzenThief = "Did not check";
-            _tzenThiefReward = "Did not buy - Unknown";
-            _coliseumVisit = "Did not visit";
+            _tzenThief = "Did_not_check";
+            _tzenThiefReward = "Did_not_buy__Unknown";
+            _coliseumVisit = "Did_not_visit";
             _auctionHouseEsperCount = 0;
             _auctionHouseEsperCountText = "Zero";
+            _gameStatus = "field";
             _startingCharacters = new();
             _startingCommands = new();
             _dragonsKilled = new();
             _checksCompleted = new();
             _checksPeeked = new();
             _mapsVisited = new();
-            _mapsVisitedJson = new();
-            _mapsVisitedWithTimestamps = new();
+            _routeJson = new();
+            _route = new();
             _knownBlitzes = new();
             _knownLores = new();
             _knownSwdTechs = new();
@@ -166,7 +175,11 @@ namespace StatsCompanion
             _chestData = Array.Empty<byte>();
             _eventBitData = Array.Empty<byte>();
             _finalBattleLineup = Array.Empty<byte>();
+            _monsterBytes = Array.Empty<byte>();
+            _monsterBytesPrevious = Array.Empty<byte>();
+            _gameStatusData = Array.Empty<byte>();
             _finalBattleCharacters = new Character[4];
+            seedInfo = new string[9];
         }
 
         public bool IsMenuTimerRunning { get => _isMenuTimerRunning; set => _isMenuTimerRunning = value; }
@@ -191,8 +204,6 @@ namespace StatsCompanion
         public byte CharacterMaxLevel { get => _characterMaxLevel; set => _characterMaxLevel = value; }
         public byte DragonCount { get => _dragonCount; set => _dragonCount = value; }
         public byte IsKefkaDead { get => _isKefkaDead; set => _isKefkaDead = value; }
-        public byte IsMenuActive { get => _isMenuActive; set => _isMenuActive = value; }
-        public byte IsMenuActivePrevious { get => _isMenuActivePrevious; set => _isMenuActivePrevious = value; }
         public byte Character1Graphic { get => _character1Graphic; set => _character1Graphic = value; }
         public byte DialogWaitingForInput { get => _dialogWaitingForInput; set => _dialogWaitingForInput = value; }
         public byte DialogPointer { get => _dialogPointer; set => _dialogPointer = value; }
@@ -214,9 +225,8 @@ namespace StatsCompanion
         public int AirshipCounter { get => _airshipCounter; set => _airshipCounter = value; }
         public int MapId { get => _mapId; set => _mapId = value; }
         public int DialogIndex { get => _dialogIndex; set => _dialogIndex = value; }
-        public int DialogIndexPrevious { get => _dialogIndexPrevious; set => _dialogIndexPrevious = value; }
-        public int CurrentGP { get => _currentGP; set => _currentGP = value; }
-        public int CurrentGPprevious { get => _currentGPprevious; set => _currentGPprevious = value; }
+        public int GPCurrent { get => _gpCurrent; set => _gpCurrent = value; }
+        public int GPPrevious { get => _gpPrevious; set => _gpPrevious = value; }
         public DateTime StartTime { get => _StartTime; set => _StartTime = value; }
         public DateTime EndTime { get => _EndTime; set => _EndTime = value; }
         public DateTime MenuOpen { get => _menuOpen; set => _menuOpen = value; }
@@ -227,7 +237,6 @@ namespace StatsCompanion
         public DateTime KtSkipUnlockTime { get => _ktSkipUnlockTime; set => _ktSkipUnlockTime = value; }
         public DateTime KefkaTowerStartTime { get => _kefkaTowerStartTime; set => _kefkaTowerStartTime = value; }
         public DateTime KefkaStartTime { get => _kefkaStartTime; set => _kefkaStartTime = value; }
-        public TimeSpan TimeSpentOnMenus { get => _timeSpentOnMenus; set => _timeSpentOnMenus = value; }
         public TimeSpan TimeSpentOnAirship { get => _timeSpentOnAirship; set => _timeSpentOnAirship = value; }
         public string TzenThiefPeekWob { get => _tzenThiefPeekWob; set => _tzenThiefPeekWob = value; }
         public string TzenThiefPeekWor { get => _tzenThiefPeekWor; set => _tzenThiefPeekWor = value; }
@@ -245,7 +254,7 @@ namespace StatsCompanion
         public byte PartyXPosition { get => _partyXPosition; set => _partyXPosition = value; }
         public bool WonColiseumMatch { get => _wonColiseumMatch; set => _wonColiseumMatch = value; }
         public string AuctionHouseEsperCountText { get => _auctionHouseEsperCountText; set => _auctionHouseEsperCountText = value; }
-        public List<string> MapsVisitedJson { get => _mapsVisitedJson; set => _mapsVisitedJson = value; }
+        public List<string> RouteJson { get => _routeJson; set => _routeJson = value; }
         public byte ScreenDisplayRegister { get => _screenDisplayRegister; set => _screenDisplayRegister = value; }
         public byte PartyYPosition { get => _partyYPosition; set => _partyYPosition = value; }
         public int ResetCount { get => _resetCount; set => _resetCount = value; }
@@ -256,7 +265,7 @@ namespace StatsCompanion
         public bool InTzenThiefArea { get => _inTzenThiefArea; set => _inTzenThiefArea = value; }
         public byte EnableDialogWindow { get => _enableDialogWindow; set => _enableDialogWindow = value; }
         public Character[] FinalBattleCharacters { get => _finalBattleCharacters; set => _finalBattleCharacters = value; }
-        public List<(string, string)> MapsVisitedWithTimestamps { get => _mapsVisitedWithTimestamps; set => _mapsVisitedWithTimestamps = value; }
+        public List<(string, string)> Route { get => _route; set => _route = value; }
         public DateTime LastMapTimestamp { get => _lastMapTimestamp; set => _lastMapTimestamp = value; }
         public byte[] CharacterSkillData { get => _characterSkillData; set => _characterSkillData = value; }
         public List<string> KnownSwdTechs { get => _knownSwdTechs; set => _knownSwdTechs = value; }
@@ -265,12 +274,22 @@ namespace StatsCompanion
         public List<string> FinalBattlePrep { get => _finalBattlePrep; set => _finalBattlePrep = value; }
         public bool IsBattleTimerRunning { get => _isBattleTimerRunning; set => _isBattleTimerRunning = value; }
         public TimeSpan TimeSpentOnBattles { get => _timeSpentOnBattles; set => _timeSpentOnBattles = value; }
-        public byte BattleCounter { get => _battleCounter; set => _battleCounter = value; }
-        public byte BattleCounterPrevious { get => _battleCounterPrevious; set => _battleCounterPrevious = value; }
         public DateTime BattleStart { get => _battleStart; set => _battleStart = value; }
         public DateTime BattleEnd { get => _battleEnd; set => _battleEnd = value; }
         public int BattlesFought { get => _battlesFought; set => _battlesFought = value; }
         public bool InAuctionHouse { get => _inAuctionHouse; set => _inAuctionHouse = value; }
+        public byte[] MonsterBytes { get => _monsterBytes; set => _monsterBytes = value; }
+        public byte[] MonsterBytesPrevious { get => _monsterBytesPrevious; set => _monsterBytesPrevious = value; }
+        public string BattleFormation { get => _battleFormation; set => _battleFormation = value; }
+        public int GPSpent { get => _gpSpent; set => _gpSpent = value; }
+        public DateTime LastAddedBattleFormation { get => _lastAddedBattleFormation; set => _lastAddedBattleFormation = value; }
+        public byte NextMenuState { get => _nextMenuState; set => _nextMenuState = value; }
+        public TimeSpan TimeSpentOnMenus { get => _timeSpentOnMenus; set => _timeSpentOnMenus = value; }
+        public TimeSpan TimeSpentOnShops { get => _timeSpentOnShops; set => _timeSpentOnShops = value; }
+        public int ShopOpenCounter { get => _shopOpenCounter; set => _shopOpenCounter = value; }
+        public byte[] GameStatusData { get => _gameStatusData; set => _gameStatusData = value; }
+        public string GameStatus { get => _gameStatus; set => _gameStatus = value; }
+        public bool IsReset { get => _isReset; set => _isReset = value; }
 
         public bool CheckIfRunStarted()
         {
@@ -282,84 +301,118 @@ namespace StatsCompanion
             return false;
         }
         
-        public void CheckIfMenuOpen()
+        public void CheckIfMenuIsOpen()
         {
             if (!IsMenuTimerRunning)
             {
-                if (IsMenuActive - IsMenuActivePrevious > 0 &&
-                    IsMenuActive - IsMenuActivePrevious < 10 &&
-                    EnableDialogWindow == 0)
+                if (GameStatus == WCData.MenuKey)
                 {
                     MenuOpen = DateTime.Now;
                     IsMenuTimerRunning = true;
-                    MenuOpenCounter++;
-                } 
+                }
             }
             else
             {
-                if (IsMenuActive == IsMenuActivePrevious &&
-                     ScreenDisplayRegister == 0 &&
-                     DateTime.Now - MenuOpen > WCData.TimeMenuFalsePositives)
+                if (GameStatus != WCData.MenuKey)
                 {
                     MenuClose = DateTime.Now;
                     IsMenuTimerRunning = false;
-                    TimeSpentOnMenus += MenuClose - MenuOpen;
+                    if (MenuNumber == 3)
+                    {
+                        TimeSpentOnShops += MenuClose - MenuOpen;
+                        ShopOpenCounter++;
+                    }
+                    else
+                    {
+                        TimeSpentOnMenus += MenuClose - MenuOpen;
+                        MenuOpenCounter++;
+                    }
                 }
             }
-            IsMenuActivePrevious = IsMenuActive;
         }
 
         public void CheckIfInBattle()
         {
             if (!IsBattleTimerRunning)
             {
-                if (BattleCounter > 30 && // values 0-30 are used for flashes, buckets and certain animations
-                    BattleCounterPrevious != 0 && // sets to zero when in town
-                    BattleCounter - BattleCounterPrevious > 0 && // only account for small increments
-                    BattleCounter - BattleCounterPrevious < 45 &&
-                    BattleCounter - BattleCounterPrevious != 4 && // Cursor false positive
-                    MenuClose - DateTime.Now < WCData.TimeFromMenuToOverworld && // Menu exit false positive
-                    BattleEnd - DateTime.Now < WCData.TimeFromBattleToOverworld && // Battle end false positive
-                    !IsMenuTimerRunning) // && MapId != 0x150) // False positive on Kefka's cinematic before final battle
-
+                if (GameStatus == WCData.BattleKey)
                 {
-                    BattleStart = DateTime.Now - WCData.TimeFromFadeToBattle;
+                    BattleStart = DateTime.Now;
                     BattlesFought++;
                     IsBattleTimerRunning = true;
                 }
             }
             else
             {
-                if ((BattleCounter == BattleCounterPrevious || HasFinished == true) &&
-                    DateTime.Now - BattleStart > WCData.TimeBattleFalsePositives)
+                if (GameStatus != WCData.BattleKey || HasFinished == true)
                 {
                     BattleEnd = DateTime.Now;
+                    MonsterBytesPrevious = Array.Empty<byte>();
+                    BattleFormation = ""; // Clear battle formation after battle is done.
+                    CleanupBattleFormationFalsePositives();
                     IsBattleTimerRunning = false;
                     TimeSpentOnBattles += BattleEnd - BattleStart;
                 }
             }
-            // Console.WriteLine(BattleCounter - BattleCounterPrevious); // For debugging the battle counter
-            BattleCounterPrevious = BattleCounter;
+        }
+
+        /// <summary>
+        /// Deletes the last battle formation from the route if less than 0.5 seconds elapsed since battle ended.
+        /// </summary>
+        private void CleanupBattleFormationFalsePositives()
+        {
+            TimeSpan timeDifference = BattleEnd - LastAddedBattleFormation;
+            if (timeDifference < WCData.TimeBattleFormationFalsePositives &&
+                timeDifference > WCData.TimeZero)
+            {
+                Route.RemoveAt(Route.Count - 1);
+            }
+        }
+
+        /// <summary>
+        /// Logs every battle in the event list.
+        /// </summary>
+        public void LogBattle()
+        {
+            if (!DataHandler.AreArraysEqual(MonsterBytes, MonsterBytesPrevious)) // Check for changes in monster indexes
+            {
+                int[] monsterIndexes = DataHandler.GetMonsterIndexes(MonsterBytes);
+                BattleFormation = "Battle: ";
+                for (int i = 0; i < 6; i++)
+                {
+                    if (monsterIndexes[i] <= 383) // Ignore if monster doesn't exist
+                    {
+                        BattleFormation += WCData.MonsterDict[monsterIndexes[i]] + ", ";
+                    }
+                }
+                if (BattleFormation != "Battle: ")
+                {
+                    BattleFormation = BattleFormation.Remove(BattleFormation.Length - 2, 2);
+                    LastAddedBattleFormation = DateTime.Now;
+                    Route.Add((BattleFormation, (LastAddedBattleFormation - StartTime).ToString(@"hh\:mm\:ss")));
+                }
+            }
+            MonsterBytesPrevious = MonsterBytes;
         }
 
         public void CheckIfFlyingAirship()
         {
             if (!IsAirshipTimerRunning)
             {
-                if ((Character1Graphic == 6 || Character1Graphic == 1) && 
-                    !CheckAirshipFalsePositives() && // ignore Cave in the Veldt, Serpent Trench
+                if ((Character1Graphic == 6 || // value when taking off from overworld
+                    Character1Graphic == 1 && !CheckAirshipFalsePositives()) && // ignore Cave in the Veldt, Serpent Trench, South Figaro cave, Ebot's Rock
                     !IsBattleTimerRunning &&
                     DateTime.Now - BattleEnd > WCData.TimeBattleFalsePositives) // don't start timer after Search the Skies cutscene
                 {
                     AirshipStart = DateTime.Now;
                     IsAirshipTimerRunning = true;
                     AirshipCounter++;
-                } 
+                }
             }
             else
             {
                 if ((Character1Graphic == 3 && Character1GraphicPrevious == 9) ||
-                    (Character1Graphic == 0 && (MapId == 0x006 || MapId == 0x00B || MapId == 0x00A || MapId == 0x011)) ||
+                    (Character1Graphic == 0 && WCData.AirshipDeckMapIds.Contains(MapId)) ||
                     IsMenuTimerRunning || IsBattleTimerRunning)
                 {
                     AirshipStop = DateTime.Now;
@@ -399,20 +452,11 @@ namespace StatsCompanion
         {
             if (MapId <= 0x19E)
             {
-                if (MapsVisited.Count == 0)
+                if (MapsVisited.Count == 0 || (MapsVisited[MapsVisited.Count - 1] != MapId && !IsMenuTimerRunning))
                 {
                     MapsVisited.Add(MapId);
                     LastMapTimestamp = DateTime.Now;
-                    MapsVisitedWithTimestamps.Add((WCData.MapsDict[(uint)MapId], (LastMapTimestamp - StartTime).ToString(@"hh\:mm\:ss")));
-                }
-                else if (MapsVisited[MapsVisited.Count - 1] != MapId && !IsMenuTimerRunning)
-                {
-                    if (DateTime.Now - LastMapTimestamp > WCData.TimeBetweenMapChanges)
-                    {
-                        MapsVisited.Add(MapId);
-                        LastMapTimestamp = DateTime.Now;
-                        MapsVisitedWithTimestamps.Add((WCData.MapsDict[(uint)MapId], (LastMapTimestamp - StartTime).ToString(@"hh\:mm\:ss")));
-                    }
+                    Route.Add((WCData.MapsDict[(uint)MapId], (LastMapTimestamp - StartTime).ToString(@"hh\:mm\:ss")));
                 }
             }
         }
@@ -530,10 +574,6 @@ namespace StatsCompanion
             {
                 ChecksPeeked.Add("Whelk Gate");
             }
-            if (!ChecksCompleted.Contains("Umaro's Cave") && (MapsVisited.Contains(0x11B) || MapsVisited.Contains(0x015)))
-            {
-                ChecksPeeked.Add("Umaro's Cave");
-            }
             if (!ChecksCompleted.Contains("Auction House 1") && !ChecksCompleted.Contains("Auction House 2") && MapsVisited.Contains(0x0C8))
             {
                 ChecksPeeked.Add("Auction House");
@@ -544,41 +584,41 @@ namespace StatsCompanion
         {
             if (TzenThiefBought == "")
             {
-                if (TzenThiefPeekWob != "Did not check")
+                if (TzenThiefPeekWob != "Did_not_check")
                 {
-                    TzenThiefReward = $"Did not buy - {TzenThiefPeekWob}";
+                    TzenThiefReward = $"Did_not_buy__{TzenThiefPeekWob}";
                     ChecksPeeked.Add("Tzen Thief");
                 }
-                else if (TzenThiefPeekWor != "Did not check")
+                else if (TzenThiefPeekWor != "Did_not_check")
                 {
-                    TzenThiefReward = $"Did not buy - {TzenThiefPeekWor}";
+                    TzenThiefReward = $"Did_not_buy__{TzenThiefPeekWor}";
                     ChecksPeeked.Add("Tzen Thief");
                 }
                 else
                 {
-                    TzenThiefReward = $"Did not buy - Unknown";
+                    TzenThiefReward = $"Did_not_buy__Unknown";
                 }
             }
             else
             {
-                TzenThiefReward = $"Bought {TzenThiefBought}";
+                TzenThiefReward = $"Bought_{TzenThiefBought}";
             }
 
-            if (TzenThiefPeekWob == "Did not check" && TzenThiefPeekWor == "Did not check")
+            if (TzenThiefPeekWob == "Did_not_check" && TzenThiefPeekWor == "Did_not_check")
             {
-                TzenThief = "Did not check";
+                TzenThief = "Did_not_check";
             }
-            else if (TzenThiefPeekWob != "Did not check" && TzenThiefPeekWor == "Did not check")
+            else if (TzenThiefPeekWob != "Did_not_check" && TzenThiefPeekWor == "Did_not_check")
             {
-                TzenThief = "Checked WOB only";
+                TzenThief = "Checked_WOB_only";
             }
-            else if (TzenThiefPeekWob == "Did not check" && TzenThiefPeekWor != "Did not check")
+            else if (TzenThiefPeekWob == "Did_not_check" && TzenThiefPeekWor != "Did_not_check")
             {
-                TzenThief = "Checked WOR only";
+                TzenThief = "Checked_WOR_only";
             }
             else
             {
-                TzenThief = "Checked both";
+                TzenThief = "Checked_both";
             }
         }
 
@@ -586,41 +626,11 @@ namespace StatsCompanion
         {
             if (WonColiseumMatch == true && MapsVisited.Contains(0x19D))
             {
-                ColiseumVisit = "Visited and fought";
+                ColiseumVisit = "Visited_and_fought";
             }
             else if (WonColiseumMatch == false && MapsVisited.Contains(0x19D))
             {
-                ColiseumVisit = "Visited but didn't fight";
-            }
-        }
-
-        public void WriteDebugInformation()
-        {
-            Console.Clear();
-            Console.WriteLine("Stats Companion is now tracking your run...");
-            Console.WriteLine("*** DO NOT close this window! ***");
-            Console.WriteLine();
-            Console.WriteLine($"In a menu: {IsMenuTimerRunning}");
-            Console.WriteLine($"Time spent in a menu: {TimeSpentOnMenus}");
-            Console.WriteLine($"Times you entered a menu: {MenuOpenCounter}");
-            Console.WriteLine();
-            Console.WriteLine($"Flying the airship: {IsAirshipTimerRunning}");
-            Console.WriteLine($"Time spent flying the airship: {TimeSpentOnAirship}");
-            Console.WriteLine($"Times you used the airship: {AirshipCounter}");
-            Console.WriteLine();
-            Console.WriteLine($"In battle: {IsBattleTimerRunning}");
-            Console.WriteLine($"Time spent battling: {TimeSpentOnBattles}");
-            Console.WriteLine($"Battles fought: {BattlesFought}");
-            Console.WriteLine();
-            Console.WriteLine($"Current map: {WCData.MapsDict[(uint)MapId]}");
-            Console.WriteLine();
-            Console.WriteLine("Last 5 maps visited:");
-            for (int i = 0; i < 5; i++)
-            {
-                if (MapsVisitedWithTimestamps.Count -1 -i >= 0)
-                {
-                    Console.WriteLine(MapsVisitedWithTimestamps[MapsVisitedWithTimestamps.Count -1 -i]);
-                }
+                ColiseumVisit = "Visited_but_did_not_fight";
             }
         }
 
@@ -640,11 +650,11 @@ namespace StatsCompanion
             }
         }
 
-        public void CreateTimestampedMapsList()
+        public void CreateTimestampedRoute()
         {
-            foreach (var item in MapsVisitedWithTimestamps)
+            foreach (var item in Route)
             {
-                MapsVisitedJson.Add($"{item.Item2} {item.Item1}");
+                RouteJson.Add($"{item.Item2} {item.Item1}");
                 if (item.Item1 == "Reset")
                 {
                     ResetCount++;
@@ -738,7 +748,7 @@ namespace StatsCompanion
                    (character.Commands.Contains("SwdTech") && KnownSwdTechs.Contains("Cleave")) ||
                    (character.Commands.Contains("Tools") && DataHandler.CheckIfItemExistsInInventory(Inventory, 169) == true))
                 {
-                    FinalBattlePrep.Add("Instant death");
+                    FinalBattlePrep.Add("Instant_Death");
                     return;
                 }
             }
@@ -751,10 +761,67 @@ namespace StatsCompanion
                 if (character.Esper == "Fenrir" || character.Esper == "Golem" || 
                     character.Esper == "Phantom" || character.Spells.Contains("Life3"))
                 {
-                    FinalBattlePrep.Add("Calmness protection");
+                    FinalBattlePrep.Add("Calmness_Protection");
                     return;
                 }
             }
+        }
+
+        public void UpdateGPSpent()
+        {
+            if (GPCurrent < GPPrevious && !IsInSaveMenu())
+            {
+                GPSpent += (GPPrevious - GPCurrent);
+            }
+            GPPrevious = GPCurrent;
+        }
+
+        private bool IsInSaveMenu()
+        {
+            return MapId == 3 || (IsMenuTimerRunning && NextMenuState >= 19 && NextMenuState <= 22);
+        }
+
+        /// <summary>
+        /// Takes the 3 bytes array and gets the game status.
+        /// </summary>
+        internal void GetGameStatus()
+        {
+            int firstTwoBytes = DataHandler.ConcatenateByteArray(GameStatusData[0..2]);
+            byte lastByte = GameStatusData[2];
+
+            if (firstTwoBytes == 0x0ba7 && lastByte == 0xC1)
+            {
+                GameStatus = WCData.BattleKey;
+            }
+            else if (firstTwoBytes == 0x0182 && lastByte == 0xC0)
+            {
+                GameStatus = WCData.FieldKey;
+            }
+            else if (firstTwoBytes == 0xa728 && lastByte == 0xEE)
+            {
+                GameStatus = WCData.WorldKey;
+            }
+            else if (firstTwoBytes == 0x1387 && lastByte == 0xC3)
+            {
+                GameStatus = WCData.MenuKey;
+            }
+            else if ((firstTwoBytes == 0xa509 && lastByte == 0xEE) ||
+                     (firstTwoBytes == 0xa94d && lastByte == 0xEE))
+            {
+                GameStatus = WCData.Mode7Key;
+            }
+        }
+
+        public void CheckResetFalsePositive()
+        {
+            if (Route.Count > 1 && MenuNumber != 2)
+            {
+                for (int i = 0; i < 2; i++)
+                {
+                    Route.RemoveAt(Route.Count - 1);
+                }
+            }
+            IsReset = false;
         }
     }
 }

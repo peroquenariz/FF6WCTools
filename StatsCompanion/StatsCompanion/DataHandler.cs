@@ -8,6 +8,43 @@ namespace StatsCompanion
     internal static class DataHandler
     {
         /// <summary>
+        /// Method that takes 2 arrays of the same size and type and checks if they have the same data.
+        /// </summary>
+        /// <param name="monsterBytes"></param>
+        /// <param name="monsterBytesPrevious"></param>
+        /// <returns>true if they're equal, otherwise false.</returns>
+        public static bool AreArraysEqual(byte[] arr1, byte[] arr2)
+        {
+            bool equal = true;
+            for (int i = 0; i < arr1.Length; i++)
+            {
+                if (arr1.Length != arr2.Length || arr1[i] != arr2[i])
+                {
+                    equal = false;
+                    return equal;
+                }
+            }
+            return equal;
+        }
+
+        /// <summary>
+        /// Method that concatenates the monster indexes.
+        /// </summary>
+        /// <param name="monsterBytes">The array containing the bytes of the monster indexes.</param>
+        /// <returns>An array of integers with the concatenated monster indexes.</returns>
+        public static int[] GetMonsterIndexes(byte[] monsterBytes)
+        {
+            int[] result = new int[6];
+            for (int i = 0; i < 6; i++)
+            {
+                byte[] arr = { monsterBytes[i * 2], monsterBytes[i * 2 + 1] }; // Original data is 6 indexes, 2 bytes each.
+                int monsterIndex = ConcatenateByteArray(arr);                  // Concatenate the 2 bytes.
+                result[i] = monsterIndex;                                      // Save it to the new array.
+            }
+            return result;
+        }
+        
+        /// <summary>
         /// Method that checks if the Tzen Thief reward was bought.
         /// </summary>
         /// <param name="currentGP">The current amount of GP.</param>
@@ -37,7 +74,7 @@ namespace StatsCompanion
         /// <returns></returns>
         public static string PeekTzenThiefRewardWob (byte dialogWaitingForInput, byte dialogPointer, byte dialogChoiceSelected)
         {
-            string tzenThiefRewardWob = "Did not check";
+            string tzenThiefRewardWob = "Did_not_check";
             if (dialogWaitingForInput != 0)
             {
                 if ((dialogChoiceSelected == 0 && dialogPointer == 4) || (dialogChoiceSelected == 1 && dialogPointer == 6))
@@ -59,7 +96,7 @@ namespace StatsCompanion
         /// <returns></returns>
         public static string PeekTzenThiefRewardWor(int dialogIndex)
         {
-            string tzenThiefRewardWor = "Did not check";
+            string tzenThiefRewardWor = "Did_not_check";
             
             if (dialogIndex == 1570)
             {
@@ -137,19 +174,34 @@ namespace StatsCompanion
             {
                 if (CheckBitSet(charactersBytes[0], WCData.BitFlags[i]))
                 {
-                    startingCommands.Add(WCData.CommandDict[characterCommands[i]]);
+                    string command = WCData.CommandDict[characterCommands[i]];
+                    if (!startingCommands.Contains(command))
+                    {
+                        string commandReplaced = Arguments.ReplaceCharacters(command);
+                        startingCommands.Add(commandReplaced);
+                    }
                 }
             }
             for (int i = 0; i < 4; i++) // Second byte check. Skip Gogo and Umaro (they don't have commands).
             {
                 if (CheckBitSet(charactersBytes[1], WCData.BitFlags[i]))
                 {
-                    startingCommands.Add(WCData.CommandDict[characterCommands[i + 8]]);
+                    string command = WCData.CommandDict[characterCommands[i + 8]];
+                    if (!startingCommands.Contains(command))
+                    {
+                        string commandReplaced = Arguments.ReplaceCharacters(command);
+                        startingCommands.Add(commandReplaced);
+                    }
                 }
             }
             if (CheckBitSet(charactersBytes[1], WCData.BitFlags[3])) // If Gau is in the party, get his 2nd command.
             {
-                startingCommands.Add(WCData.CommandDict[characterCommands[12]]);
+                string command = WCData.CommandDict[characterCommands[12]];
+                if (!startingCommands.Contains(command))
+                {
+                    string commandReplaced = Arguments.ReplaceCharacters(command);
+                    startingCommands.Add(commandReplaced);
+                }
             }
             return startingCommands;
         }
@@ -166,14 +218,16 @@ namespace StatsCompanion
             {
                 if (CheckBitSet(dragonsBytes[0], WCData.DragonFlags1[i]))
                 {
-                    dragonsKilled.Add(WCData.DragonDict[WCData.DragonFlags1[i]]);
+                    string dragon = Arguments.ReplaceCharacters(WCData.DragonDict[WCData.DragonFlags1[i]]);
+                    dragonsKilled.Add(dragon);
                 }
             }
             for (int i = 0; i < 2; i++)
             {
                 if (CheckBitSet(dragonsBytes[1], WCData.DragonFlags2[i]))
                 {
-                    dragonsKilled.Add(WCData.DragonDict[WCData.DragonFlags2[i]]);
+                    string dragon = Arguments.ReplaceCharacters(WCData.DragonDict[WCData.DragonFlags2[i]]);
+                    dragonsKilled.Add(dragon);
                 }
             }
             return dragonsKilled;

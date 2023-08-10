@@ -20,6 +20,8 @@ namespace StatsCompanion
         private readonly ReadMemoryRequest _readMemoryRequest;
         private readonly SingleReadMemoryRequest _singleReadMemoryRequest;
 
+        private bool _isValidConnection;
+
         public int RequestTimer { get; set; }
 
         public SniConnection()
@@ -38,7 +40,8 @@ namespace StatsCompanion
                 Uri = "",
                 Request = _readMemoryRequest
             };
-            
+
+            _isValidConnection = false;
             RequestTimer = 0;
         }
 
@@ -51,21 +54,40 @@ namespace StatsCompanion
         {
             try
             {
-                var devicesList = _devicesClient.ListDevices(new DevicesRequest { }).Devices[0];
-                _singleReadMemoryRequest.Uri = devicesList.Uri;
+                var firstDevice = _devicesClient.ListDevices(new DevicesRequest { }).Devices[0];
+                _singleReadMemoryRequest.Uri = firstDevice.Uri;
                 _readMemoryRequest.RequestAddressSpace = AddressSpace.SnesAbus;
                 Log.ConnectionSuccessful(_singleReadMemoryRequest.Uri, _readMemoryRequest.RequestAddressSpace.ToString());
+                _isValidConnection = true;
             }
             catch (System.ArgumentOutOfRangeException)
             {
-                string message = "Device not found! Make sure your device/emulator is correctly connected to SNI.";
-                Log.ConnectionError(message);
+                while (!_isValidConnection)
+                {
+                    try
+                    {
+                        string message = "Device not found! Make sure your device/emulator is correctly connected to SNI.";
+                        Log.ConnectionError(message);
+                        var firstDevice = _devicesClient.ListDevices(new DevicesRequest { }).Devices[0];
+                        _isValidConnection = true;
+                    }
+                    catch (System.Exception) { }
+                }
                 ResetConnection();
             }
             catch (Grpc.Core.RpcException)
             {
-                string message = "Error - SNI not found! Make sure it's open and connected to your device/emulator.";
-                Log.ConnectionError(message);
+                while (!_isValidConnection)
+                {
+                    try
+                    {
+                        string message = "Error - SNI not found! Make sure it's open and connected to your device/emulator.";
+                        Log.ConnectionError(message);
+                        var firstDevice = _devicesClient.ListDevices(new DevicesRequest { }).Devices[0];
+                        _isValidConnection = true;
+                    }
+                    catch (System.Exception) { }
+                }
                 ResetConnection();
             }
         }
@@ -87,6 +109,7 @@ namespace StatsCompanion
             }
             catch
             {
+                _isValidConnection = false;
                 ResetConnection();
                 return ReadMemory(address, size);
             }

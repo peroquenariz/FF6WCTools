@@ -272,6 +272,10 @@ namespace StatsCompanion
                                 }
                             }
 
+                            // Generic event bit peeks.
+                            run.EventBitData = sniConnection.ReadMemory(WCData.EventBitStartAddress, WCData.EventBitDataSize);
+                            run.CheckEventBitPeeks();
+
                             // Check for specific items in the inventory.
                             run.CheckForItemsInInventory();
 

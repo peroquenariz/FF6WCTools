@@ -110,6 +110,7 @@ namespace StatsCompanion
         List<string> _dragonsKilled;
         List<string> _checksCompleted;
         List<string> _checksPeeked;
+        List<string> _eventBitsPeeked;
         List<string> _routeJson;
         List<string> _knownSwdTechs;
         List<string> _knownBlitzes;
@@ -159,6 +160,7 @@ namespace StatsCompanion
             _dragonsKilled = new();
             _checksCompleted = new();
             _checksPeeked = new();
+            _eventBitsPeeked = new();
             _mapsVisited = new();
             _routeJson = new();
             _route = new();
@@ -290,6 +292,7 @@ namespace StatsCompanion
         public byte[] GameStatusData { get => _gameStatusData; set => _gameStatusData = value; }
         public string GameStatus { get => _gameStatus; set => _gameStatus = value; }
         public bool IsReset { get => _isReset; set => _isReset = value; }
+        public List<string> EventBitsPeeked { get => _eventBitsPeeked; set => _eventBitsPeeked = value; }
 
         public bool CheckIfRunStarted()
         {
@@ -541,23 +544,18 @@ namespace StatsCompanion
             // Peeks by map ID.
             foreach (var item in WCData.PeeksByMapId)
             {
-                if (ChecksCompleted.Contains(item.Value) == false && MapsVisited.Contains(item.Key))
+                if (!ChecksCompleted.Contains(item.Value) && MapsVisited.Contains(item.Key))
                 {
                     ChecksPeeked.Add(item.Value);
                 }
             }
 
             // Peeks by event bits.
-            foreach (var item in WCData.PeeksByEventBit)
+            foreach (var item in EventBitsPeeked)
             {
-                if (ChecksCompleted.Contains(item.Value) == false)
+                if (!ChecksCompleted.Contains(item))
                 {
-                    byte eventByte = EventBitData[item.Key / 8];
-                    bool eventBit = DataHandler.CheckBitByOffset(eventByte, item.Key);
-                    if (eventBit == true)
-                    {
-                        ChecksPeeked.Add(item.Value);
-                    }
+                    ChecksPeeked.Add(item);
                 }
             }
 
@@ -577,6 +575,22 @@ namespace StatsCompanion
             if (!ChecksCompleted.Contains("Auction House 1") && !ChecksCompleted.Contains("Auction House 2") && MapsVisited.Contains(0x0C8))
             {
                 ChecksPeeked.Add("Auction House");
+            }
+        }
+
+        public void CheckEventBitPeeks()
+        {
+            foreach (var item in WCData.PeeksByEventBit)
+            {
+                if (!EventBitsPeeked.Contains(item.Value))
+                {
+                    byte eventByte = EventBitData[item.Key / 8];
+                    bool eventBit = DataHandler.CheckBitByOffset(eventByte, item.Key);
+                    if (eventBit == true)
+                    {
+                        EventBitsPeeked.Add(item.Value);
+                    }
+                }
             }
         }
 

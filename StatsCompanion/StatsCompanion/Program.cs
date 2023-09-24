@@ -58,6 +58,7 @@ namespace StatsCompanion
                         if (isValidDirectory == true &&
                             DateTime.Now - fileHandler.LastDirectoryRefresh > fileHandler.RefreshInterval)
                         {
+                            // TODO: don't use a public field for out run.seedInfo!
                             isValidDirectory = fileHandler.UpdateLastSeed(run.seedInfo, out run.seedInfo);
                         }
                         run.MapId = DataHandler.ConcatenateByteArray(sniConnection.ReadMemory(WCData.MapId, 2)) & 0x1FF;
@@ -345,6 +346,7 @@ namespace StatsCompanion
                     }
 
                     // Add Kefka kill time to event list.
+                    // TODO: move this to Run class.
                     string kefkaKillTime = (run.EndTime - run.StartTime - WCData.TimeFromKefkaFlashToAnimation).ToString(@"hh\:mm\:ss");
                     run.Route.Add(("Kefka kill", kefkaKillTime));
 

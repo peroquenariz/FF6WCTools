@@ -18,6 +18,7 @@ namespace StatsCompanion
             bool equal = true;
             for (int i = 0; i < arr1.Length; i++)
             {
+                // TODO: optimize length check before the loop
                 if (arr1.Length != arr2.Length || arr1[i] != arr2[i])
                 {
                     equal = false;

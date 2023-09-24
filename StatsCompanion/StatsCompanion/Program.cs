@@ -331,11 +331,10 @@ namespace StatsCompanion
                         }
                     }
 
-                    fileHandler.ResetLastLoadedSeed();
-
                     // If the seed has been abandoned, start tracking the new run.
                     if (run.SeedHasBeenAbandoned == true)
                     {
+                        fileHandler.ResetLastLoadedSeed();
                         continue;
                     }
 
@@ -394,6 +393,7 @@ namespace StatsCompanion
                     // Create JSON string with the run data.
                     Arguments runArguments = new(run);
                     string jsonRunData = fileHandler.SerializeJson(runArguments);
+                    Arguments runArguments = new(run, appVersion, fileHandler.LastLoadedSeed);
                     
                     // Create a timestamped filename.
                     string jsonPath = $"{fileHandler.RunsDirectory}\\{run.EndTime.ToString("yyyy_MM_dd - HH_mm_ss")}.json";
@@ -402,6 +402,7 @@ namespace StatsCompanion
                     FileHandler.WriteStringToFile(jsonPath, jsonRunData);
                     
                     Log.RunSuccessful((run.EndTime - run.StartTime - WCData.TimeFromKefkaFlashToAnimation).ToString(@"hh\:mm\:ss\.ff"));
+                    fileHandler.ResetLastLoadedSeed();
 #if JSON_DEBUG
                     Console.ReadKey(); 
 #endif

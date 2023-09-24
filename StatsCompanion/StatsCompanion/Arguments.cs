@@ -8,6 +8,8 @@ namespace StatsCompanion
     /// </summary>
     internal class Arguments
     {
+        public string appVersion { get; set; }
+        public string filename { get; set; }
         public string runTime { get; set; }
         public string runDate { get; set; }
         public string kefkaTowerUnlockTime { get; set; }
@@ -64,8 +66,11 @@ namespace StatsCompanion
         private const string TIME_FORMAT = "hh\\:mm\\:ss";
         private const string DATE_FORMAT = "yyyy-MM-ddTHH:mm:ss";
 
-        public Arguments(Run run)
+        public Arguments(Run run, string appVersion, string seedFilename)
         {
+            this.appVersion = appVersion;
+            filename = seedFilename;
+            if (this.filename.Length > 4) filename = filename[..^4];
             runTime = (run.EndTime - run.StartTime - WCData.TimeFromKefkaFlashToAnimation).ToString(@TIME_FORMAT);
             runDate = run.StartTime.ToString(DATE_FORMAT);
             flagset = "Other";

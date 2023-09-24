@@ -11,6 +11,7 @@ namespace StatsCompanion
         public string appVersion { get; set; }
         public string filename { get; set; }
         public string runTime { get; set; }
+        public string runTimePrecise { get; set; }
         public string runDate { get; set; }
         public string kefkaTowerUnlockTime { get; set; }
         public bool skip { get; set; }
@@ -64,6 +65,7 @@ namespace StatsCompanion
         public List<string> route { get; set; }
         
         private const string TIME_FORMAT = "hh\\:mm\\:ss";
+        private const string TIME_FORMAT_PRECISE = "hh\\:mm\\:ss\\.fff";
         private const string DATE_FORMAT = "yyyy-MM-ddTHH:mm:ss";
 
         public Arguments(Run run, string appVersion, string seedFilename)
@@ -72,6 +74,7 @@ namespace StatsCompanion
             filename = seedFilename;
             if (this.filename.Length > 4) filename = filename[..^4];
             runTime = (run.EndTime - run.StartTime - WCData.TimeFromKefkaFlashToAnimation).ToString(@TIME_FORMAT);
+            runTimePrecise = (run.EndTime - run.StartTime - WCData.TimeFromKefkaFlashToAnimation).ToString(@TIME_FORMAT_PRECISE);
             runDate = run.StartTime.ToString(DATE_FORMAT);
             flagset = "Other";
             otherFlagset = "";

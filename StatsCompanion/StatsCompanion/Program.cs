@@ -393,9 +393,8 @@ namespace StatsCompanion
                     run.CreateTimestampedRoute();
 
                     // Create JSON string with the run data.
-                    Arguments runArguments = new(run);
-                    string jsonRunData = fileHandler.SerializeJson(runArguments);
                     Arguments runArguments = new(run, appVersion, fileHandler.LastLoadedSeed);
+                    string jsonRunData = fileHandler.SerializeJson(runArguments);
                     
                     // Create a timestamped filename.
                     string jsonPath = $"{fileHandler.RunsDirectory}\\{run.EndTime.ToString("yyyy_MM_dd - HH_mm_ss")}.json";

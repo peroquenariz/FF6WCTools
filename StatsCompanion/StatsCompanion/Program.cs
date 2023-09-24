@@ -10,6 +10,8 @@ namespace StatsCompanion
     {
         static void Main(string[] args)
         {
+            Console.Clear();
+
             string appVersion = Assembly.GetEntryAssembly()!.GetName().Version!.ToString();
             NameValueCollection config = ConfigurationManager.AppSettings;
             FileHandler fileHandler = new(config.Get("seedDirectory")!);

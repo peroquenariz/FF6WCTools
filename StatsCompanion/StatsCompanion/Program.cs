@@ -20,7 +20,7 @@ namespace StatsCompanion
             {
                 SniConnection sniConnection = new();
                 Run run = new();
-
+                
                 while (true)
                 {
                     if (debugMode)
@@ -43,7 +43,7 @@ namespace StatsCompanion
 
                     // Start a new run.
                     run = new();
-#if RELEASE
+#if !DEBUG
                     // Wait for the player to start a new game.
                     // Only exit the loop if current menu is FF6WC custom pre-game menu and new game has been selected.
                     while (true)
@@ -323,7 +323,8 @@ namespace StatsCompanion
                                 Log.DebugInformation(run);
                             }
 #if JSON_DEBUG
-                            run.HasFinished = true; 
+                            run.EndTime = DateTime.Now;
+                            run.HasFinished = true;
 #endif
                         }
                     }

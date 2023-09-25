@@ -10,6 +10,8 @@ namespace StatsCompanion
     {
         static void Main(string[] args)
         {
+            Console.Clear();
+
             string appVersion = Assembly.GetEntryAssembly()!.GetName().Version!.ToString();
             NameValueCollection config = ConfigurationManager.AppSettings;
             FileHandler fileHandler = new(config.Get("seedDirectory")!);
@@ -20,7 +22,7 @@ namespace StatsCompanion
             {
                 SniConnection sniConnection = new();
                 Run run = new();
-
+                
                 while (true)
                 {
                     if (debugMode)
@@ -43,7 +45,7 @@ namespace StatsCompanion
 
                     // Start a new run.
                     run = new();
-#if RELEASE
+#if !DEBUG
                     // Wait for the player to start a new game.
                     // Only exit the loop if current menu is FF6WC custom pre-game menu and new game has been selected.
                     while (true)
@@ -56,6 +58,7 @@ namespace StatsCompanion
                         if (isValidDirectory == true &&
                             DateTime.Now - fileHandler.LastDirectoryRefresh > fileHandler.RefreshInterval)
                         {
+                            // TODO: don't use a public field for out run.seedInfo!
                             isValidDirectory = fileHandler.UpdateLastSeed(run.seedInfo, out run.seedInfo);
                         }
                         run.MapId = DataHandler.ConcatenateByteArray(sniConnection.ReadMemory(WCData.MapId, 2)) & 0x1FF;
@@ -323,16 +326,16 @@ namespace StatsCompanion
                                 Log.DebugInformation(run);
                             }
 #if JSON_DEBUG
-                            run.HasFinished = true; 
+                            run.EndTime = DateTime.Now;
+                            run.HasFinished = true;
 #endif
                         }
                     }
 
-                    fileHandler.ResetLastLoadedSeed();
-
                     // If the seed has been abandoned, start tracking the new run.
                     if (run.SeedHasBeenAbandoned == true)
                     {
+                        fileHandler.ResetLastLoadedSeed();
                         continue;
                     }
 
@@ -343,6 +346,7 @@ namespace StatsCompanion
                     }
 
                     // Add Kefka kill time to event list.
+                    // TODO: move this to Run class.
                     string kefkaKillTime = (run.EndTime - run.StartTime - WCData.TimeFromKefkaFlashToAnimation).ToString(@"hh\:mm\:ss");
                     run.Route.Add(("Kefka kill", kefkaKillTime));
 
@@ -389,16 +393,14 @@ namespace StatsCompanion
                     run.CreateTimestampedRoute();
 
                     // Create JSON string with the run data.
-                    Arguments runArguments = new(run);
-                    string jsonRunData = fileHandler.SerializeJson(runArguments);
+                    Arguments runArguments = new(run, appVersion, fileHandler.LastLoadedSeed);
                     
-                    // Create a timestamped filename.
-                    string jsonPath = $"{fileHandler.RunsDirectory}\\{run.EndTime.ToString("yyyy_MM_dd - HH_mm_ss")}.json";
+                    // Write JSON file.
+                    fileHandler.WriteJSONFile(run.EndTime, runArguments);
                     
-                    // Write to a .json file.
-                    FileHandler.WriteStringToFile(jsonPath, jsonRunData);
-                    
-                    Log.RunSuccessful((run.EndTime - run.StartTime - WCData.TimeFromKefkaFlashToAnimation).ToString(@"hh\:mm\:ss\.ff"));
+                    // Show final time in console.
+                    Log.RunSuccessful((run.EndTime - run.StartTime - WCData.TimeFromKefkaFlashToAnimation).ToString(@"hh\:mm\:ss\.fff"));
+                    fileHandler.ResetLastLoadedSeed();
 #if JSON_DEBUG
                     Console.ReadKey(); 
 #endif
@@ -406,12 +408,12 @@ namespace StatsCompanion
             }
             catch (Exception e)
             {
-                // Crash log path.
-                string crashlogPath = $"{ fileHandler.CrashlogDirectory}\\crashlog - {DateTime.Now.ToString("yyyy_MM_dd - HH_mm_ss")}.txt";
+                // Write crashlog file
+                string crashlogPath = fileHandler.WriteCrashlogFile(DateTime.Now, e.ToString());
                 
-                FileHandler.WriteStringToFile(crashlogPath, e.ToString());
-
+                // Show crashlog in console
                 Log.CrashInformation(e, crashlogPath);
+                
                 Console.ReadLine();
             }
         }

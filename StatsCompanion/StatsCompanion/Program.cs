@@ -394,15 +394,12 @@ namespace StatsCompanion
 
                     // Create JSON string with the run data.
                     Arguments runArguments = new(run, appVersion, fileHandler.LastLoadedSeed);
-                    string jsonRunData = fileHandler.SerializeJson(runArguments);
                     
-                    // Create a timestamped filename.
-                    string jsonPath = $"{fileHandler.RunsDirectory}\\{run.EndTime.ToString("yyyy_MM_dd - HH_mm_ss")}.json";
+                    // Write JSON file.
+                    fileHandler.WriteJSONFile(run.EndTime, runArguments);
                     
-                    // Write to a .json file.
-                    FileHandler.WriteStringToFile(jsonPath, jsonRunData);
-                    
-                    Log.RunSuccessful((run.EndTime - run.StartTime - WCData.TimeFromKefkaFlashToAnimation).ToString(@"hh\:mm\:ss\.ff"));
+                    // Show final time in console.
+                    Log.RunSuccessful((run.EndTime - run.StartTime - WCData.TimeFromKefkaFlashToAnimation).ToString(@"hh\:mm\:ss\.fff"));
                     fileHandler.ResetLastLoadedSeed();
 #if JSON_DEBUG
                     Console.ReadKey(); 
@@ -411,12 +408,12 @@ namespace StatsCompanion
             }
             catch (Exception e)
             {
-                // Crash log path.
-                string crashlogPath = $"{ fileHandler.CrashlogDirectory}\\crashlog - {DateTime.Now.ToString("yyyy_MM_dd - HH_mm_ss")}.txt";
+                // Write crashlog file
+                string crashlogPath = fileHandler.WriteCrashlogFile(DateTime.Now, e.ToString());
                 
-                FileHandler.WriteStringToFile(crashlogPath, e.ToString());
-
+                // Show crashlog in console
                 Log.CrashInformation(e, crashlogPath);
+                
                 Console.ReadLine();
             }
         }

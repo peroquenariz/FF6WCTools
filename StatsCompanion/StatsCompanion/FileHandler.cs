@@ -12,6 +12,8 @@ namespace StatsCompanion
     /// </summary>
     internal class FileHandler
     {
+        private const string JSON_TIMESTAMP_FORMAT = "yyyy_MM_dd - HH_mm_ss";
+
         private readonly TimeSpan _refreshInterval = new(0,0,2);
         private readonly JsonSerializerOptions _jsonOptions = new() { WriteIndented = true };
         private readonly string _appDirectory;
@@ -46,12 +48,13 @@ namespace StatsCompanion
         public string SeedDirectory { get => _seedDirectory; }
         public DateTime LastDirectoryRefresh { get => _lastDirectoryRefresh; }
         public TimeSpan RefreshInterval { get => _refreshInterval; }
+        public char DirectorySeparator { get => Path.DirectorySeparatorChar; }
 
         public FileHandler(string seedDirectory)
         {
             _appDirectory = Directory.GetCurrentDirectory();
-            _runsDirectory = $"{_appDirectory}\\runs";
-            _crashlogDirectory = $"{_appDirectory}\\crashlog";
+            _runsDirectory = $"{_appDirectory}{DirectorySeparator}runs";
+            _crashlogDirectory = $"{_appDirectory}{DirectorySeparator}crashlog";
             _seedDirectory = seedDirectory;
 
             _directoryList = new() { _runsDirectory, _crashlogDirectory };
@@ -200,7 +203,7 @@ namespace StatsCompanion
                 }
                 else if (lastCreatedFile.Extension == ".smc")
                 {
-                    string txtPath = $"{lastCreatedFile.DirectoryName}\\{filenameWithoutExtension}.txt";
+                    string txtPath = $"{lastCreatedFile.DirectoryName}{DirectorySeparator}{filenameWithoutExtension}.txt";
                     bool hasTxt = File.Exists(txtPath);
                     if (hasTxt)
                     {
@@ -233,6 +236,29 @@ namespace StatsCompanion
         public void ResetLastLoadedSeed()
         {
             _lastLoadedSeed = "";
+        }
+
+        public void WriteJSONFile(DateTime endTime, Arguments runArguments)
+        {
+            // Serialize the JSON.
+            string jsonRunData = SerializeJson(runArguments);
+
+            // Create a timestamped filename.
+            string jsonPath = $"{RunsDirectory}{DirectorySeparator}{endTime.ToString(JSON_TIMESTAMP_FORMAT)}.json";
+
+            // Write to a .json file.
+            WriteStringToFile(jsonPath, jsonRunData);
+        }
+
+        public string WriteCrashlogFile(DateTime crashTime, string crashlog)
+        {
+            // Crash log path.
+            string crashlogPath = $"{CrashlogDirectory}{DirectorySeparator}crashlog - {crashTime.ToString("yyyy_MM_dd - HH_mm_ss")}.txt";
+
+            // Write crashlog txt
+            WriteStringToFile(crashlogPath, crashlog);
+
+            return crashlogPath;
         }
     }
 }

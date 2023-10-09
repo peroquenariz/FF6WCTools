@@ -171,7 +171,8 @@ namespace StatsCompanion
             List<string> patterns = new() {
                 @"(-cpal [0123456789\.]* )",
                 @"(-cpor [0123456789\.]* )",
-                @"(-cspr [0123456789\.]* )"
+                @"(-cspr [0123456789\.]* )",
+                @"(-cspp [0123456789\.]* )"
             };
             
             // Regex replace palette, portrait and sprite swaps.

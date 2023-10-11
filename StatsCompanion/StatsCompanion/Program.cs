@@ -20,7 +20,7 @@ namespace StatsCompanion
 
             try
             {
-                SniConnection sniConnection = new();
+                SniClient sniClient = new();
                 Run run = new();
                 
                 while (true)
@@ -36,7 +36,7 @@ namespace StatsCompanion
 
                     
                     // Open a connection to SNI
-                    sniConnection.ResetConnection();
+                    sniClient.ResetConnection();
 
                     if (run.SeedHasBeenAbandoned)
                     {
@@ -61,9 +61,9 @@ namespace StatsCompanion
                             // TODO: don't use a public field for out run.seedInfo!
                             isValidDirectory = fileHandler.UpdateLastSeed(run.seedInfo, out run.seedInfo);
                         }
-                        run.MapId = DataHandler.ConcatenateByteArray(sniConnection.ReadMemory(WCData.MapId, 2)) & 0x1FF;
-                        run.MenuNumber = sniConnection.ReadMemory(WCData.MenuNumber, 1)[0];
-                        run.NewGameSelected = sniConnection.ReadMemory(WCData.NewGameSelected, 1)[0];
+                        run.MapId = DataHandler.ConcatenateByteArray(sniClient.ReadMemory(WCData.MapId, 2)) & 0x1FF;
+                        run.MenuNumber = sniClient.ReadMemory(WCData.MenuNumber, 1)[0];
+                        run.NewGameSelected = sniClient.ReadMemory(WCData.NewGameSelected, 1)[0];
                         if (run.CheckIfRunStarted() == true)
                         {
                             break;
@@ -75,8 +75,8 @@ namespace StatsCompanion
                     Thread.Sleep(3500);
 
                     // Read character data.
-                    run.CharacterData = sniConnection.ReadMemory(WCData.CharacterDataStart, WCData.CharacterDataSize);
-                    run.CharactersBytes = sniConnection.ReadMemory(WCData.CharactersByte, 2);
+                    run.CharacterData = sniClient.ReadMemory(WCData.CharacterDataStart, WCData.CharacterDataSize);
+                    run.CharactersBytes = sniClient.ReadMemory(WCData.CharactersByte, 2);
 
                     // Get starting characters and commands.
                     run.CharacterCommands = DataHandler.GetCharacterCommands(run.CharacterData);
@@ -84,16 +84,16 @@ namespace StatsCompanion
                     run.StartingCommands = DataHandler.GetAvailableCommands(run.CharactersBytes, run.CharacterCommands);
 
                     // Get initial GP count.
-                    run.GPCurrent = run.GPPrevious = DataHandler.ConcatenateByteArray(sniConnection.ReadMemory(WCData.CurrentGP, 3));
+                    run.GPCurrent = run.GPPrevious = DataHandler.ConcatenateByteArray(sniClient.ReadMemory(WCData.CurrentGP, 3));
 
                     // Loop while run is in progress.
                     while (run.HasFinished == false)
                     {
-                        if (sniConnection.RequestTimer % 2 != 0)
+                        if (sniClient.RequestTimer % 2 != 0)
                         {
                             // Check if the player is in a menu or shop, track time spent menuing and times they opened a menu.
-                            run.EnableDialogWindow = sniConnection.ReadMemory(WCData.EnableDialogWindow, 1)[0];
-                            run.GameStatusData = sniConnection.ReadMemory(WCData.NMIJumpCode, 3);
+                            run.EnableDialogWindow = sniClient.ReadMemory(WCData.EnableDialogWindow, 1)[0];
+                            run.GameStatusData = sniClient.ReadMemory(WCData.NMIJumpCode, 3);
                             run.GetGameStatus();
                             run.CheckIfMenuIsOpen();
                         }
@@ -101,7 +101,7 @@ namespace StatsCompanion
                         // Check if the player is flying the airship, track time spent flying and times they drove it.
                         if (WCData.AirshipMapIds.Contains(run.MapId) && run.EnableDialogWindow != 1)
                         {
-                            run.Character1Graphic = sniConnection.ReadMemory(WCData.Character1Graphic, 1)[0];
+                            run.Character1Graphic = sniClient.ReadMemory(WCData.Character1Graphic, 1)[0];
                             run.CheckIfFlyingAirship();
                         }
 
@@ -115,21 +115,21 @@ namespace StatsCompanion
                         // Check for final Kefka kill.
                         if (run.MapId == 0x164)
                         {
-                            run.IsKefkaFight = DataHandler.ConcatenateByteArray(sniConnection.ReadMemory(WCData.BattleIndex, 2));
-                            run.IsKefkaDead = sniConnection.ReadMemory(WCData.EnableKefkaFinalAnimation, 1)[0];
+                            run.IsKefkaFight = DataHandler.ConcatenateByteArray(sniClient.ReadMemory(WCData.BattleIndex, 2));
+                            run.IsKefkaDead = sniClient.ReadMemory(WCData.EnableKefkaFinalAnimation, 1)[0];
 
                             // Check if the player is in the party selection menu before final Kefka fight.
                             if (run.IsMenuTimerRunning)
                             {
                                 // Get final Kefka character lineup.
-                                run.FinalBattleLineup = sniConnection.ReadMemory(WCData.FinalBattleCharacterListStart, 12);
+                                run.FinalBattleLineup = sniClient.ReadMemory(WCData.FinalBattleCharacterListStart, 12);
                             }
 
                             // Get character data.
                             if (!run.IsFinalBattle)
                             {
-                                run.CharacterData = sniConnection.ReadMemory(WCData.CharacterDataStart, WCData.CharacterDataSize);
-                                run.CharacterSkillData = sniConnection.ReadMemory(WCData.CharacterSkillData, WCData.CharacterSkillDataSize);
+                                run.CharacterData = sniClient.ReadMemory(WCData.CharacterDataStart, WCData.CharacterDataSize);
+                                run.CharacterSkillData = sniClient.ReadMemory(WCData.CharacterSkillData, WCData.CharacterSkillDataSize);
                                 run.IsFinalBattle = true;
                             }
 
@@ -139,19 +139,19 @@ namespace StatsCompanion
                         // Tzen thief peek WoB.
                         if (run.MapId == 0x132 && run.TzenThiefPeekWob == "Did_not_check")
                         {
-                            run.DialogIndex = DataHandler.ConcatenateByteArray(sniConnection.ReadMemory(WCData.DialogIndex, 2));
+                            run.DialogIndex = DataHandler.ConcatenateByteArray(sniClient.ReadMemory(WCData.DialogIndex, 2));
                             if (run.DialogIndex == 1569)
                             {
-                                run.DialogWaitingForInput = sniConnection.ReadMemory(WCData.DialogWaitingForInput, 1)[0];
-                                run.DialogPointer = sniConnection.ReadMemory(WCData.DialogPointer, 1)[0];
-                                run.DialogChoiceSelected = sniConnection.ReadMemory(WCData.DialogChoiceSelected, 1)[0];
+                                run.DialogWaitingForInput = sniClient.ReadMemory(WCData.DialogWaitingForInput, 1)[0];
+                                run.DialogPointer = sniClient.ReadMemory(WCData.DialogPointer, 1)[0];
+                                run.DialogChoiceSelected = sniClient.ReadMemory(WCData.DialogChoiceSelected, 1)[0];
                                 run.TzenThiefPeekWob = DataHandler.PeekTzenThiefRewardWob(run.DialogWaitingForInput, run.DialogPointer, run.DialogChoiceSelected);
                             }
                         }
 
                         // All the reads that don't need to happen every frame are checked against RequestTimer, to avoid spamming SNI.
-                        sniConnection.RequestTimer++;
-                        if (sniConnection.RequestTimer % 10 == 0 || run.HasFinished)
+                        sniClient.RequestTimer++;
+                        if (sniClient.RequestTimer % 10 == 0 || run.HasFinished)
                         {
                             // Check if the player is in a battle, track time spent battling.
                             run.CheckIfInBattle();
@@ -159,29 +159,29 @@ namespace StatsCompanion
                             // If in battle, log encounter in event list.
                             if (run.IsBattleTimerRunning)
                             {
-                                run.MonsterBytes = sniConnection.ReadMemory(WCData.MonsterIndexStart, 12);
+                                run.MonsterBytes = sniClient.ReadMemory(WCData.MonsterIndexStart, 12);
                                 run.LogBattle();
                             }
                         }
                         
-                        if (sniConnection.RequestTimer > 10)
+                        if (sniClient.RequestTimer > 10)
                         {
-                            sniConnection.RequestTimer = 0;
+                            sniClient.RequestTimer = 0;
                             
-                            run.MapId = DataHandler.ConcatenateByteArray(sniConnection.ReadMemory(WCData.MapId, 2)) & 0x1FF;
-                            run.Inventory = sniConnection.ReadMemory(WCData.InventoryStart, WCData.InventorySize);
+                            run.MapId = DataHandler.ConcatenateByteArray(sniClient.ReadMemory(WCData.MapId, 2)) & 0x1FF;
+                            run.Inventory = sniClient.ReadMemory(WCData.InventoryStart, WCData.InventorySize);
 
                             // Read KT unlock and skip status only if the bits haven't been set.
                             if (!run.IsKTSkipUnlocked || !run.IsKefkaTowerUnlocked)
                             {
-                                run.KefkaTowerEventByte = sniConnection.ReadMemory(WCData.EventBitStartAddress + 0x093 / 8, 1)[0];
+                                run.KefkaTowerEventByte = sniClient.ReadMemory(WCData.EventBitStartAddress + 0x093 / 8, 1)[0];
                             }
                             
                             if (run.IsMenuTimerRunning)
                             {
-                                run.MenuNumber = sniConnection.ReadMemory(WCData.MenuNumber, 1)[0];
-                                run.ScreenDisplayRegister = sniConnection.ReadMemory(WCData.ScreenDisplayRegister, 1)[0]; // Menu fades
-                                run.NextMenuState = sniConnection.ReadMemory(WCData.NextMenuState, 1)[0]; // Next menu state
+                                run.MenuNumber = sniClient.ReadMemory(WCData.MenuNumber, 1)[0];
+                                run.ScreenDisplayRegister = sniClient.ReadMemory(WCData.ScreenDisplayRegister, 1)[0]; // Menu fades
+                                run.NextMenuState = sniClient.ReadMemory(WCData.NextMenuState, 1)[0]; // Next menu state
                             }
 
                             // Add visited maps to the list.
@@ -190,7 +190,7 @@ namespace StatsCompanion
                             // Update GP spent.
                             if (run.MapId != 3)
                             {
-                                run.GPCurrent = DataHandler.ConcatenateByteArray(sniConnection.ReadMemory(WCData.CurrentGP, 3));
+                                run.GPCurrent = DataHandler.ConcatenateByteArray(sniClient.ReadMemory(WCData.CurrentGP, 3));
                             }
                             run.UpdateGPSpent();
 
@@ -208,12 +208,12 @@ namespace StatsCompanion
                             // Count espers that were bought at the Auction House.
                             if (run.MapId == 0x0C8 && !run.InAuctionHouse)
                             {
-                                run.EsperCountPrevious = sniConnection.ReadMemory(WCData.EsperCount, 1)[0];
+                                run.EsperCountPrevious = sniClient.ReadMemory(WCData.EsperCount, 1)[0];
                                 run.InAuctionHouse = true;
                             }
                             else if (run.MapId != 0x0C8 && run.InAuctionHouse)
                             {
-                                run.EsperCount = sniConnection.ReadMemory(WCData.EsperCount, 1)[0];
+                                run.EsperCount = sniClient.ReadMemory(WCData.EsperCount, 1)[0];
                                 run.CountAuctionHouseEspersBought();
                                 run.InAuctionHouse = false;
                             }
@@ -221,7 +221,7 @@ namespace StatsCompanion
                             // Whelk peek.
                             if (run.MapId == 0x02B && run.IsWhelkPeeked == false)
                             {
-                                run.PartyYPosition = sniConnection.ReadMemory(WCData.PartyYPosition, 1)[0];
+                                run.PartyYPosition = sniClient.ReadMemory(WCData.PartyYPosition, 1)[0];
                                 if (run.PartyYPosition <= 32 && run.PartyYPosition >= 30)
                                 {
                                     run.IsWhelkPeeked = true;
@@ -231,14 +231,14 @@ namespace StatsCompanion
                             // Esper Mountain peek.
                             if (run.MapId == 0x177 && run.IsEsperMountainPeeked == false)
                             {
-                                run.EsperMountainPeekByte = sniConnection.ReadMemory(WCData.EventBitStartAddress + 0x17B / 8, 1)[0];
+                                run.EsperMountainPeekByte = sniClient.ReadMemory(WCData.EventBitStartAddress + 0x17B / 8, 1)[0];
                                 run.IsEsperMountainPeeked = DataHandler.CheckBitByOffset(run.EsperMountainPeekByte, 0x17B);
                             }
 
                             // South Figaro basement peek.
                             if (run.MapId == 0x053 && run.IsSouthFigaroBasementPeeked == false)
                             {
-                                run.PartyXPosition = sniConnection.ReadMemory(WCData.PartyXPosition, 1)[0];
+                                run.PartyXPosition = sniClient.ReadMemory(WCData.PartyXPosition, 1)[0];
                                 //byte basementNpcStatus = sniConnection.ReadMemory(WCData.FieldObjectStartAddress + 41 * 0x10, 1)[0];
                                 if (run.PartyXPosition >= 0x37 && run.PartyXPosition <= 0x3B)
                                 {
@@ -249,7 +249,7 @@ namespace StatsCompanion
                             // Tzen thief peek WoR.
                             if (run.MapId == 0x131 && run.TzenThiefPeekWor == "Did_not_check")
                             {
-                                run.DialogIndex = DataHandler.ConcatenateByteArray(sniConnection.ReadMemory(WCData.DialogIndex, 2));
+                                run.DialogIndex = DataHandler.ConcatenateByteArray(sniClient.ReadMemory(WCData.DialogIndex, 2));
                                 run.TzenThiefPeekWor = DataHandler.PeekTzenThiefRewardWor(run.DialogIndex);
                             }
 
@@ -257,11 +257,11 @@ namespace StatsCompanion
                             // Works by checking esper changes against Tzen Thief bit.
                             if ((run.MapId == 0x131 || run.MapId == 0x132) && run.TzenThiefBought == "")
                             {
-                                run.PartyYPosition = sniConnection.ReadMemory(WCData.PartyYPosition, 1)[0];
+                                run.PartyYPosition = sniClient.ReadMemory(WCData.PartyYPosition, 1)[0];
                                 if (run.PartyYPosition < 7)
                                 {
-                                    run.EsperCount = sniConnection.ReadMemory(WCData.EsperCount, 1)[0];
-                                    run.TzenThiefBit = DataHandler.CheckBitByOffset(sniConnection.ReadMemory(WCData.EventBitStartAddress + 0x27c / 8, 1)[0], 0x27c);
+                                    run.EsperCount = sniClient.ReadMemory(WCData.EsperCount, 1)[0];
+                                    run.TzenThiefBit = DataHandler.CheckBitByOffset(sniClient.ReadMemory(WCData.EventBitStartAddress + 0x27c / 8, 1)[0], 0x27c);
                                     run.TzenThiefBought = DataHandler.CheckTzenThiefBought(run.EsperCount, run.EsperCountPrevious, run.TzenThiefBit);
                                     if (run.InTzenThiefArea == false)
                                     {
@@ -276,7 +276,7 @@ namespace StatsCompanion
                             }
 
                             // Generic event bit peeks.
-                            run.EventBitData = sniConnection.ReadMemory(WCData.EventBitStartAddress, WCData.EventBitDataSize);
+                            run.EventBitData = sniClient.ReadMemory(WCData.EventBitStartAddress, WCData.EventBitDataSize);
                             run.CheckEventBitPeeks();
 
                             // Check for specific items in the inventory.
@@ -351,14 +351,14 @@ namespace StatsCompanion
                     run.Route.Add(("Kefka kill", kefkaKillTime));
 
                     // Get data after Kefka kill.
-                    run.CharactersBytes = sniConnection.ReadMemory(WCData.CharactersByte, 2);
-                    run.DragonsBytes = sniConnection.ReadMemory(WCData.DragonsByte, 2);
-                    run.BossCount = sniConnection.ReadMemory(WCData.BossCount, 1)[0];
-                    run.EsperCount = sniConnection.ReadMemory(WCData.EsperCount, 1)[0];
-                    run.CheckCount = sniConnection.ReadMemory(WCData.CheckCount, 1)[0];
-                    run.DragonCount = sniConnection.ReadMemory(WCData.DragonCount, 1)[0];
-                    run.ChestData = sniConnection.ReadMemory(WCData.ChestDataStart, WCData.ChestDataSize);
-                    run.EventBitData = sniConnection.ReadMemory(WCData.EventBitStartAddress, WCData.EventBitDataSize);
+                    run.CharactersBytes = sniClient.ReadMemory(WCData.CharactersByte, 2);
+                    run.DragonsBytes = sniClient.ReadMemory(WCData.DragonsByte, 2);
+                    run.BossCount = sniClient.ReadMemory(WCData.BossCount, 1)[0];
+                    run.EsperCount = sniClient.ReadMemory(WCData.EsperCount, 1)[0];
+                    run.CheckCount = sniClient.ReadMemory(WCData.CheckCount, 1)[0];
+                    run.DragonCount = sniClient.ReadMemory(WCData.DragonCount, 1)[0];
+                    run.ChestData = sniClient.ReadMemory(WCData.ChestDataStart, WCData.ChestDataSize);
+                    run.EventBitData = sniClient.ReadMemory(WCData.EventBitStartAddress, WCData.EventBitDataSize);
                     run.CharacterCount = DataHandler.GetCharacterCount(run.CharactersBytes);
                     run.ChestCount = DataHandler.GetChestCount(run.ChestData);
                     run.CharacterMaxLevel = DataHandler.GetMaximumCharacterLevel(run.CharacterData);

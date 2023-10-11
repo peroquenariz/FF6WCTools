@@ -1,11 +1,12 @@
-﻿using Grpc.Net.Client;
+﻿using Google.Protobuf;
+using Grpc.Net.Client;
 
 namespace StatsCompanion
 {
     /// <summary>
     /// A class for handling the connection to SNI and requesting memory reads.
     /// </summary>
-    internal class SniConnection
+    internal class SniClient
     {
         private const string SniAddress = "http://localhost:8191/";
         private readonly GrpcChannel _sniChannel = GrpcChannel.ForAddress(SniAddress);
@@ -16,15 +17,17 @@ namespace StatsCompanion
         // Memory client
         private readonly DeviceMemory.DeviceMemoryClient _memoryClient;
 
-        // Reading memory requires passing 2 messages to the service: ReadMemoryRequest and SingleReadMemoryRequest.
+        // Reading or writing memory requires passing 2 messages to the service.
         private readonly ReadMemoryRequest _readMemoryRequest;
         private readonly SingleReadMemoryRequest _singleReadMemoryRequest;
+        private readonly WriteMemoryRequest _writeMemoryRequest;
+        private readonly SingleWriteMemoryRequest _singleWriteMemoryRequest;
 
         private bool _isValidConnection;
 
         public int RequestTimer { get; set; }
 
-        public SniConnection()
+        public SniClient()
         {
             _devicesClient = new Devices.DevicesClient(_sniChannel);
 
@@ -39,6 +42,18 @@ namespace StatsCompanion
             {
                 Uri = "",
                 Request = _readMemoryRequest
+            };
+
+            _writeMemoryRequest = new WriteMemoryRequest
+            {
+                RequestMemoryMapping = MemoryMapping.HiRom,
+
+            };
+
+            _singleWriteMemoryRequest = new SingleWriteMemoryRequest
+            {
+                Uri = "",
+                Request = _writeMemoryRequest
             };
 
             _isValidConnection = false;
@@ -56,7 +71,9 @@ namespace StatsCompanion
             {
                 var firstDevice = _devicesClient.ListDevices(new DevicesRequest { }).Devices[0];
                 _singleReadMemoryRequest.Uri = firstDevice.Uri;
+                _singleWriteMemoryRequest.Uri = firstDevice.Uri;
                 _readMemoryRequest.RequestAddressSpace = AddressSpace.SnesAbus;
+                _writeMemoryRequest.RequestAddressSpace = AddressSpace.SnesAbus;
                 Log.ConnectionSuccessful(_singleReadMemoryRequest.Uri, _readMemoryRequest.RequestAddressSpace.ToString());
                 _isValidConnection = true;
             }
@@ -112,6 +129,28 @@ namespace StatsCompanion
                 _isValidConnection = false;
                 ResetConnection();
                 return ReadMemory(address, size);
+            }
+        }
+
+        /// <summary>
+        /// Takes a byte array and writes it to memory.
+        /// </summary>
+        /// <param name="address">The memory address to write to.</param>
+        /// <param name="data">The data to write.</param>
+        public void WriteMemory(uint address, byte[] data)
+        {
+            try
+            {
+                _writeMemoryRequest.RequestAddress = address;
+                _writeMemoryRequest.Data = ByteString.CopyFrom(data);
+                _memoryClient.SingleWrite(_singleWriteMemoryRequest);
+                return;
+            }
+            catch
+            {
+                _isValidConnection = false;
+                ResetConnection();
+                WriteMemory(address, data);
             }
         }
     }

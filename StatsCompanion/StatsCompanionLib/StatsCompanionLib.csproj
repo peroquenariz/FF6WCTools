@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Title>StatsCompanionLib</Title>
+    <Company>$(Authors)</Company>
+    <Authors>peroquenariz</Authors>
+    <Version>0.2.3</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FF6WCToolsLib\FF6WCToolsLib.csproj" />
+  </ItemGroup>
+
+</Project>

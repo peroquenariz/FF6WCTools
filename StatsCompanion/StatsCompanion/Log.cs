@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading;
+using FF6WCToolsLib;
+using StatsCompanionLib;
 
 namespace StatsCompanion
 {
@@ -15,22 +16,70 @@ namespace StatsCompanion
         private const string WindowTitle = "Stats Companion";
         
         private readonly string _appVersion;
+        private readonly string _libVersion;
 
         public static int cursorTopPosition;
         
-        public Log(string appVersion)
+        public Log(string appVersion, string libVersion, SniClient sniClient, FileHandler fileHandler)
         {
             Console.CursorVisible = false;
             Console.Title = WindowTitle;
             _appVersion = appVersion;
-            AssemblyVersion();
+            _libVersion = libVersion;
+
+            Version();
             cursorTopPosition = 3;
+
+            sniClient.OnConnectionError += SniClient_OnConnectionError;
+            sniClient.OnConnectionSuccessful += SniClient_OnConnectionSuccessful;
+
+            fileHandler.OnSeedDirectoryNotFound += FileHandler_OnSeedDirectoryNotFound;
+            fileHandler.OnSeedDirectoryInvalid += FileHandler_OnSeedDirectoryInvalid;
+            fileHandler.OnSeedNotFound += FileHandler_OnSeedNotFound;
+            fileHandler.OnSeedInfoFound += FileHandler_OnSeedInfoFound;
+            fileHandler.OnSeedInfoNotFound += FileHandler_OnSeedInfoNotFound;
         }
 
-        public void AssemblyVersion(bool debugMode = false)
+        private void FileHandler_OnSeedInfoNotFound(object? sender, SeedInfoNotFoundEventArgs e)
+        {
+            NoMatchingSeedInfoFound(e.Filename);
+        }
+
+        private void FileHandler_OnSeedInfoFound(object? sender, SeedInfoFoundEventArgs e)
+        {
+            SeedInformation(e.Filename, e.SeedInfo, e.SeedInfoLines);
+        }
+
+        private void FileHandler_OnSeedNotFound(object? sender, EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void FileHandler_OnSeedDirectoryInvalid(object? sender, EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void FileHandler_OnSeedDirectoryNotFound(object? sender, EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void SniClient_OnConnectionSuccessful(object? sender, ConnectionSuccessfulEventArgs e)
+        {
+            ConnectionSuccessful(e.Uri);
+        }
+
+        private void SniClient_OnConnectionError(object? sender, ConnectionErrorEventArgs e)
+        {
+            ConnectionError(e.Message);
+        }
+
+        public void Version(bool debugMode = false)
         {
             Console.ForegroundColor = ConsoleColor.White;
-            string version = $"Stats Companion v{_appVersion}";
+            //string version = $"Stats Companion v{_libVersion} (lib) | v{_appVersion} (app)";
+            string version = $"Stats Companion v{_libVersion}";
             Console.Write(version);
             if (debugMode)
             {
@@ -89,7 +138,7 @@ namespace StatsCompanion
                     flags = seedInfo[i].Substring(10);
                 }
             }
-            flagset = Arguments.GetFlagset(flags);
+            flagset = RunJson.GetFlagset(flags);
             Console.WriteLine();
             Console.WriteLine($"Detected flagset: {flagset}".PadRight(RightPadding));
         }
@@ -114,7 +163,7 @@ namespace StatsCompanion
             Console.WriteLine($"JSON file successfully saved. Final time: {finalTime}.".PadRight(RightPadding));
         }
 
-        public static void ConnectionSuccessful(string uri, string requestAddressSpace)
+        public static void ConnectionSuccessful(string uri)
         {
             ResetConsoleCursor();
             Console.ForegroundColor = ConsoleColor.Green;

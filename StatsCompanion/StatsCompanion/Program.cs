@@ -3,6 +3,8 @@ using System.Collections.Specialized;
 using System.Configuration;
 using System.Threading;
 using System.Reflection;
+using FF6WCToolsLib;
+using StatsCompanionLib;
 
 namespace StatsCompanion
 {
@@ -11,16 +13,16 @@ namespace StatsCompanion
         static void Main(string[] args)
         {
             Console.Clear();
-
-            string appVersion = Assembly.GetEntryAssembly()!.GetName().Version!.ToString();
+            string appVersion = Assembly.GetExecutingAssembly().GetName().Version!.ToString();
+            string libVersion = StatsCompanionLib.StatsCompanion.LibVersion;
             NameValueCollection config = ConfigurationManager.AppSettings;
             FileHandler fileHandler = new(config.Get("seedDirectory")!);
-            Log log = new(appVersion);
+            SniClient sniClient = new();
+            Log log = new(appVersion, libVersion, sniClient, fileHandler);
             bool debugMode = Convert.ToBoolean(config.Get("debugMode"));
 
             try
             {
-                SniClient sniClient = new();
                 Run run = new();
                 
                 while (true)
@@ -28,7 +30,7 @@ namespace StatsCompanion
                     if (debugMode)
                     {
                         Console.Clear();
-                        log.AssemblyVersion(debugMode);
+                        log.Version(debugMode);
                     }
 
                     Log.cursorTopPosition = 3;
@@ -55,11 +57,12 @@ namespace StatsCompanion
                             Log.WaitingForNewGame();
                         }
 
+                        // TODO: move this to FileHandler and make it a function (get rid of copypasted auto-reset code)
                         if (isValidDirectory == true &&
                             DateTime.Now - fileHandler.LastDirectoryRefresh > fileHandler.RefreshInterval)
                         {
-                            // TODO: don't use a public field for out run.seedInfo!
-                            isValidDirectory = fileHandler.UpdateLastSeed(run.seedInfo, out run.seedInfo);
+                            isValidDirectory = fileHandler.UpdateLastSeed(run.SeedInfo, out string[] updatedSeedInfo);
+                            run.SeedInfo = updatedSeedInfo;
                         }
                         run.MapId = DataHandler.ConcatenateByteArray(sniClient.ReadMemory(WCData.MapId, 2)) & 0x1FF;
                         run.MenuNumber = sniClient.ReadMemory(WCData.MenuNumber, 1)[0];
@@ -255,6 +258,7 @@ namespace StatsCompanion
 
                             // Check if Tzen thief was bought, and if it was an esper or an item.
                             // Works by checking esper changes against Tzen Thief bit.
+                            // TODO: cleanup and properly comment this code!
                             if ((run.MapId == 0x131 || run.MapId == 0x132) && run.TzenThiefBought == "")
                             {
                                 run.PartyYPosition = sniClient.ReadMemory(WCData.PartyYPosition, 1)[0];
@@ -309,11 +313,14 @@ namespace StatsCompanion
                             }
 
                             // If a new seed is found in the directory, abandon the seed.
+                            // TODO: move this to FileHandler and make it a function (get rid of copypasted auto-reset code)
                             if (isValidDirectory == true &&
                                 DateTime.Now - fileHandler.LastDirectoryRefresh > fileHandler.RefreshInterval)
                             {
                                 string previousSeed = fileHandler.LastLoadedSeed;
-                                isValidDirectory = fileHandler.UpdateLastSeed(run.seedInfo, out run.seedInfo, false);
+                                isValidDirectory = fileHandler.UpdateLastSeed(run.SeedInfo, out string[] updatedSeedInfo, false);
+
+                                run.SeedInfo = updatedSeedInfo;
                                 if (fileHandler.LastLoadedSeed != previousSeed)
                                 {
                                     run.SeedHasBeenAbandoned = true;
@@ -393,10 +400,10 @@ namespace StatsCompanion
                     run.CreateTimestampedRoute();
 
                     // Create JSON string with the run data.
-                    Arguments runArguments = new(run, appVersion, fileHandler.LastLoadedSeed);
+                    RunJson runJson = new(run, appVersion, fileHandler.LastLoadedSeed);
                     
                     // Write JSON file.
-                    fileHandler.WriteJSONFile(run.EndTime, runArguments);
+                    fileHandler.WriteJSONFile(run.EndTime, runJson);
                     
                     // Show final time in console.
                     Log.RunSuccessful((run.EndTime - run.StartTime - WCData.TimeFromKefkaFlashToAnimation).ToString(@"hh\:mm\:ss\.fff"));

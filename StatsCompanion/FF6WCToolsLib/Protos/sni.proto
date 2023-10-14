@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 option go_package = "github.com/alttpo/sni/protos/sni";
-option csharp_namespace = "StatsCompanion";
+option csharp_namespace = "FF6WCToolsLib";
 option java_package = "com.github.alttpo.sni";
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

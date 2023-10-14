@@ -7,10 +7,9 @@
     <Nullable>enable</Nullable>
     <ApplicationIcon>_UncleUlty.ico</ApplicationIcon>
     <Title>Stats Companion</Title>
-    <AssemblyVersion>0.2.3.0</AssemblyVersion>
-    <FileVersion>0.2.3.0</FileVersion>
-    <Version>0.2.3</Version>
+    <Version>1.0.0</Version>
     <Configurations>Debug;Release;JSON_DEBUG</Configurations>
+    <Authors>peroquenariz</Authors>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,15 +17,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Google.Protobuf" Version="3.22.1" />
-    <PackageReference Include="Grpc.Net.Client" Version="2.52.0" />
-    <PackageReference Include="Grpc.Tools" Version="2.53.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="7.0.0" />
   </ItemGroup>
-	<ItemGroup>
-		<Protobuf Include="Protos\sni.proto" GrpcServices="Client" />
-	</ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FF6WCToolsLib\FF6WCToolsLib.csproj" />
+    <ProjectReference Include="..\StatsCompanionLib\StatsCompanionLib.csproj" />
+  </ItemGroup>
 </Project>

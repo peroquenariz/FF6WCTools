@@ -1,13 +1,17 @@
-﻿using Google.Protobuf;
+﻿using System;
+using Google.Protobuf;
 using Grpc.Net.Client;
 
-namespace StatsCompanion
+namespace FF6WCToolsLib
 {
     /// <summary>
     /// A class for handling the connection to SNI and requesting memory reads.
     /// </summary>
-    internal class SniClient
+    public class SniClient
     {
+        public event EventHandler<ConnectionSuccessfulEventArgs>? OnConnectionSuccessful;
+        public event EventHandler<ConnectionErrorEventArgs>? OnConnectionError;
+        
         private const string SniAddress = "http://localhost:8191/";
         private readonly GrpcChannel _sniChannel = GrpcChannel.ForAddress(SniAddress);
 
@@ -74,21 +78,21 @@ namespace StatsCompanion
                 _singleWriteMemoryRequest.Uri = firstDevice.Uri;
                 _readMemoryRequest.RequestAddressSpace = AddressSpace.SnesAbus;
                 _writeMemoryRequest.RequestAddressSpace = AddressSpace.SnesAbus;
-                Log.ConnectionSuccessful(_singleReadMemoryRequest.Uri, _readMemoryRequest.RequestAddressSpace.ToString());
                 _isValidConnection = true;
+                OnConnectionSuccessful?.Invoke(this, new ConnectionSuccessfulEventArgs(firstDevice.Uri));
             }
-            catch (System.ArgumentOutOfRangeException)
+            catch (ArgumentOutOfRangeException)
             {
                 while (!_isValidConnection)
                 {
                     try
                     {
                         string message = "Device not found! Make sure your device/emulator is correctly connected to SNI.";
-                        Log.ConnectionError(message);
+                        OnConnectionError?.Invoke(this, new ConnectionErrorEventArgs(message));
                         var firstDevice = _devicesClient.ListDevices(new DevicesRequest { }).Devices[0];
                         _isValidConnection = true;
                     }
-                    catch (System.Exception) { }
+                    catch (Exception) { }
                 }
                 ResetConnection();
             }
@@ -99,11 +103,11 @@ namespace StatsCompanion
                     try
                     {
                         string message = "Error - SNI not found! Make sure it's open and connected to your device/emulator.";
-                        Log.ConnectionError(message);
+                        OnConnectionError?.Invoke(this, new ConnectionErrorEventArgs(message));
                         var firstDevice = _devicesClient.ListDevices(new DevicesRequest { }).Devices[0];
                         _isValidConnection = true;
                     }
-                    catch (System.Exception) { }
+                    catch (Exception) { }
                 }
                 ResetConnection();
             }
@@ -152,6 +156,24 @@ namespace StatsCompanion
                 ResetConnection();
                 WriteMemory(address, data);
             }
+        }
+    }
+    
+    public class ConnectionSuccessfulEventArgs : EventArgs
+    {
+        public string Uri { get; }
+        public ConnectionSuccessfulEventArgs(string uri)
+        {
+            Uri = uri;
+        }
+    }
+
+    public class ConnectionErrorEventArgs : EventArgs
+    {
+        public string Message { get; }
+        public ConnectionErrorEventArgs(string message)
+        {
+            Message = message;
         }
     }
 }

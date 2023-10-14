@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using FF6WCToolsLib;
 
-namespace StatsCompanion
+namespace StatsCompanionLib
 {
     /// <summary>
     /// A class representing a Worlds Collide run.
     /// </summary>
-    internal class Run
+    public class Run
     {
         bool _isMenuTimerRunning;
         bool _isBattleTimerRunning;
@@ -61,7 +62,7 @@ namespace StatsCompanion
         byte[] _monsterBytesPrevious;
         byte[] _gameStatusData;
         Character[] _finalBattleCharacters;
-        public string[] seedInfo;
+        private string[] seedInfo;
         int _chestCount;
         int _characterCount;
         int _isKefkaFight;
@@ -293,6 +294,7 @@ namespace StatsCompanion
         public string GameStatus { get => _gameStatus; set => _gameStatus = value; }
         public bool IsReset { get => _isReset; set => _isReset = value; }
         public List<string> EventBitsPeeked { get => _eventBitsPeeked; set => _eventBitsPeeked = value; }
+        public string[] SeedInfo { get => seedInfo; set => seedInfo = value; }
 
         public bool CheckIfRunStarted()
         {
@@ -762,7 +764,7 @@ namespace StatsCompanion
                    (character.Commands.Contains("SwdTech") && KnownSwdTechs.Contains("Cleave")) ||
                    (character.Commands.Contains("Tools") && DataHandler.CheckIfItemExistsInInventory(Inventory, 169) == true))
                 {
-                    FinalBattlePrep.Add("Instant_Death");
+                    FinalBattlePrep.Add("Instant_Death"); // TODO: replace characters in RunJson
                     return;
                 }
             }
@@ -775,7 +777,7 @@ namespace StatsCompanion
                 if (character.Esper == "Fenrir" || character.Esper == "Golem" || 
                     character.Esper == "Phantom" || character.Spells.Contains("Life3"))
                 {
-                    FinalBattlePrep.Add("Calmness_Protection");
+                    FinalBattlePrep.Add("Calmness_Protection"); // TODO: replace characters in RunJson
                     return;
                 }
             }
@@ -798,7 +800,7 @@ namespace StatsCompanion
         /// <summary>
         /// Takes the 3 bytes array and gets the game status.
         /// </summary>
-        internal void GetGameStatus()
+        public void GetGameStatus()
         {
             int firstTwoBytes = DataHandler.ConcatenateByteArray(GameStatusData[0..2]);
             byte lastByte = GameStatusData[2];

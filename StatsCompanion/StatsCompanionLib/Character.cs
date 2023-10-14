@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
+using FF6WCToolsLib;
 
-namespace StatsCompanion
+namespace StatsCompanionLib
 {
     /// <summary>
     /// A class representing a Worlds Collide character.
     /// </summary>
-    internal class Character
+    public class Character
     {
         private string _name;
         private byte _level;
@@ -42,27 +43,27 @@ namespace StatsCompanion
 
         public Character(byte[] characterData, byte[] characterSkillsData, string name)
         {
-            Name = name;
-            Level = characterData[0x08];
-            Commands = new() {
+            _name = name;
+            _level = characterData[0x08];
+            _commands = new() {
                 WCData.CommandDict[characterData[0x16]], 
                 WCData.CommandDict[characterData[0x17]],
                 WCData.CommandDict[characterData[0x18]], 
                 WCData.CommandDict[characterData[0x19]] 
             };
-            Vigor = characterData[0x1A];
-            Speed = characterData[0x1B];
-            Stamina = characterData[0x1C];
-            Magpower = characterData[0x1D];
-            Esper = WCData.EsperDict[characterData[0x1E]];
-            RHand = WCData.ItemDict[characterData[0x1F]];
-            LHand = WCData.ItemDict[characterData[0x20]];
-            Helmet = WCData.ItemDict[characterData[0x21]];
-            Armor = WCData.ItemDict[characterData[0x22]];
-            Relic1 = WCData.ItemDict[characterData[0x23]];
-            Relic2 = WCData.ItemDict[characterData[0x24]];
+            _vigor = characterData[0x1A];
+            _speed = characterData[0x1B];
+            _stamina = characterData[0x1C];
+            _magpower = characterData[0x1D];
+            _esper = WCData.EsperDict[characterData[0x1E]];
+            _rHand = WCData.ItemDict[characterData[0x1F]];
+            _lHand = WCData.ItemDict[characterData[0x20]];
+            _helmet = WCData.ItemDict[characterData[0x21]];
+            _armor = WCData.ItemDict[characterData[0x22]];
+            _relic1 = WCData.ItemDict[characterData[0x23]];
+            _relic2 = WCData.ItemDict[characterData[0x24]];
             _characterSpellsData = characterSkillsData;
-            Spells = new();
+            _spells = new List<string>();
             GetSpellList(_characterSpellsData);
         }
 

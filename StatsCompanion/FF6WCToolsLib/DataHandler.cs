@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 
-namespace StatsCompanion
+namespace FF6WCToolsLib
 {
     /// <summary>
     /// A class that contains methods for processing game memory.
     /// </summary>
-    internal static class DataHandler
+    public static class DataHandler
     {
         /// <summary>
         /// Method that takes 2 arrays of the same size and type and checks if they have the same data.
@@ -15,16 +15,19 @@ namespace StatsCompanion
         /// <returns>true if they're equal, otherwise false.</returns>
         public static bool AreArraysEqual(byte[] arr1, byte[] arr2)
         {
-            bool equal = true;
+            bool equal = false;
+            
+            if (arr1.Length != arr2.Length) return equal;
+            
             for (int i = 0; i < arr1.Length; i++)
             {
-                // TODO: optimize length check before the loop
-                if (arr1.Length != arr2.Length || arr1[i] != arr2[i])
+                if (arr1[i] != arr2[i])
                 {
-                    equal = false;
                     return equal;
                 }
             }
+            
+            equal = true;
             return equal;
         }
 
@@ -44,13 +47,13 @@ namespace StatsCompanion
             }
             return result;
         }
-        
+
         /// <summary>
         /// Method that checks if the Tzen Thief reward was bought.
         /// </summary>
-        /// <param name="currentGP">The current amount of GP.</param>
-        /// <param name="currentGPprevious">The previous amount of GP.</param>
-        /// <param name="dialogIndex">The dialog index.</param>
+        /// <param name="esperCount">Number of espers owned when entering Tzen Thief area.</param>
+        /// <param name="esperCountPrevious">Number of espers owned when exiting Tzen Thief area.</param>
+        /// <param name="tzenThiefBit">Event bit that indicates if Tzen Thief was bought.</param>
         /// <returns></returns>
         public static string CheckTzenThiefBought(byte esperCount, byte esperCountPrevious, bool tzenThiefBit)
         {
@@ -75,6 +78,9 @@ namespace StatsCompanion
         /// <returns></returns>
         public static string PeekTzenThiefRewardWob (byte dialogWaitingForInput, byte dialogPointer, byte dialogChoiceSelected)
         {
+            // TODO: get rid of underscores and replace characters in JSON instead.
+            // Use variables instead of magic numbers.
+            // Get rid of strings in the logic.
             string tzenThiefRewardWob = "Did_not_check";
             if (dialogWaitingForInput != 0)
             {
@@ -97,6 +103,9 @@ namespace StatsCompanion
         /// <returns></returns>
         public static string PeekTzenThiefRewardWor(int dialogIndex)
         {
+            // TODO: get rid of underscores and replace characters in JSON instead.
+            // Use variables instead of magic numbers.
+            // Get rid of strings in the logic.
             string tzenThiefRewardWor = "Did_not_check";
             
             if (dialogIndex == 1570)
@@ -132,6 +141,7 @@ namespace StatsCompanion
             {
                 characterCommands[i] = characterData[i * 37 + 23];
             }
+            
             // Manually get Gau's 1st command.
             characterCommands[12] = characterData[11 * 37 + 22];
             return characterCommands;
@@ -144,22 +154,25 @@ namespace StatsCompanion
         /// <returns>A list with the available characters.</returns>
         public static List<string> GetAvailableCharacters(byte[] charactersBytes)
         {
-            var startingCharacters = new List<string>();
+            var availableCharacters = new List<string>();
+            
             for (int i = 0; i < 8; i++) // First byte check.
             {
                 if (CheckBitSet(charactersBytes[0], WCData.BitFlags[i]))
                 {
-                    startingCharacters.Add(WCData.CharacterNames[i]);
+                    availableCharacters.Add(WCData.CharacterNames[i]);
                 }
             }
+            
             for (int i = 0; i < 6; i++) // Second byte check.
             {
                 if (CheckBitSet(charactersBytes[1], WCData.BitFlags[i]))
                 {
-                    startingCharacters.Add(WCData.CharacterNames[i + 8]);
+                    availableCharacters.Add(WCData.CharacterNames[i + 8]);
                 }
             }
-            return startingCharacters;
+            
+            return availableCharacters;
         }
 
         /// <summary>
@@ -170,41 +183,45 @@ namespace StatsCompanion
         /// <returns>A list with the available commands.</returns>
         public static List<string> GetAvailableCommands(byte[] charactersBytes, byte[] characterCommands)
         {
-            var startingCommands = new List<string>();
+            // TODO: DITCH THIS CODE!
+            // Starting characters are already listed! No need to check the bits again.
+            // Use run.StartingCharacters instead!
+            
+            var availableCommands = new List<string>();
+            
             for (int i = 0; i < 8; i++) // First byte check.
             {
                 if (CheckBitSet(charactersBytes[0], WCData.BitFlags[i]))
                 {
                     string command = WCData.CommandDict[characterCommands[i]];
-                    if (!startingCommands.Contains(command))
+                    if (!availableCommands.Contains(command))
                     {
-                        string commandReplaced = Arguments.ReplaceCharacters(command);
-                        startingCommands.Add(commandReplaced);
+                        availableCommands.Add(command);
                     }
                 }
             }
+            
             for (int i = 0; i < 4; i++) // Second byte check. Skip Gogo and Umaro (they don't have commands).
             {
                 if (CheckBitSet(charactersBytes[1], WCData.BitFlags[i]))
                 {
                     string command = WCData.CommandDict[characterCommands[i + 8]];
-                    if (!startingCommands.Contains(command))
+                    if (!availableCommands.Contains(command))
                     {
-                        string commandReplaced = Arguments.ReplaceCharacters(command);
-                        startingCommands.Add(commandReplaced);
+                        availableCommands.Add(command);
                     }
                 }
             }
+            
             if (CheckBitSet(charactersBytes[1], WCData.BitFlags[3])) // If Gau is in the party, get his 2nd command.
             {
                 string command = WCData.CommandDict[characterCommands[12]];
-                if (!startingCommands.Contains(command))
+                if (!availableCommands.Contains(command))
                 {
-                    string commandReplaced = Arguments.ReplaceCharacters(command);
-                    startingCommands.Add(commandReplaced);
+                    availableCommands.Add(command);
                 }
             }
-            return startingCommands;
+            return availableCommands;
         }
 
         /// <summary>
@@ -215,19 +232,21 @@ namespace StatsCompanion
         public static List<string> GetDragonsKilled(byte[] dragonsBytes)
         {
             var dragonsKilled = new List<string>();
+            
             for (int i = 0; i < 6; i++)
             {
                 if (CheckBitSet(dragonsBytes[0], WCData.DragonFlags1[i]))
                 {
-                    string dragon = Arguments.ReplaceCharacters(WCData.DragonDict[WCData.DragonFlags1[i]]);
+                    string dragon = WCData.DragonDict[WCData.DragonFlags1[i]];
                     dragonsKilled.Add(dragon);
                 }
             }
+            
             for (int i = 0; i < 2; i++)
             {
                 if (CheckBitSet(dragonsBytes[1], WCData.DragonFlags2[i]))
                 {
-                    string dragon = Arguments.ReplaceCharacters(WCData.DragonDict[WCData.DragonFlags2[i]]);
+                    string dragon = WCData.DragonDict[WCData.DragonFlags2[i]];
                     dragonsKilled.Add(dragon);
                 }
             }
@@ -242,10 +261,12 @@ namespace StatsCompanion
         public static int GetChestCount(byte[] chestData)
         {
             int chestCount = 0;
+            
             for (int i = 0; i < chestData.Length; i++)
             {
                 chestCount += CountSetBits(chestData[i]);
             }
+           
             return chestCount;
         }
 
@@ -257,13 +278,16 @@ namespace StatsCompanion
         public static byte GetMaximumCharacterLevel(byte[] characterData)
         {
             byte characterMaxLevel = 0;
+            
             for (int i = 0; i < 14; i++)
             {
-                if (characterData[i * 37 + 8] > characterMaxLevel)
+                byte characterLevel = characterData[i * 37 + 8];
+                if (characterLevel > characterMaxLevel)
                 {
-                    characterMaxLevel = characterData[i * 37 + 8];
+                    characterMaxLevel = characterLevel;
                 }
             }
+            
             return characterMaxLevel;
         }
 
@@ -276,6 +300,7 @@ namespace StatsCompanion
         public static bool CheckIfItemExistsInInventory(byte[] inventoryData, byte itemValue)
         {
             bool itemExists = false;
+            
             for (int i = 0; i < WCData.InventorySize; i++)
             {
                 if (inventoryData[i] == itemValue)
@@ -284,6 +309,7 @@ namespace StatsCompanion
                     break;
                 }
             }
+            
             return itemExists;
         }
 
@@ -291,15 +317,17 @@ namespace StatsCompanion
         /// Method that takes a byte and a flag and checks if the bit is set.
         /// </summary>
         /// <param name="data">The byte to check.</param>
-        /// <param name="flag">The flag to use.</param>
+        /// <param name="flag">The bit flag to use.</param>
         /// <returns>true if the bit is set, otherwise false.</returns>
         public static bool CheckBitSet(int data, int flag)
         {
             bool isSet = false;
+            
             if ((data & flag) != 0)
             {
                 isSet = true;
             }
+            
             return isSet;
         }
 
@@ -312,10 +340,12 @@ namespace StatsCompanion
         public static bool CheckBitByOffset(byte data, int offset)
         {
             bool isSet = false;
+            
             if ((data & WCData.BitFlags[offset % 8]) != 0)
             {
                 isSet = true;
             }
+            
             return isSet;
         }
 

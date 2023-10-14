@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace StatsCompanion
+namespace FF6WCToolsLib
 {
     /// <summary>
     /// A class holding information about Final Fantasy 6: Worlds Collide.
     /// </summary>
-    internal static class WCData
+    public static class WCData
     {
         public const string BattleKey = "battle";
         public const string MenuKey = "menu";
@@ -211,22 +211,22 @@ namespace StatsCompanion
         public const uint CharacterDataStart = 0x7E1600;
         
         /// <summary>
-        /// Size of the memory area that contains character data. 14 characters, 37 bytes each: 518 bytes total.
+        /// Size in bytes of the memory area that contains character data.
         /// </summary>
         public const int CharacterDataSize = 519;
 
         /// <summary>
-        /// Address that contains the start of the inventory. Size: 255 bytes.
+        /// Address that contains the start of the inventory.
         /// </summary>
         public const uint InventoryStart = 0x7E1869;
 
         /// <summary>
-        /// Address that contains the start of the inventory item count. Size: 255 bytes.
+        /// Address that contains the start of the inventory item count.
         /// </summary>
         public const uint InventoryCountStart = 0x7E1969;
         
         /// <summary>
-        /// Size of the inventory in memory.
+        /// Size in bytes of the inventory in memory.
         /// </summary>
         public const byte InventorySize = 255;
         
@@ -240,7 +240,7 @@ namespace StatsCompanion
         /// <summary>
         /// Array that contains the flags for each bit.
         /// </summary>
-        static public readonly byte[] BitFlags = new byte[] { 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80 };
+        public static readonly byte[] BitFlags = new byte[] { 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80 };
 
         /// <summary>
         /// Memory address that contains which dragon has been killed.
@@ -249,13 +249,13 @@ namespace StatsCompanion
         public const uint DragonsByte = 0x7E1EA3;
 
         // Dragon flags.
-        static public readonly byte[] DragonFlags1 = new byte[] { 0x04, 0x08, 0x10, 0x20, 0x40, 0x80 };
-        static public readonly byte[] DragonFlags2 = new byte[] { 0x01, 0x02 };
+        public static readonly byte[] DragonFlags1 = new byte[] { 0x04, 0x08, 0x10, 0x20, 0x40, 0x80 };
+        public static readonly byte[] DragonFlags2 = new byte[] { 0x01, 0x02 };
         
         /// <summary>
         /// Array that contains an ordered list of the characters for ease of indexing.
         /// </summary>
-        static public readonly string[] CharacterNames = new string[] {
+        public static readonly string[] CharacterNames = new string[] {
             "Terra",
             "Locke",
             "Cyan",
@@ -272,19 +272,19 @@ namespace StatsCompanion
             "Umaro"
         };
 
-        static public readonly TimeSpan TimeFromKefkaFlashToAnimation = new(0, 0, 0, 4, 967); // 298 frames at 60FPS.
-        static public readonly TimeSpan TimeFromSwitchesToKefkaLair = new(0, 0, 0, 13, 50); // 783 frames at 60FPS.
+        public static readonly TimeSpan TimeFromKefkaFlashToAnimation = new(0, 0, 0, 4, 967); // 298 frames at 60FPS.
+        public static readonly TimeSpan TimeFromSwitchesToKefkaLair = new(0, 0, 0, 13, 50); // 783 frames at 60FPS.
         
         // These are used to avoid false positives with frame counters stopping and resuming too fast.
-        static public readonly TimeSpan TimeBattleFalsePositives = new(0, 0, 3);
-        static public readonly TimeSpan TimeBattleFormationFalsePositives = new(0, 0, 2);
-        //static public readonly TimeSpan TimeMenuFalsePositives = new(0, 0, 0, 0, 500);
+        public static readonly TimeSpan TimeBattleFalsePositives = new(0, 0, 3);
+        public static readonly TimeSpan TimeBattleFormationFalsePositives = new(0, 0, 2);
+        //public static readonly TimeSpan TimeMenuFalsePositives = new(0, 0, 0, 0, 500);
 
-        static public readonly TimeSpan TimeFromFadeToBattle = new(0, 0, 0, 0, 617);
-        static public readonly TimeSpan TimeFromMenuToOverworld = new(0, 0, 0, 0, 750);
-        static public readonly TimeSpan TimeFromBattleToOverworld = new(0, 0, 0, 2, 500);
+        public static readonly TimeSpan TimeFromFadeToBattle = new(0, 0, 0, 0, 617);
+        public static readonly TimeSpan TimeFromMenuToOverworld = new(0, 0, 0, 0, 750);
+        public static readonly TimeSpan TimeFromBattleToOverworld = new(0, 0, 0, 2, 500);
 
-        static public readonly TimeSpan TimeZero = new(0);
+        public static readonly TimeSpan TimeZero = new(0);
 
 
         /// <summary>

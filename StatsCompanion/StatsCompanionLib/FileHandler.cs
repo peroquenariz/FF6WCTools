@@ -5,13 +5,20 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text.Json;
 
-namespace StatsCompanion
+namespace StatsCompanionLib
 {
     /// <summary>
     /// Handles all file operations.
     /// </summary>
-    internal class FileHandler
+    public class FileHandler
     {
+        public event EventHandler? OnSeedDirectoryNotFound;
+        public event EventHandler? OnSeedDirectoryInvalid;
+        public event EventHandler? OnSeedNotFound;
+
+        public event EventHandler<SeedInfoFoundEventArgs>? OnSeedInfoFound;
+        public event EventHandler<SeedInfoNotFoundEventArgs>? OnSeedInfoNotFound;
+
         private const string JSON_TIMESTAMP_FORMAT = "yyyy_MM_dd - HH_mm_ss";
 
         private readonly TimeSpan _refreshInterval = new(0,0,2);
@@ -28,13 +35,13 @@ namespace StatsCompanion
             "standard_",
             "chaos_",
             "true_chaos_",
-            "blamethebot"
+            "blamethebot",
         };
         private readonly List<string> _seedInfoLines = new(){
             "Version",
             "Generated",
             "Seed",
-            "Hash"
+            "Hash",
         };
         private readonly List<string> _directoryList;
         
@@ -94,7 +101,7 @@ namespace StatsCompanion
         /// </summary>
         /// <param name="runArguments">The run data.</param>
         /// <returns>A formatted JSON string, ready to write to a file.</returns>
-        public string SerializeJson(Arguments runArguments)
+        public string SerializeJson(RunJson runArguments)
         {
             string serializedJson = JsonSerializer.Serialize(runArguments, _jsonOptions);
             return serializedJson;
@@ -114,12 +121,12 @@ namespace StatsCompanion
 
             if (_seedDirectory.Length == 0)
             {
-                if (writeSeedInfo) Log.NoSeedDirectory();
+                if (writeSeedInfo) OnSeedDirectoryNotFound?.Invoke(this, EventArgs.Empty);
                 return false;
             }
             if (!Directory.Exists(_seedDirectory))
             {
-                if (writeSeedInfo) Log.InvalidSeedDirectory();
+                if (writeSeedInfo) OnSeedDirectoryInvalid?.Invoke(this, EventArgs.Empty);
                 return false;
             }
 
@@ -129,7 +136,7 @@ namespace StatsCompanion
 
             if (files.Length == 0)
             {
-                if (writeSeedInfo) Log.NoSeedsFound();
+                if (writeSeedInfo) OnSeedNotFound?.Invoke(this, EventArgs.Empty);
                 _lastLoadedSeed = "";
                 return true;
             }
@@ -151,7 +158,7 @@ namespace StatsCompanion
 
             if (!seedFound)
             {
-                if (writeSeedInfo) Log.NoSeedsFound();
+                if (writeSeedInfo) OnSeedNotFound?.Invoke(this, EventArgs.Empty);
                 _lastLoadedSeed = "";
                 return true;
             }
@@ -167,8 +174,6 @@ namespace StatsCompanion
                 {
                     ZipArchive seedZip = ZipFile.OpenRead(lastCreatedFile.FullName);
                     // Compare replacing underscores with spaces
-                    // Thanks Seedbot :)
-                    // Nvm, it's Discord's fault lmao
                     foreach (var entry in seedZip.Entries)
                     {
                         string filenameNoSpaces = (filenameWithoutExtension + ".txt").Replace("_", " ");
@@ -188,7 +193,7 @@ namespace StatsCompanion
                         {
                             ReadSeedTextFile(seedTextStream, seedInfo);
                         }
-                        if (writeSeedInfo) Log.SeedInformation(filenameWithoutExtension, seedInfo, _seedInfoLines);
+                        if (writeSeedInfo) OnSeedInfoFound?.Invoke(this, new SeedInfoFoundEventArgs(filenameWithoutExtension, seedInfo, _seedInfoLines));
                     }
 
                     seedZip.Dispose();
@@ -199,7 +204,7 @@ namespace StatsCompanion
                     {
                         ReadSeedTextFile(seedTextStream, seedInfo);
                     }
-                    if (writeSeedInfo) Log.SeedInformation(filenameWithoutExtension, seedInfo, _seedInfoLines);
+                    if (writeSeedInfo) OnSeedInfoFound?.Invoke(this, new SeedInfoFoundEventArgs(filenameWithoutExtension, seedInfo, _seedInfoLines));
                 }
                 else if (lastCreatedFile.Extension == ".smc")
                 {
@@ -211,11 +216,11 @@ namespace StatsCompanion
                         {
                             ReadSeedTextFile(seedTextStream, seedInfo);
                         }
-                        if (writeSeedInfo) Log.SeedInformation(filenameWithoutExtension, seedInfo, _seedInfoLines);
+                        if (writeSeedInfo) OnSeedInfoFound?.Invoke(this, new SeedInfoFoundEventArgs(filenameWithoutExtension, seedInfo, _seedInfoLines));
                     }
                     else
                     {
-                        if (writeSeedInfo) Log.NoMatchingSeedInfoFound(lastCreatedFile.Name);
+                        if (writeSeedInfo) OnSeedInfoNotFound?.Invoke(this, new SeedInfoNotFoundEventArgs(lastCreatedFile.Name));
                         _lastLoadedSeed = "";
                     }
                 }
@@ -238,7 +243,7 @@ namespace StatsCompanion
             _lastLoadedSeed = "";
         }
 
-        public void WriteJSONFile(DateTime endTime, Arguments runArguments)
+        public void WriteJSONFile(DateTime endTime, RunJson runArguments)
         {
             // Serialize the JSON.
             string jsonRunData = SerializeJson(runArguments);
@@ -259,6 +264,30 @@ namespace StatsCompanion
             WriteStringToFile(crashlogPath, crashlog);
 
             return crashlogPath;
+        }
+    }
+
+    public class SeedInfoFoundEventArgs
+    {
+        public string Filename { get; }
+        public string[] SeedInfo { get; }
+        public List<string> SeedInfoLines { get; }
+        
+        public SeedInfoFoundEventArgs(string filename, string[] seedInfo, List<string> seedInfoLines)
+        {
+            Filename = filename;
+            SeedInfo = seedInfo;
+            SeedInfoLines = seedInfoLines;
+        }
+    }
+
+    public class SeedInfoNotFoundEventArgs
+    {
+        public string Filename { get; }
+
+        public SeedInfoNotFoundEventArgs (string filename)
+        {
+            Filename = filename;
         }
     }
 }

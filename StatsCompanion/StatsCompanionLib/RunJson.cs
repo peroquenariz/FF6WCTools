@@ -1,12 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using FF6WCToolsLib;
 
-namespace StatsCompanion
+namespace StatsCompanionLib
 {
     /// <summary>
     /// Handles the final JSON export.
     /// </summary>
-    internal class Arguments
+    public class RunJson
     {
         public string appVersion { get; set; }
         public string filename { get; set; }
@@ -68,7 +69,7 @@ namespace StatsCompanion
         private const string TIME_FORMAT_PRECISE = "hh\\:mm\\:ss\\.fff";
         private const string DATE_FORMAT = "yyyy-MM-ddTHH:mm:ss";
 
-        public Arguments(Run run, string appVersion, string seedFilename)
+        public RunJson(Run run, string appVersion, string seedFilename)
         {
             this.appVersion = appVersion;
             filename = seedFilename;
@@ -82,7 +83,7 @@ namespace StatsCompanion
             kefkaTime = (run.KefkaStartTime - run.StartTime).ToString(@TIME_FORMAT);
             userId = "";
             chars = run.StartingCharacters;
-            abilities = run.StartingCommands;
+            abilities = ReplaceCharactersInList(run.StartingCommands);
             disableAbilityCheck = false;
             numOfChars = run.CharacterCount;
             numOfEspers = run.EsperCount;
@@ -93,7 +94,7 @@ namespace StatsCompanion
             kefkaTowerUnlockTime = (run.KefkaTowerUnlockTime - run.StartTime).ToString(@TIME_FORMAT);
             skip = run.IsKTSkipUnlocked;
             ktSkipUnlockTime = run.KtSkipUnlockTimeString;
-            dragons = run.DragonsKilled;
+            dragons = ReplaceCharactersInList(run.DragonsKilled);
             finalBattle = run.FinalBattlePrep;
             highestLevel = run.CharacterMaxLevel;
             superBalls = run.HasSuperBall;
@@ -126,7 +127,7 @@ namespace StatsCompanion
             seed = null;
             seedRaw = null;
             flagsetRaw = null;
-            GetSeedInfo(run.seedInfo);
+            GetSeedInfo(run.SeedInfo);
         }
 
         /// <summary>
@@ -200,14 +201,34 @@ namespace StatsCompanion
 
         /// <summary>
         /// Replaces characters from a given string.
+        /// StatsCollide requires that all spaces are replaced by underscores,
+        /// and " - " are replaced by double underscores.
         /// </summary>
         /// <param name="input">The string to replace.</param>
         /// <returns>a string with replaced characters.</returns>
-        public static string ReplaceCharacters (string input)
+        private string ReplaceCharacters (string input)
         {
             string output;
             output = input.Replace(" - ", "__").Replace(" ", "_");
             return output;
+        }
+
+        /// <summary>
+        /// Takes a list of strings and replaces the corresponding characters.
+        /// Required for submitting JSONs to StatsCollide.
+        /// </summary>
+        /// <param name="inputList"></param>
+        /// <returns></returns>
+        private List<string> ReplaceCharactersInList (List<string> inputList)
+        {
+            List<string> replacedList = new List<string>();
+
+            foreach (string item in inputList)
+            {
+                replacedList.Add(ReplaceCharacters(item));
+            }
+
+            return replacedList;
         }
     }
 }

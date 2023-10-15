@@ -17,8 +17,8 @@ internal class Log
     private readonly string? _appVersion;
     private readonly string? _libVersion;
 
-    public static int cursorTopPosition;
-    
+    public static int cursorTopPosition; // TODO: make it private, and link cursor change to an event
+
     public Log(string? appVersion, string? libVersion, SniClient sniClient, FileHandler fileHandler)
     {
         Console.CursorVisible = false;
@@ -111,7 +111,7 @@ internal class Log
         Console.CursorLeft = 0;
         Console.CursorTop = 8;
         Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.Write($"No seeds found in the seed directory.".PadRight(RightPadding));
+        Console.Write($"No seeds found in the seed directory! Make sure your seed is in the correct folder.".PadRight(RightPadding));
         ClearLines(10);
     }
 

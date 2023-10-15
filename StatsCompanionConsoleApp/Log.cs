@@ -51,17 +51,17 @@ internal class Log
 
     private void FileHandler_OnSeedNotFound(object? sender, EventArgs e)
     {
-        throw new NotImplementedException();
+        NoSeedsFound();
     }
 
     private void FileHandler_OnSeedDirectoryInvalid(object? sender, EventArgs e)
     {
-        throw new NotImplementedException();
+        InvalidSeedDirectory();
     }
 
     private void FileHandler_OnSeedDirectoryNotFound(object? sender, EventArgs e)
     {
-        throw new NotImplementedException();
+        NoSeedDirectory();
     }
 
     private void SniClient_OnConnectionSuccessful(object? sender, ConnectionSuccessfulEventArgs e)

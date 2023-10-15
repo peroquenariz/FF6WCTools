@@ -1,17 +1,18 @@
 ﻿using System.Reflection;
 
-namespace StatsCompanionLib
+namespace StatsCompanionLib;
+
+/// <summary>
+/// Stats Companion core.
+/// </summary>
+public class StatsCompanion
 {
+    private readonly string? _libVersion;
 
-    public static class StatsCompanion
+    public string? LibVersion { get => _libVersion; }
+
+    public StatsCompanion()
     {
-        private static readonly string _libVersion = Assembly.GetExecutingAssembly().GetName().Version!.ToString();
-
-        public static string LibVersion { get => _libVersion; }
-
-        //public StatsCompanion()
-        //{
-        //    _libVersion = Assembly.GetEntryAssembly()!.GetName().Version!.ToString();
-        //}
+        _libVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
     }
 }

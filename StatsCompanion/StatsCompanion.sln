@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.33414.496
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StatsCompanion", "StatsCompanion\StatsCompanion.csproj", "{D3848DEB-3ADB-4751-829D-3B621E07EC0E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StatsCompanionConsoleApp", "StatsCompanion\StatsCompanionConsoleApp.csproj", "{D3848DEB-3ADB-4751-829D-3B621E07EC0E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FF6WCToolsLib", "FF6WCToolsLib\FF6WCToolsLib.csproj", "{7495C1D0-7AD6-42AE-ADC3-83BCCAA2015E}"
 EndProject

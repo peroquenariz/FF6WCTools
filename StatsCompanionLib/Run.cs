@@ -147,7 +147,7 @@ public class Run
         _isReset = false;
         _ktSkipUnlockTimeString = "";
         _battleFormation = "";
-        _tzenThiefPeekWob = "Did_not_check";
+        _tzenThiefPeekWob = "Did_not_check"; // TODO: replace all these underscores in the JSON
         _tzenThiefPeekWor = "Did_not_check";
         _tzenThiefBought = "";
         _tzenThief = "Did_not_check";
@@ -156,19 +156,19 @@ public class Run
         _auctionHouseEsperCount = 0;
         _auctionHouseEsperCountText = "Zero";
         _gameStatus = "field";
-        _startingCharacters = new();
-        _startingCommands = new();
-        _dragonsKilled = new();
-        _checksCompleted = new();
-        _checksPeeked = new();
-        _eventBitsPeeked = new();
-        _mapsVisited = new();
-        _routeJson = new();
-        _route = new();
-        _knownBlitzes = new();
-        _knownLores = new();
-        _knownSwdTechs = new();
-        _finalBattlePrep = new();
+        _startingCharacters = new List<string>();
+        _startingCommands = new List<string>();
+        _dragonsKilled = new List<string>();
+        _checksCompleted = new List<string>();
+        _checksPeeked = new List<string>();
+        _eventBitsPeeked = new List<string>();
+        _mapsVisited = new List<int>();
+        _routeJson = new List<string>();
+        _route = new List<(string, string)>();
+        _knownBlitzes = new List<string>();
+        _knownLores = new List<string>();
+        _knownSwdTechs = new List<string>();
+        _finalBattlePrep = new List<string>();
         _inventory = Array.Empty<byte>();
         _charactersBytes = Array.Empty<byte>();
         _characterData = Array.Empty<byte>();
@@ -349,7 +349,7 @@ public class Run
         }
         else
         {
-            if (GameStatus != WCData.BattleKey || HasFinished == true)
+            if (GameStatus != WCData.BattleKey || HasFinished)
             {
                 BattleEnd = DateTime.Now;
                 MonsterBytesPrevious = Array.Empty<byte>();
@@ -479,7 +479,7 @@ public class Run
         if (HasExpEgg == "No")
         {
             bool expEgg = DataHandler.CheckIfItemExistsInInventory(Inventory, 228);
-            if (expEgg == true)
+            if (expEgg)
             {
                 HasExpEgg = "Yes";
             }
@@ -488,7 +488,7 @@ public class Run
         if (HasSuperBall == "No")
         {
             bool superBall = DataHandler.CheckIfItemExistsInInventory(Inventory, 250);
-            if (superBall == true)
+            if (superBall)
             {
                 HasSuperBall = "Yes";
             }
@@ -497,10 +497,10 @@ public class Run
 
     public void CheckKefkaTowerUnlock()
     {
-        if (IsKefkaTowerUnlocked == false)
+        if (!IsKefkaTowerUnlocked)
         {
             IsKefkaTowerUnlocked = DataHandler.CheckBitByOffset(KefkaTowerEventByte, 0x094);
-            if (IsKefkaTowerUnlocked == true)
+            if (IsKefkaTowerUnlocked)
             {
                 KefkaTowerUnlockTime = DateTime.Now;
             }
@@ -509,10 +509,10 @@ public class Run
 
     public void CheckKTSkipUnlock()
     {
-        if (IsKTSkipUnlocked == false)
+        if (!IsKTSkipUnlocked)
         {
             IsKTSkipUnlocked = DataHandler.CheckBitByOffset(KefkaTowerEventByte, 0x093);
-            if (IsKTSkipUnlocked == true)
+            if (IsKTSkipUnlocked)
             {
                 KtSkipUnlockTime = DateTime.Now;
             }
@@ -521,7 +521,7 @@ public class Run
 
     public void CheckKefkaTowerStart()
     {
-        if ((MapId == 0x14E || MapId == 0x163) && IsKefkaTowerUnlocked == true && IsKefkaTowerStarted == false)
+        if ((MapId == 0x14E || MapId == 0x163) && IsKefkaTowerUnlocked  && !IsKefkaTowerStarted)
         {
             KefkaTowerStartTime = DateTime.Now;
             IsKefkaTowerStarted = true;
@@ -534,7 +534,7 @@ public class Run
         {
             byte checkByte = EventBitData[item.Value / 8];
             bool checkDone = DataHandler.CheckBitByOffset(checkByte, item.Value);
-            if (checkDone == true)
+            if (checkDone)
             {
                 ChecksCompleted.Add(WCData.CheckNamesDict[item.Key]);
             }
@@ -562,15 +562,15 @@ public class Run
         }
 
         // Multiple condition peeks. Check manually for each.
-        if (!ChecksCompleted.Contains("South Figaro Prisoner") && IsSouthFigaroBasementPeeked == true)
+        if (!ChecksCompleted.Contains("South Figaro Prisoner") && IsSouthFigaroBasementPeeked)
         {
             ChecksPeeked.Add("South Figaro Prisoner");
         }
-        if (!ChecksCompleted.Contains("Esper Mountain") && IsEsperMountainPeeked == true)
+        if (!ChecksCompleted.Contains("Esper Mountain") && IsEsperMountainPeeked)
         {
             ChecksPeeked.Add("Esper Mountain");
         }
-        if (!ChecksCompleted.Contains("Whelk Gate") && IsWhelkPeeked == true)
+        if (!ChecksCompleted.Contains("Whelk Gate") && IsWhelkPeeked)
         {
             ChecksPeeked.Add("Whelk Gate");
         }
@@ -588,7 +588,7 @@ public class Run
             {
                 byte eventByte = EventBitData[item.Key / 8];
                 bool eventBit = DataHandler.CheckBitByOffset(eventByte, item.Key);
-                if (eventBit == true)
+                if (eventBit)
                 {
                     EventBitsPeeked.Add(item.Value);
                 }
@@ -640,11 +640,11 @@ public class Run
 
     public void CheckColiseumVisit()
     {
-        if (WonColiseumMatch == true && MapsVisited.Contains(0x19D))
+        if (WonColiseumMatch  && MapsVisited.Contains(0x19D))
         {
             ColiseumVisit = "Visited_and_fought";
         }
-        else if (WonColiseumMatch == false && MapsVisited.Contains(0x19D))
+        else if (!WonColiseumMatch && MapsVisited.Contains(0x19D))
         {
             ColiseumVisit = "Visited_but_did_not_fight";
         }
@@ -683,22 +683,22 @@ public class Run
         for (int i = 0; i < 4; i++)
         {
             // Get character data.
-            byte[] cData = CharacterData[(FinalBattleLineup[i] * 37)..(FinalBattleLineup[i] * 37 + 37)];
+            byte[] characterData = CharacterData[(FinalBattleLineup[i] * 37)..(FinalBattleLineup[i] * 37 + 37)];
 
             // Get character skill data.
-            byte[] cSkillData;
+            byte[] characterSkillData;
             
             if (FinalBattleLineup[i] < 0x0C)
             {
-                cSkillData = CharacterSkillData[(FinalBattleLineup[i] * 54)..(FinalBattleLineup[i] * 54 + 54)];
+                characterSkillData = CharacterSkillData[(FinalBattleLineup[i] * 54)..(FinalBattleLineup[i] * 54 + 54)];
             }
             else
             {
                 // If character is Gogo or Umaro, create an empty array.
-                cSkillData = Array.Empty<byte>();
+                characterSkillData = Array.Empty<byte>();
             }
             string name = WCData.CharacterNames[FinalBattleLineup[i]];
-            FinalBattleCharacters[i] = new Character(cData, cSkillData, name);
+            FinalBattleCharacters[i] = new Character(characterData, characterSkillData, name);
         }
     }
 
@@ -708,7 +708,7 @@ public class Run
         for (byte i = 0; i < 8; i++)
         {
             bool isSwdTechKnown = DataHandler.CheckBitSet(swdTechData, WCData.BitFlags[i]);
-            if (isSwdTechKnown == true)
+            if (isSwdTechKnown)
             {
                 KnownSwdTechs.Add(WCData.SwdTechDict[i]);
             }
@@ -721,7 +721,7 @@ public class Run
         for (byte i = 0; i < 8; i++)
         {
             bool isBlitzKnown = DataHandler.CheckBitSet(blitzData, WCData.BitFlags[i]);
-            if (isBlitzKnown == true)
+            if (isBlitzKnown)
             {
                 KnownBlitzes.Add(WCData.BlitzDict[i]);
             }
@@ -734,7 +734,7 @@ public class Run
         for (byte i = 0; i < 24; i++)
         {
             bool isLoreKnown = DataHandler.CheckBitSet(loreData, WCData.BitFlags[i%8] << 8*(i/8));
-            if (isLoreKnown == true)
+            if (isLoreKnown)
             {
                 KnownLores.Add(WCData.LoreDict[i]);
             }
@@ -762,7 +762,7 @@ public class Run
             if (character.Spells.Contains("X-Zone") || character.Spells.Contains("Doom") ||
                 character.Esper == "Raiden" || character.Esper == "Odin" ||
                (character.Commands.Contains("SwdTech") && KnownSwdTechs.Contains("Cleave")) ||
-               (character.Commands.Contains("Tools") && DataHandler.CheckIfItemExistsInInventory(Inventory, 169) == true))
+               (character.Commands.Contains("Tools") && DataHandler.CheckIfItemExistsInInventory(Inventory, 169)))
             {
                 FinalBattlePrep.Add("Instant_Death"); // TODO: replace characters in RunJson
                 return;

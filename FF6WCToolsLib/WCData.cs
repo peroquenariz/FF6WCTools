@@ -290,27 +290,27 @@ public static class WCData
     /// <summary>
     /// List containing the maps that are used to determine if the airship is being flown.
     /// </summary>
-    public static readonly List<int> AirshipMapIds = new() { 0x000, 0x001, 0x006, 0x00B, 0x00A, 0x011 };
+    public static readonly List<int> AirshipMapIds = new List<int>() { 0x000, 0x001, 0x006, 0x00B, 0x00A, 0x011 };
 
     /// <summary>
     /// List containing the overworld maps.
     /// </summary>
-    public static readonly List<int> OverworldMapIds = new() { 0x000, 0x001 };
+    public static readonly List<int> OverworldMapIds = new List<int>() { 0x000, 0x001 };
 
     /// <summary>
     /// List containing the airship deck maps.
     /// </summary>
-    public static readonly List<int> AirshipDeckMapIds = new() { 0x006, 0x00B, 0x00A, 0x011 };
+    public static readonly List<int> AirshipDeckMapIds = new List<int>() { 0x006, 0x00B, 0x00A, 0x011 };
 
     /// <summary>
     /// List with maps that are excluded in the airship check.
     /// </summary>
-    public static readonly List<int> AirshipFalsePositives = new() { 0x161, 0x0BB, 0x046, 0x195 };
+    public static readonly List<int> AirshipFalsePositives = new List<int>() { 0x161, 0x0BB, 0x046, 0x195 };
 
     /// <summary>
     /// Dictionary holding the bit offsets of every check event.
     /// </summary>
-    public static readonly Dictionary<string, int> EventBitDict = new()
+    public static readonly Dictionary<string, int> EventBitDict = new Dictionary<string, int>()
     {
         {"GOT_RAIDEN", 0x2dd},
         {"AUCTION_BOUGHT_ESPER1", 0x16c},
@@ -371,7 +371,7 @@ public static class WCData
     /// <summary>
     /// Dictionary holding the names of each event bit.
     /// </summary>
-    public static readonly Dictionary<string, string> CheckNamesDict = new()
+    public static readonly Dictionary<string, string> CheckNamesDict = new Dictionary<string, string>()
     {
         {"GOT_RAIDEN", "Ancient Castle"},
         {"DEFEATED_ANCIENT_CASTLE_DRAGON", "Ancient Castle Dragon"},
@@ -440,7 +440,7 @@ public static class WCData
     /// <summary>
     /// Dictionary holding the bytes for each dragon.
     /// </summary>
-    public static readonly Dictionary<byte, string> DragonDict = new() {
+    public static readonly Dictionary<byte, string> DragonDict = new Dictionary<byte, string>() {
         [0x04] = "Narshe",
         [0x08] = "Mt Zozo",
         [0x10] = "Opera House",
@@ -454,7 +454,7 @@ public static class WCData
     /// <summary>
     /// Dictionary holding the map names for each value.
     /// </summary>
-    public static readonly Dictionary<uint, string> MapsDict = new()
+    public static readonly Dictionary<uint, string> MapsDict = new Dictionary<uint, string>()
     {
         {0x000, "World of Balance, World Map"},
         {0x001, "World of Ruin, World Map"},
@@ -876,7 +876,7 @@ public static class WCData
     /// <summary>
     /// A dictionary holding the check peeks that are determined by map ID.
     /// </summary>
-    public static readonly Dictionary<int, string> PeeksByMapId = new()
+    public static readonly Dictionary<int, string> PeeksByMapId = new Dictionary<int, string>()
     {
         {0x198, "Ancient Castle"},
         {0x09C, "Baren Falls"},
@@ -917,7 +917,7 @@ public static class WCData
     /// <summary>
     /// A dictionary holding the check peeks that are determined by event bits.
     /// </summary>
-    public static readonly Dictionary<int, string> PeeksByEventBit = new()
+    public static readonly Dictionary<int, string> PeeksByEventBit = new Dictionary<int, string>()
     {
         {0x27d, "Collapsing House"},
         {0x2b6, "Darill's Tomb"},
@@ -929,7 +929,7 @@ public static class WCData
     /// <summary>
     /// A dictionary holding the names for each item value.
     /// </summary>
-    public static readonly Dictionary<byte, string> ItemDict = new()
+    public static readonly Dictionary<byte, string> ItemDict = new Dictionary<byte, string>()
     {
         {0, "Dirk"},
         {1, "MithrilKnife"},
@@ -1192,7 +1192,7 @@ public static class WCData
     /// <summary>
     /// Dictionary holding the index of each spell.
     /// </summary>
-    public static readonly Dictionary<byte, string> SpellDict = new()
+    public static readonly Dictionary<byte, string> SpellDict = new Dictionary<byte, string>()
     {
         {0x00, "Fire"},
         {0x01, "Ice"},
@@ -1253,7 +1253,7 @@ public static class WCData
     /// <summary>
     /// Dictionary holding the index of each SwdTech.
     /// </summary>
-    public static readonly Dictionary<byte, string> SwdTechDict = new()
+    public static readonly Dictionary<byte, string> SwdTechDict = new Dictionary<byte, string>()
     {
         { 0, "Dispatch" },
         { 1, "Retort" },
@@ -1268,7 +1268,7 @@ public static class WCData
     /// <summary>
     /// Dictionary holding the index of each Blitz.
     /// </summary>
-    public static readonly Dictionary<byte, string> BlitzDict = new()
+    public static readonly Dictionary<byte, string> BlitzDict = new Dictionary<byte, string>()
     {
         { 0, "Pummel" },
         { 1, "AuraBolt" },
@@ -1283,7 +1283,7 @@ public static class WCData
     /// <summary>
     /// Dictionary holding the index of each Lore.
     /// </summary>
-    public static readonly Dictionary<byte, string> LoreDict = new()
+    public static readonly Dictionary<byte, string> LoreDict = new Dictionary<byte, string>()
     {
         { 0, "Condemned" },
         { 1, "Roulette" },
@@ -1314,7 +1314,7 @@ public static class WCData
     /// <summary>
     /// Dictionary holding the name for each esper byte.
     /// </summary>
-    public static readonly Dictionary<byte, string> EsperDict = new()
+    public static readonly Dictionary<byte, string> EsperDict = new Dictionary<byte, string>()
     {
         {0x00, "Ramuh"},
         {0x01, "Ifrit"},
@@ -1349,7 +1349,7 @@ public static class WCData
     /// <summary>
     /// Dictionary holding the byte value for each command in memory.
     /// </summary>
-    public static readonly Dictionary<byte, string> CommandDict = new()
+    public static readonly Dictionary<byte, string> CommandDict = new Dictionary<byte, string>()
     {
         [0] = "Fight",
         [1] = "Item",
@@ -1387,7 +1387,7 @@ public static class WCData
     /// <summary>
     /// Dictionary holding the byte value for each letter and symbol.
     /// </summary>
-    public static readonly Dictionary<byte, string> CharDict = new()
+    public static readonly Dictionary<byte, string> CharDict = new Dictionary<byte, string>()
     {
         { 0x80, "A" },
         { 0x81, "B" },
@@ -1476,7 +1476,7 @@ public static class WCData
     /// <summary>
     /// Monster index dictionary.
     /// </summary>
-    public static readonly Dictionary<int, string> MonsterDict = new()
+    public static readonly Dictionary<int, string> MonsterDict = new Dictionary<int, string>()
     {
         {0, "Guard"},
         {1, "Soldier"},
@@ -1867,7 +1867,7 @@ public static class WCData
     /// <summary>
     /// Flagset dictionary.
     /// </summary>
-    public static readonly Dictionary<string, string> FlagsetDict = new()
+    public static readonly Dictionary<string, string> FlagsetDict = new Dictionary<string, string>()
     {
         { "Ultros League - Season 4", "-cg -oa 2.2.2.2.6.6.4.9.9 -ob 3.1.1.2.9.9.4.12.12 -oc 30.8.8.1.1.11.8 -od 59.1.1.11.31 -sc1 random -sc2 random -sc3 random -sal -eu -csrp 80 125 -fst -brl -slr 3 5 -lmprp 75 125 -lel -srr 25 35 -rnl -rnc -sdr 1 2 -das -dda -dns -sch -scis -com 98989898989898989898989898 -rec1 28 -rec2 27 -xpm 3 -mpm 5 -gpm 5 -nxppd -lsced 2 -hmced 2 -xgced 2 -ase 2 -msl 40 -sed -bbs -drloc shuffle -stloc mix -be -bnu -res -fer 0 -escr 100 -dgne -wnz -mmnu -cmd -esr 2 5 -ebr 82 -emprp 75 125 -nm1 random -rnl1 -rns1 -nm2 random -rnl2 -rns2 -nmmi -mmprp 75 125 -gp 5000 -smc 3 -sto 1 -ieor 33 -ieror 33 -csb 3 14 -mca -stra -saw -sisr 20 -sprp 75 125 -sdm 5 -npi -sebr -sesb -ccsr 20 -chrm 0 0 -cms -frw -wmhc -cor 100 -crr 100 -crvr 80 100 -crm -ari -anca -adeh -ame 1 -nmc -noshoes -nu -nfps -fs -fe -fvd -fr -fj -fbs -fedc -fc -ond -rr -etn" },
         { "Ultros League - Season 5", "-cg -oa 2.2.2.2.6.6.4.9.9 -ob 3.1.1.2.9.9.4.12.12.10.21.21 -oc 30.8.8.1.1.11.8 -od 59.1.1.11.31 -sc1 random -sc2 random -sc3 random -sal -eu -csrp 80 125 -fst -brl -slr 3 5 -lmprp 75 125 -lel -srr 25 35 -rnl -rnc -sdr 1 2 -das -dda -dns -sch -scis -com 98989898989898989898989898 -rec1 28 -rec2 27 -xpm 3 -mpm 5 -gpm 5 -nxppd -lsced 2 -hmced 2 -xgced 2 -ase 2 -msl 40 -sed -bbs -drloc shuffle -stloc mix -be -bnu -res -fer 0 -escr 100 -dgne -wnz -mmnu -cmd -esr 2 5 -elrt -ebr 82 -emprp 75 125 -nm1 random -rnl1 -rns1 -nm2 random -rnl2 -rns2 -nmmi -mmprp 75 125 -gp 5000 -smc 3 -sto 1 -ieor 33 -ieror 33 -ir stronger -csb 6 14 -mca -stra -saw -sisr 20 -sprp 75 125 -sdm 5 -npi -sebr -snsb -snee -snil -ccsr 20 -chrm 0 0 -cms -frw -wmhc -cor 100 -crr 100 -crvr 100 120 -crm -ari -anca -adeh -ame 1 -nmc -noshoes -u254 -nfps -fs -fe -fvd -fr -fj -fbs -fedc -fc -ond -etn" },

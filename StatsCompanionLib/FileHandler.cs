@@ -22,7 +22,7 @@ public class FileHandler
     private const string JSON_TIMESTAMP_FORMAT = "yyyy_MM_dd - HH_mm_ss";
 
     private readonly TimeSpan _refreshInterval = new(0,0,2);
-    private readonly JsonSerializerOptions _jsonOptions = new() { WriteIndented = true };
+    private readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions() { WriteIndented = true };
     private readonly string _appDirectory;
     private readonly string _runsDirectory;
     private readonly string _crashlogDirectory;
@@ -37,7 +37,7 @@ public class FileHandler
         "true_chaos_",
         "blamethebot",
     };
-    private readonly List<string> _seedInfoLines = new(){
+    private readonly List<string> _seedInfoLines = new List<string>(){
         "Version",
         "Generated",
         "Seed",
@@ -64,7 +64,7 @@ public class FileHandler
         _crashlogDirectory = $"{_appDirectory}{DirectorySeparator}crashlog";
         _seedDirectory = seedDirectory;
 
-        _directoryList = new() { _runsDirectory, _crashlogDirectory };
+        _directoryList = new List<string>() { _runsDirectory, _crashlogDirectory };
         
         _lastLoadedSeed = "";
         _lastDirectoryRefresh = DateTime.Now;

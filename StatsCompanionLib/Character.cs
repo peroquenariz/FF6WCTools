@@ -45,7 +45,7 @@ public class Character
     {
         _name = name;
         _level = characterData[0x08];
-        _commands = new() {
+        _commands = new List<string>() {
             WCData.CommandDict[characterData[0x16]], 
             WCData.CommandDict[characterData[0x17]],
             WCData.CommandDict[characterData[0x18]], 

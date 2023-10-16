@@ -12,19 +12,33 @@ internal class Program
 {
     static void Main(string[] args)
     {
+        // Initial console clear 
         Console.Clear();
-        StatsCompanion statsCompanion = new StatsCompanion();
+        
+        // Get console app version.
         string? consoleAppVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
-        string? libVersion = statsCompanion.LibVersion;
+
+        // Get data from config file.
         NameValueCollection config = ConfigurationManager.AppSettings;
-        FileHandler fileHandler = new(config.Get("seedDirectory")!);
-        SniClient sniClient = new();
-        Log log = new(consoleAppVersion, libVersion, sniClient, fileHandler);
+        
+        // Set debug mode.
         bool debugMode = Convert.ToBoolean(config.Get("debugMode"));
+        
+        // Component inicialization.
+        FileHandler fileHandler = new(config.Get("seedDirectory")!);
+        SniClient sniClient = new SniClient();
+        StatsCompanion statsCompanion = new StatsCompanion(sniClient, fileHandler);
+        
+        // Get StatsCompanionLib version.
+        string? libVersion = statsCompanion.LibVersion;
+        
+        // Initialize logger.
+        Log log = new(consoleAppVersion, statsCompanion, sniClient, fileHandler);
+        log.Version();
 
         try
         {
-            Run run = new();
+            Run run = new Run();
             
             while (true)
             {
@@ -47,7 +61,7 @@ internal class Program
                 }
 
                 // Start a new run.
-                run = new();
+                run = new Run();
 #if !DEBUG
                 // Wait for the player to start a new game.
                 // Only exit the loop if current menu is FF6WC custom pre-game menu and new game has been selected.
@@ -59,7 +73,7 @@ internal class Program
                     }
 
                     // TODO: move this to FileHandler and make it a function (get rid of copypasted auto-reset code)
-                    if (isValidDirectory == true &&
+                    if (isValidDirectory  &&
                         DateTime.Now - fileHandler.LastDirectoryRefresh > fileHandler.RefreshInterval)
                     {
                         isValidDirectory = fileHandler.UpdateLastSeed(run.SeedInfo, out string[] updatedSeedInfo);
@@ -68,7 +82,7 @@ internal class Program
                     run.MapId = DataHandler.ConcatenateByteArray(sniClient.ReadMemory(WCData.MapId, 2)) & 0x1FF;
                     run.MenuNumber = sniClient.ReadMemory(WCData.MenuNumber, 1)[0];
                     run.NewGameSelected = sniClient.ReadMemory(WCData.NewGameSelected, 1)[0];
-                    if (run.CheckIfRunStarted() == true)
+                    if (run.CheckIfRunStarted())
                     {
                         break;
                     }
@@ -91,7 +105,7 @@ internal class Program
                 run.GPCurrent = run.GPPrevious = DataHandler.ConcatenateByteArray(sniClient.ReadMemory(WCData.CurrentGP, 3));
 
                 // Loop while run is in progress.
-                while (run.HasFinished == false)
+                while (!run.HasFinished)
                 {
                     if (sniClient.RequestTimer % 2 != 0)
                     {
@@ -111,7 +125,7 @@ internal class Program
 
                     // Check only after reaching Kefka's Lair.
                     // Log Kefka start time.
-                    if (run.MapId == 0x150 && run.SteppedOnKTSwitches == false)
+                    if (run.MapId == 0x150 && !run.SteppedOnKTSwitches)
                     {
                         run.LogKefkaStartTime();
                     }
@@ -223,7 +237,7 @@ internal class Program
                         }
 
                         // Whelk peek.
-                        if (run.MapId == 0x02B && run.IsWhelkPeeked == false)
+                        if (run.MapId == 0x02B && !run.IsWhelkPeeked)
                         {
                             run.PartyYPosition = sniClient.ReadMemory(WCData.PartyYPosition, 1)[0];
                             if (run.PartyYPosition <= 32 && run.PartyYPosition >= 30)
@@ -233,14 +247,14 @@ internal class Program
                         }
 
                         // Esper Mountain peek.
-                        if (run.MapId == 0x177 && run.IsEsperMountainPeeked == false)
+                        if (run.MapId == 0x177 && !run.IsEsperMountainPeeked)
                         {
                             run.EsperMountainPeekByte = sniClient.ReadMemory(WCData.EventBitStartAddress + 0x17B / 8, 1)[0];
                             run.IsEsperMountainPeeked = DataHandler.CheckBitByOffset(run.EsperMountainPeekByte, 0x17B);
                         }
 
                         // South Figaro basement peek.
-                        if (run.MapId == 0x053 && run.IsSouthFigaroBasementPeeked == false)
+                        if (run.MapId == 0x053 && !run.IsSouthFigaroBasementPeeked)
                         {
                             run.PartyXPosition = sniClient.ReadMemory(WCData.PartyXPosition, 1)[0];
                             //byte basementNpcStatus = sniConnection.ReadMemory(WCData.FieldObjectStartAddress + 41 * 0x10, 1)[0];
@@ -268,7 +282,7 @@ internal class Program
                                 run.EsperCount = sniClient.ReadMemory(WCData.EsperCount, 1)[0];
                                 run.TzenThiefBit = DataHandler.CheckBitByOffset(sniClient.ReadMemory(WCData.EventBitStartAddress + 0x27c / 8, 1)[0], 0x27c);
                                 run.TzenThiefBought = DataHandler.CheckTzenThiefBought(run.EsperCount, run.EsperCountPrevious, run.TzenThiefBit);
-                                if (run.InTzenThiefArea == false)
+                                if (!run.InTzenThiefArea)
                                 {
                                     run.EsperCountPrevious = run.EsperCount;
                                     run.InTzenThiefArea = true;
@@ -315,7 +329,7 @@ internal class Program
 
                         // If a new seed is found in the directory, abandon the seed.
                         // TODO: move this to FileHandler and make it a function (get rid of copypasted auto-reset code)
-                        if (isValidDirectory == true &&
+                        if (isValidDirectory  &&
                             DateTime.Now - fileHandler.LastDirectoryRefresh > fileHandler.RefreshInterval)
                         {
                             string previousSeed = fileHandler.LastLoadedSeed;
@@ -341,7 +355,7 @@ internal class Program
                 }
 
                 // If the seed has been abandoned, start tracking the new run.
-                if (run.SeedHasBeenAbandoned == true)
+                if (run.SeedHasBeenAbandoned)
                 {
                     fileHandler.ResetLastLoadedSeed();
                     continue;

@@ -169,11 +169,11 @@ public class RunJson
     {
         string flagset = "Other";
         string flagsReplaced = flags;
-        List<string> patterns = new() {
+        List<string> patterns = new List<string>() {
             @"(-cpal [0123456789\.]* )",
             @"(-cpor [0123456789\.]* )",
             @"(-cspr [0123456789\.]* )",
-            @"(-cspp [0123456789\.]* )"
+            @"(-cspp [0123456789\.]* )",
         };
         
         // Regex replace palette, portrait and sprite swaps.

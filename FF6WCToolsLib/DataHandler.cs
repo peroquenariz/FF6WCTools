@@ -58,11 +58,11 @@ public static class DataHandler
     public static string CheckTzenThiefBought(byte esperCount, byte esperCountPrevious, bool tzenThiefBit)
     {
         string tzenThiefBought = "";
-        if (tzenThiefBit == true && esperCount == esperCountPrevious)
+        if (tzenThiefBit && esperCount == esperCountPrevious)
         {
             tzenThiefBought = "Item";
         }
-        else if (tzenThiefBit == true && esperCount > esperCountPrevious)
+        else if (tzenThiefBit && esperCount > esperCountPrevious)
         {
             tzenThiefBought = "Esper";
         }

@@ -74,8 +74,8 @@ public class RunJson
         this.appVersion = appVersion;
         filename = seedFilename;
         if (this.filename.Length > 4) filename = filename[..^4];
-        runTime = (run.EndTime - run.StartTime - WCData.TimeFromKefkaFlashToAnimation).ToString(@TIME_FORMAT);
-        runTimePrecise = (run.EndTime - run.StartTime - WCData.TimeFromKefkaFlashToAnimation).ToString(@TIME_FORMAT_PRECISE);
+        runTime = run.FinalTime.ToString(@TIME_FORMAT);
+        runTimePrecise = run.FinalTime.ToString(@TIME_FORMAT_PRECISE);
         runDate = run.StartTime.ToString(DATE_FORMAT);
         flagset = "Other";
         otherFlagset = "";

@@ -94,6 +94,7 @@ public class Run
     TimeSpan _timeSpentOnShops;
     TimeSpan _timeSpentOnBattles;
     TimeSpan _timeSpentOnAirship;
+    TimeSpan _finalTime;
     string _hasExpEgg;
     string _hasSuperBall;
     string _tzenThiefPeekWob;
@@ -295,6 +296,7 @@ public class Run
     public bool IsReset { get => _isReset; set => _isReset = value; }
     public List<string> EventBitsPeeked { get => _eventBitsPeeked; set => _eventBitsPeeked = value; }
     public string[] SeedInfo { get => seedInfo; set => seedInfo = value; }
+    public TimeSpan FinalTime { get => _finalTime; set => _finalTime = value; }
 
     public bool CheckIfRunStarted()
     {
@@ -449,6 +451,7 @@ public class Run
         if (IsKefkaFight == 0x0202 && IsKefkaDead == 0x01)
         {
             EndTime = DateTime.Now;
+            FinalTime = EndTime - StartTime - WCData.TimeFromKefkaFlashToAnimation;
             HasFinished = true;
         }
     }

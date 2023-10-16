@@ -19,15 +19,12 @@ internal class Log
 
     public static int cursorTopPosition; // TODO: make it private, and link cursor change to an event
 
-    public Log(string? appVersion, string? libVersion, SniClient sniClient, FileHandler fileHandler)
+    public Log(string? appVersion, StatsCompanion statsCompanion, SniClient sniClient, FileHandler fileHandler)
     {
         Console.CursorVisible = false;
         Console.Title = WindowTitle;
         _appVersion = appVersion;
-        _libVersion = libVersion;
-
-        Version();
-        cursorTopPosition = 3;
+        _libVersion = statsCompanion.LibVersion;
 
         sniClient.OnConnectionError += SniClient_OnConnectionError;
         sniClient.OnConnectionSuccessful += SniClient_OnConnectionSuccessful;
@@ -37,6 +34,49 @@ internal class Log
         fileHandler.OnSeedNotFound += FileHandler_OnSeedNotFound;
         fileHandler.OnSeedInfoFound += FileHandler_OnSeedInfoFound;
         fileHandler.OnSeedInfoNotFound += FileHandler_OnSeedInfoNotFound;
+
+        statsCompanion.OnExecutionLoopStart += StatsCompanion_OnExecutionLoopStart;
+        statsCompanion.OnShowVersionDebug += StatsCompanion_OnShowVersionDebug;
+        statsCompanion.OnSeedAbandoned += StatsCompanion_OnSeedAbandoned;
+        statsCompanion.OnWaitingForNewGame += StatsCompanion_OnWaitingForNewGame;
+        statsCompanion.OnTrackingRun += StatsCompanion_OnTrackingRun;
+        statsCompanion.OnShowDebugInformation += StatsCompanion_OnShowDebugInformation;
+        statsCompanion.OnRunSuccessful += StatsCompanion_OnRunSuccessful;
+    }
+
+    private void StatsCompanion_OnExecutionLoopStart(object? sender, EventArgs e)
+    {
+        cursorTopPosition = 3;
+    }
+
+    private void StatsCompanion_OnRunSuccessful(object? sender, RunSuccessfulEventArgs e)
+    {
+        RunSuccessful(e.FinalTime);
+    }
+
+    private void StatsCompanion_OnShowDebugInformation(object? sender, DebugInformationEventArgs e)
+    {
+        DebugInformation(e.RunData);
+    }
+
+    private void StatsCompanion_OnTrackingRun(object? sender, EventArgs e)
+    {
+        TrackingRun();
+    }
+
+    private void StatsCompanion_OnWaitingForNewGame(object? sender, EventArgs e)
+    {
+        WaitingForNewGame();
+    }
+
+    private void StatsCompanion_OnSeedAbandoned(object? sender, EventArgs e)
+    {
+        SeedAbandoned();
+    }
+
+    private void StatsCompanion_OnShowVersionDebug(object? sender, DebugModeEventArgs e)
+    {
+        Version(e.IsDebugMode);
     }
 
     private void FileHandler_OnSeedInfoNotFound(object? sender, SeedInfoNotFoundEventArgs e)
@@ -74,13 +114,13 @@ internal class Log
         ConnectionError(e.Message);
     }
 
-    public void Version(bool debugMode = false)
+    public void Version(bool isDebugMode = false)
     {
         Console.ForegroundColor = ConsoleColor.White;
         //string version = $"Stats Companion v{_libVersion} (lib) | v{_appVersion} (app)";
         string version = $"Stats Companion v{_libVersion}";
         Console.Write(version);
-        if (debugMode)
+        if (isDebugMode)
         {
             Console.Write(" - DEBUG MODE"); 
         }
@@ -90,6 +130,7 @@ internal class Log
             Console.Write("-");
         }
         Console.WriteLine();
+        cursorTopPosition = 3;
     }
 
     public static void SeedAbandoned()

@@ -74,9 +74,9 @@ internal class Log
         SeedAbandoned();
     }
 
-    private void StatsCompanion_OnShowVersionDebug(object? sender, DebugModeEventArgs e)
+    private void StatsCompanion_OnShowVersionDebug(object? sender, EventArgs e)
     {
-        Version(e.IsDebugMode);
+        Version(true);
     }
 
     private void FileHandler_OnSeedInfoNotFound(object? sender, SeedInfoNotFoundEventArgs e)
@@ -116,14 +116,12 @@ internal class Log
 
     public void Version(bool isDebugMode = false)
     {
+        if (isDebugMode) Console.Clear();
         Console.ForegroundColor = ConsoleColor.White;
         //string version = $"Stats Companion v{_libVersion} (lib) | v{_appVersion} (app)";
         string version = $"Stats Companion v{_libVersion}";
         Console.Write(version);
-        if (isDebugMode)
-        {
-            Console.Write(" - DEBUG MODE"); 
-        }
+        if (isDebugMode) Console.Write(" - DEBUG MODE");
         Console.WriteLine();
         for (int i = 0; i < version.Length; i++)
         {

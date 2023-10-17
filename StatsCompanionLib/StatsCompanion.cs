@@ -11,7 +11,7 @@ namespace StatsCompanionLib;
 public class StatsCompanion
 {
     public event EventHandler? OnExecutionLoopStart;
-    public event EventHandler<DebugModeEventArgs>? OnShowVersionDebug;
+    public event EventHandler? OnShowVersionDebug;
     public event EventHandler? OnSeedAbandoned;
     public event EventHandler? OnWaitingForNewGame;
     public event EventHandler? OnTrackingRun;
@@ -40,8 +40,7 @@ public class StatsCompanion
         {
             if (isDebugMode)
             {
-                Console.Clear();
-                OnShowVersionDebug?.Invoke(this, new DebugModeEventArgs(isDebugMode));
+                OnShowVersionDebug?.Invoke(this, EventArgs.Empty);
             }
 
             OnExecutionLoopStart?.Invoke(this, EventArgs.Empty);

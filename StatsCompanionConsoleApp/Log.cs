@@ -11,18 +11,18 @@ namespace StatsCompanionConsoleApp;
 /// </summary>
 internal class Log
 {
-    private const int RightPadding = 90;
-    private const string WindowTitle = "Stats Companion";
+    private const int RIGHT_PADDING = 90;
+    private const string WINDOW_TITLE = "Stats Companion";
     
     private readonly string? _appVersion;
     private readonly string? _libVersion;
 
-    public static int cursorTopPosition; // TODO: make it private, and link cursor change to an event
+    private static int _cursorTopPosition;
 
     public Log(string? appVersion, StatsCompanion statsCompanion, SniClient sniClient, FileHandler fileHandler)
     {
         Console.CursorVisible = false;
-        Console.Title = WindowTitle;
+        Console.Title = WINDOW_TITLE;
         _appVersion = appVersion;
         _libVersion = statsCompanion.LibVersion;
 
@@ -46,7 +46,7 @@ internal class Log
 
     private void StatsCompanion_OnExecutionLoopStart(object? sender, EventArgs e)
     {
-        cursorTopPosition = 3;
+        _cursorTopPosition = 3;
     }
 
     private void StatsCompanion_OnRunSuccessful(object? sender, RunSuccessfulEventArgs e)
@@ -128,20 +128,20 @@ internal class Log
             Console.Write("-");
         }
         Console.WriteLine();
-        cursorTopPosition = 3;
+        _cursorTopPosition = 3;
     }
 
     public static void SeedAbandoned()
     {
         Console.CursorTop = 5;
         Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.WriteLine("It seems like you've abandoned your run! Better luck next time!".PadRight(RightPadding));
+        Console.WriteLine("It seems like you've abandoned your run! Better luck next time!".PadRight(RIGHT_PADDING));
     }
 
     public static void WaitingForNewGame()
     {
         Console.ForegroundColor = ConsoleColor.DarkCyan;
-        Console.WriteLine("Waiting for new game...".PadRight(RightPadding));
+        Console.WriteLine("Waiting for new game...".PadRight(RIGHT_PADDING));
         ClearLines(1);
     }
 
@@ -150,7 +150,7 @@ internal class Log
         Console.CursorLeft = 0;
         Console.CursorTop = 8;
         Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.Write($"No seeds found in the seed directory! Make sure your seed is in the correct folder.".PadRight(RightPadding));
+        Console.Write($"No seeds found in the seed directory! Make sure your seed is in the correct folder.".PadRight(RIGHT_PADDING));
         ClearLines(10);
     }
 
@@ -161,7 +161,7 @@ internal class Log
         Console.CursorLeft = 0;
         Console.CursorTop = 8;
         Console.ForegroundColor = ConsoleColor.Cyan;
-        Console.WriteLine($"Loaded seed: {filename}".PadRight(RightPadding));
+        Console.WriteLine($"Loaded seed: {filename}".PadRight(RIGHT_PADDING));
         Console.ForegroundColor = ConsoleColor.White;
         Console.WriteLine();
         for (int i = 0; i < seedInfo.Length; i++)
@@ -178,37 +178,37 @@ internal class Log
         }
         flagset = RunJson.GetFlagset(flags);
         Console.WriteLine();
-        Console.WriteLine($"Detected flagset: {flagset}".PadRight(RightPadding));
+        Console.WriteLine($"Detected flagset: {flagset}".PadRight(RIGHT_PADDING));
     }
 
     public static void TrackingRun()
     {
         ResetConsoleCursor();
         Console.ForegroundColor = ConsoleColor.White;
-        Console.WriteLine("Now tracking your run...".PadRight(RightPadding));
+        Console.WriteLine("Now tracking your run...".PadRight(RIGHT_PADDING));
         Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.WriteLine("*** DO NOT close this window! ***".PadRight(RightPadding));
+        Console.WriteLine("*** DO NOT close this window! ***".PadRight(RIGHT_PADDING));
         ClearLines(1);
         Console.ForegroundColor = ConsoleColor.White;
         Console.WriteLine("Press ESCAPE to reset this run and start tracking a new seed");
         ClearLines(15);
-        cursorTopPosition = 6;
+        _cursorTopPosition = 6;
     }
 
     public static void RunSuccessful(string finalTime)
     {
         Console.CursorTop = 5;
         Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine($"JSON file successfully saved. Final time: {finalTime}.".PadRight(RightPadding));
+        Console.WriteLine($"JSON file successfully saved. Final time: {finalTime}.".PadRight(RIGHT_PADDING));
     }
 
     public static void ConnectionSuccessful(string uri)
     {
         ResetConsoleCursor();
         Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine("Connection to SNI successful!".PadRight(RightPadding));
+        Console.WriteLine("Connection to SNI successful!".PadRight(RIGHT_PADDING));
         Console.ForegroundColor = ConsoleColor.White;
-        Console.WriteLine($"Tracking device URI: {uri}".PadRight(RightPadding));
+        Console.WriteLine($"Tracking device URI: {uri}".PadRight(RIGHT_PADDING));
         Console.WriteLine();
     }
 
@@ -216,13 +216,13 @@ internal class Log
     {
         ResetConsoleCursor();
         Console.ForegroundColor = ConsoleColor.Red;
-        Console.WriteLine(message.PadRight(RightPadding));
+        Console.WriteLine(message.PadRight(RIGHT_PADDING));
         Console.ForegroundColor = ConsoleColor.White;
         ClearLines(3);
         Console.CursorTop -= 2;
         for (int i = 5; i > 0; i--)
         {
-            Console.Write($"Retrying in {i} seconds...".PadRight(RightPadding));
+            Console.Write($"Retrying in {i} seconds...".PadRight(RIGHT_PADDING));
             Thread.Sleep(1000);
             Console.CursorLeft = 0;
         }
@@ -291,7 +291,7 @@ internal class Log
 
     private static void ResetConsoleCursor()
     {
-        Console.CursorTop = cursorTopPosition;
+        Console.CursorTop = _cursorTopPosition;
         Console.CursorLeft = 0;
     }
 
@@ -299,26 +299,26 @@ internal class Log
     {
         for (int i = 0; i < amountOfLines; i++)
         {
-            Console.WriteLine("".PadRight(RightPadding));
+            Console.WriteLine("".PadRight(RIGHT_PADDING));
         }
     }
 
     public static void InvalidSeedDirectory()
     {
         Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.WriteLine($"Invalid/non-existant seed directory - not collecting seed information!".PadRight(RightPadding));
+        Console.WriteLine($"Invalid/non-existant seed directory - not collecting seed information!".PadRight(RIGHT_PADDING));
     }
 
     public static void NoSeedDirectory()
     {
         Console.ForegroundColor = ConsoleColor.DarkGray;
-        Console.WriteLine("No seed directory provided in the config file - not collecting seed information!".PadRight(RightPadding));
+        Console.WriteLine("No seed directory provided in the config file - not collecting seed information!".PadRight(RIGHT_PADDING));
     }
     public static void NoMatchingSeedInfoFound(string filename)
     {
         Console.CursorLeft = 0;
         Console.CursorTop = 8;
         Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.WriteLine($"No matching .txt found for {filename} - not collecting seed information!".PadRight(RightPadding));
+        Console.WriteLine($"No matching .txt found for {filename} - not collecting seed information!".PadRight(RIGHT_PADDING));
     }
 }

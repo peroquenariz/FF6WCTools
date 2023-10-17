@@ -57,7 +57,7 @@ public class StatsCompanion
 
             // Start a new run.
             run = new Run();
-#if !DEBUG
+#if RELEASE
             // Wait for the player to start a new game.
             // Only exit the loop if current menu is FF6WC custom pre-game menu and new game has been selected.
             OnWaitingForNewGame?.Invoke(this, EventArgs.Empty);
@@ -396,9 +396,11 @@ public class StatsCompanion
             run.CheckColiseumVisit();
 
 #if JSON_DEBUG
-            run.CharacterData = sniConnection.ReadMemory(WCData.CharacterDataStart, WCData.CharacterDataSize);
-            run.CharacterSkillData = sniConnection.ReadMemory(WCData.CharacterSkillData, WCData.CharacterSkillDataSize);
-            run.FinalBattleLineup = sniConnection.ReadMemory(WCData.FinalBattleCharacterListStart, 12);
+            run.CharacterData = _sniClient.ReadMemory(WCData.CharacterDataStart, WCData.CharacterDataSize);
+            run.CharacterSkillData = _sniClient.ReadMemory(WCData.CharacterSkillData, WCData.CharacterSkillDataSize);
+            
+            // Mock-up final lineup for the JSON
+            run.FinalBattleLineup = new byte[] {0x0D, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A};
 #endif
 
             // Get final 4-character lineup and skills data.

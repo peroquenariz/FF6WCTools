@@ -218,6 +218,8 @@ public class StatsCompanion
                     }
                     else if (run.IsReset)
                     {
+                        // If next menu after reset is not the load game menu,
+                        // remove the reset from the list.
                         run.CheckResetFalsePositive();
                     }
 

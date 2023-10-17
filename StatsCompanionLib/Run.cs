@@ -14,7 +14,7 @@ public class Run
     private bool _isAirshipTimerRunning;
     private bool _seedHasBeenAbandoned;
     private bool _steppedOnKTSwitches;
-    private bool _HasFinished;
+    private bool _hasFinished;
     private bool _isWhelkPeeked;
     private bool _isEsperMountainPeeked;
     private bool _isSouthFigaroBasementPeeked;
@@ -62,7 +62,7 @@ public class Run
     private byte[] _monsterBytesPrevious;
     private byte[] _gameStatusData;
     private Character[] _finalBattleCharacters;
-    private string[] seedInfo;
+    private string[] _seedInfo;
     private int _chestCount;
     private int _characterCount;
     private int _isKefkaFight;
@@ -76,8 +76,8 @@ public class Run
     private int _gpPrevious;
     private int _gpSpent;
     private int _resetCount;
-    private DateTime _StartTime;
-    private DateTime _EndTime;
+    private DateTime _startTime;
+    private DateTime _endTime;
     private DateTime _menuOpen;
     private DateTime _menuClose;
     private DateTime _battleStart;
@@ -124,7 +124,7 @@ public class Run
     public Run()
     {
         _seedHasBeenAbandoned = false;
-        _HasFinished = false;
+        _hasFinished = false;
         _steppedOnKTSwitches = false;
         _hasExpEgg = "No";
         _hasSuperBall = "No";
@@ -183,14 +183,14 @@ public class Run
         _monsterBytesPrevious = Array.Empty<byte>();
         _gameStatusData = Array.Empty<byte>();
         _finalBattleCharacters = new Character[4];
-        seedInfo = new string[9];
+        _seedInfo = new string[9];
     }
 
     public bool IsMenuTimerRunning { get => _isMenuTimerRunning; set => _isMenuTimerRunning = value; }
     public bool IsAirshipTimerRunning { get => _isAirshipTimerRunning; set => _isAirshipTimerRunning = value; }
     public bool SeedHasBeenAbandoned { get => _seedHasBeenAbandoned; set => _seedHasBeenAbandoned = value; }
     public bool SteppedOnKTSwitches { get => _steppedOnKTSwitches; set => _steppedOnKTSwitches = value; }
-    public bool HasFinished { get => _HasFinished; set => _HasFinished = value; }
+    public bool HasFinished { get => _hasFinished; set => _hasFinished = value; }
     public string HasExpEgg { get => _hasExpEgg; set => _hasExpEgg = value; }
     public string HasSuperBall { get => _hasSuperBall; set => _hasSuperBall = value; }
     public bool IsWhelkPeeked { get => _isWhelkPeeked; set => _isWhelkPeeked = value; }
@@ -231,8 +231,8 @@ public class Run
     public int DialogIndex { get => _dialogIndex; set => _dialogIndex = value; }
     public int GPCurrent { get => _gpCurrent; set => _gpCurrent = value; }
     public int GPPrevious { get => _gpPrevious; set => _gpPrevious = value; }
-    public DateTime StartTime { get => _StartTime; set => _StartTime = value; }
-    public DateTime EndTime { get => _EndTime; set => _EndTime = value; }
+    public DateTime StartTime { get => _startTime; set => _startTime = value; }
+    public DateTime EndTime { get => _endTime; set => _endTime = value; }
     public DateTime MenuOpen { get => _menuOpen; set => _menuOpen = value; }
     public DateTime MenuClose { get => _menuClose; set => _menuClose = value; }
     public DateTime AirshipStart { get => _airshipStart; set => _airshipStart = value; }
@@ -295,14 +295,14 @@ public class Run
     public string GameStatus { get => _gameStatus; set => _gameStatus = value; }
     public bool IsReset { get => _isReset; set => _isReset = value; }
     public List<string> EventBitsPeeked { get => _eventBitsPeeked; set => _eventBitsPeeked = value; }
-    public string[] SeedInfo { get => seedInfo; set => seedInfo = value; }
+    public string[] SeedInfo { get => _seedInfo; set => _seedInfo = value; }
     public TimeSpan FinalTime { get => _finalTime; set => _finalTime = value; }
 
     public bool CheckIfRunStarted()
     {
-        if (MapId == 3 && NewGameSelected == 1 && MenuNumber == 9)
+        if (_mapId == 3 && _newGameSelected == 1 && _menuNumber == 9)
         {
-            StartTime = DateTime.Now;
+            _startTime = DateTime.Now;
             return true;
         }
         return false;
@@ -310,29 +310,29 @@ public class Run
     
     public void CheckIfMenuIsOpen()
     {
-        if (!IsMenuTimerRunning)
+        if (!_isMenuTimerRunning)
         {
-            if (GameStatus == WCData.MenuKey)
+            if (_gameStatus == WCData.MenuKey)
             {
-                MenuOpen = DateTime.Now;
-                IsMenuTimerRunning = true;
+                _menuOpen = DateTime.Now;
+                _isMenuTimerRunning = true;
             }
         }
         else
         {
-            if (GameStatus != WCData.MenuKey)
+            if (_gameStatus != WCData.MenuKey)
             {
-                MenuClose = DateTime.Now;
-                IsMenuTimerRunning = false;
-                if (MenuNumber == 3)
+                _menuClose = DateTime.Now;
+                _isMenuTimerRunning = false;
+                if (_menuNumber == 3)
                 {
-                    TimeSpentOnShops += MenuClose - MenuOpen;
-                    ShopOpenCounter++;
+                    _timeSpentOnShops += _menuClose - _menuOpen;
+                    _shopOpenCounter++;
                 }
                 else
                 {
-                    TimeSpentOnMenus += MenuClose - MenuOpen;
-                    MenuOpenCounter++;
+                    _timeSpentOnMenus += _menuClose - _menuOpen;
+                    _menuOpenCounter++;
                 }
             }
         }
@@ -340,25 +340,25 @@ public class Run
 
     public void CheckIfInBattle()
     {
-        if (!IsBattleTimerRunning)
+        if (!_isBattleTimerRunning)
         {
-            if (GameStatus == WCData.BattleKey)
+            if (_gameStatus == WCData.BattleKey)
             {
-                BattleStart = DateTime.Now;
-                BattlesFought++;
-                IsBattleTimerRunning = true;
+                _battleStart = DateTime.Now;
+                _battlesFought++;
+                _isBattleTimerRunning = true;
             }
         }
         else
         {
-            if (GameStatus != WCData.BattleKey || HasFinished)
+            if (_gameStatus != WCData.BattleKey || _hasFinished)
             {
-                BattleEnd = DateTime.Now;
-                MonsterBytesPrevious = Array.Empty<byte>();
-                BattleFormation = ""; // Clear battle formation after battle is done.
+                _battleEnd = DateTime.Now;
+                _monsterBytesPrevious = Array.Empty<byte>();
+                _battleFormation = ""; // Clear battle formation after battle is done.
                 CleanupBattleFormationFalsePositives();
-                IsBattleTimerRunning = false;
-                TimeSpentOnBattles += BattleEnd - BattleStart;
+                _isBattleTimerRunning = false;
+                _timeSpentOnBattles += _battleEnd - _battleStart;
             }
         }
     }
@@ -368,11 +368,11 @@ public class Run
     /// </summary>
     private void CleanupBattleFormationFalsePositives()
     {
-        TimeSpan timeDifference = BattleEnd - LastAddedBattleFormation;
+        TimeSpan timeDifference = _battleEnd - _lastAddedBattleFormation;
         if (timeDifference < WCData.TimeBattleFormationFalsePositives &&
-            timeDifference > WCData.TimeZero)
+            timeDifference > WCData.TimeZero) // TODO: replace with TimeSpan.Zero
         {
-            Route.RemoveAt(Route.Count - 1);
+            _route.RemoveAt(_route.Count - 1);
         }
     }
 
@@ -381,219 +381,222 @@ public class Run
     /// </summary>
     public void LogBattle()
     {
-        if (!DataHandler.AreArraysEqual(MonsterBytes, MonsterBytesPrevious)) // Check for changes in monster indexes
+        if (!DataHandler.AreArraysEqual(_monsterBytes, _monsterBytesPrevious)) // Check for changes in monster indexes
         {
-            int[] monsterIndexes = DataHandler.GetMonsterIndexes(MonsterBytes);
-            BattleFormation = "Battle: ";
+            int[] monsterIndexes = DataHandler.GetMonsterIndexes(_monsterBytes);
+            _battleFormation = "Battle: ";
             for (int i = 0; i < 6; i++)
             {
                 if (monsterIndexes[i] <= 383) // Ignore if monster doesn't exist
                 {
-                    BattleFormation += WCData.MonsterDict[monsterIndexes[i]] + ", ";
+                    _battleFormation += WCData.MonsterDict[monsterIndexes[i]] + ", ";
                 }
             }
-            if (BattleFormation != "Battle: ")
+            if (_battleFormation != "Battle: ")
             {
-                BattleFormation = BattleFormation.Remove(BattleFormation.Length - 2, 2);
-                LastAddedBattleFormation = DateTime.Now;
-                Route.Add((BattleFormation, (LastAddedBattleFormation - StartTime).ToString(@"hh\:mm\:ss")));
+                _battleFormation = _battleFormation.Remove(_battleFormation.Length - 2, 2);
+                _lastAddedBattleFormation = DateTime.Now;
+                _route.Add((_battleFormation, (_lastAddedBattleFormation - _startTime).ToString(@"hh\:mm\:ss")));
             }
         }
-        MonsterBytesPrevious = MonsterBytes;
+        _monsterBytesPrevious = _monsterBytes;
     }
 
     public void CheckIfFlyingAirship()
     {
-        if (!IsAirshipTimerRunning)
+        if (!_isAirshipTimerRunning)
         {
-            if ((Character1Graphic == 6 || // value when taking off from overworld
-                Character1Graphic == 1 && !CheckAirshipFalsePositives()) && // ignore Cave in the Veldt, Serpent Trench, South Figaro cave, Ebot's Rock
-                !IsBattleTimerRunning &&
-                DateTime.Now - BattleEnd > WCData.TimeBattleFalsePositives) // don't start timer after Search the Skies cutscene
+            if ((_character1Graphic == 6 || // value when taking off from overworld
+                _character1Graphic == 1 && !CheckAirshipFalsePositives()) && // ignore Cave in the Veldt, Serpent Trench, South Figaro cave, Ebot's Rock
+                !_isBattleTimerRunning &&
+                DateTime.Now - _battleEnd > WCData.TimeBattleFalsePositives) // don't start timer after Search the Skies cutscene
             {
-                AirshipStart = DateTime.Now;
-                IsAirshipTimerRunning = true;
-                AirshipCounter++;
+                _airshipStart = DateTime.Now;
+                _isAirshipTimerRunning = true;
+                _airshipCounter++;
             }
         }
         else
         {
-            if ((Character1Graphic == 3 && Character1GraphicPrevious == 9) ||
-                (Character1Graphic == 0 && WCData.AirshipDeckMapIds.Contains(MapId)) ||
-                IsMenuTimerRunning || IsBattleTimerRunning)
+            if ((_character1Graphic == 3 && _character1GraphicPrevious == 9) ||
+                (_character1Graphic == 0 && WCData.AirshipDeckMapIds.Contains(_mapId)) ||
+                _isMenuTimerRunning || _isBattleTimerRunning)
             {
-                AirshipStop = DateTime.Now;
-                IsAirshipTimerRunning = false;
-                TimeSpentOnAirship += AirshipStop - AirshipStart;
+                _airshipStop = DateTime.Now;
+                _isAirshipTimerRunning = false;
+                _timeSpentOnAirship += _airshipStop - _airshipStart;
             }
         }
-        Character1GraphicPrevious = Character1Graphic;
+        _character1GraphicPrevious = _character1Graphic;
     }
 
     public bool CheckAirshipFalsePositives()
     {
         bool airshipFalsePositive = false;
-        if (MapsVisited.Count>2)
+        if (_mapsVisited.Count>2)
         {
-            airshipFalsePositive = WCData.AirshipFalsePositives.Contains(MapsVisited[^2]);
+            airshipFalsePositive = WCData.AirshipFalsePositives.Contains(_mapsVisited[^2]);
         }
         return airshipFalsePositive;
     }
 
     public void LogKefkaStartTime()
     {
-        KefkaStartTime = DateTime.Now - WCData.TimeFromSwitchesToKefkaLair;
-        SteppedOnKTSwitches = true;
+        _kefkaStartTime = DateTime.Now - WCData.TimeFromSwitchesToKefkaLair;
+        _steppedOnKTSwitches = true;
     }
 
     public void CheckKefkaKill()
     {
-        if (IsKefkaFight == 0x0202 && IsKefkaDead == 0x01)
+        if (_isKefkaFight == 0x0202 && _isKefkaDead == 0x01)
         {
-            EndTime = DateTime.Now;
-            FinalTime = EndTime - StartTime - WCData.TimeFromKefkaFlashToAnimation;
-            HasFinished = true;
+            _endTime = DateTime.Now;
+            _finalTime = _endTime - _startTime - WCData.TimeFromKefkaFlashToAnimation;
+            _hasFinished = true;
         }
     }
 
     public void UpdateMapsVisited()
     {
-        if (MapId <= 0x19E)
+        if (_mapId <= 0x19E)
         {
-            if (MapsVisited.Count == 0 || (MapsVisited[MapsVisited.Count - 1] != MapId && !IsMenuTimerRunning))
+            if (_mapsVisited.Count == 0 || (_mapsVisited[_mapsVisited.Count - 1] != _mapId && !_isMenuTimerRunning))
             {
-                MapsVisited.Add(MapId);
-                LastMapTimestamp = DateTime.Now;
-                Route.Add((WCData.MapsDict[(uint)MapId], (LastMapTimestamp - StartTime).ToString(@"hh\:mm\:ss")));
+                _mapsVisited.Add(_mapId);
+                _lastMapTimestamp = DateTime.Now;
+                _route.Add((WCData.MapsDict[(uint)_mapId], (_lastMapTimestamp - _startTime).ToString(@"hh\:mm\:ss")));
             }
         }
     }
 
     public void CountAuctionHouseEspersBought()
     {
-        if (EsperCount - EsperCountPrevious >= 0)
+        if (_esperCount - _esperCountPrevious >= 0)
         {
-            AuctionHouseEsperCount += (byte)(EsperCount - EsperCountPrevious);
+            _auctionHouseEsperCount += (byte)(_esperCount - _esperCountPrevious);
         }
     }
 
     public void CheckForItemsInInventory()
     {
-        if (HasExpEgg == "No")
+        if (_hasExpEgg == "No")
         {
-            bool expEgg = DataHandler.CheckIfItemExistsInInventory(Inventory, 228);
+            // TODO: rename bools
+            bool expEgg = DataHandler.CheckIfItemExistsInInventory(_inventory, 228);
             if (expEgg)
             {
-                HasExpEgg = "Yes";
+                _hasExpEgg = "Yes";
             }
             
         }
-        if (HasSuperBall == "No")
+        if (_hasSuperBall == "No")
         {
-            bool superBall = DataHandler.CheckIfItemExistsInInventory(Inventory, 250);
+            // TODO: rename bools
+            bool superBall = DataHandler.CheckIfItemExistsInInventory(_inventory, 250);
             if (superBall)
             {
-                HasSuperBall = "Yes";
+                _hasSuperBall = "Yes";
             }
         }
     }
 
     public void CheckKefkaTowerUnlock()
     {
-        if (!IsKefkaTowerUnlocked)
+        if (!_isKefkaTowerUnlocked)
         {
-            IsKefkaTowerUnlocked = DataHandler.CheckBitByOffset(KefkaTowerEventByte, 0x094);
-            if (IsKefkaTowerUnlocked)
+            _isKefkaTowerUnlocked = DataHandler.CheckBitByOffset(KefkaTowerEventByte, 0x094);
+            if (_isKefkaTowerUnlocked)
             {
-                KefkaTowerUnlockTime = DateTime.Now;
+                _kefkaTowerUnlockTime = DateTime.Now;
             }
         }
     }
 
     public void CheckKTSkipUnlock()
     {
-        if (!IsKTSkipUnlocked)
+        if (!_isKTSkipUnlocked)
         {
-            IsKTSkipUnlocked = DataHandler.CheckBitByOffset(KefkaTowerEventByte, 0x093);
-            if (IsKTSkipUnlocked)
+            _isKTSkipUnlocked = DataHandler.CheckBitByOffset(KefkaTowerEventByte, 0x093);
+            if (_isKTSkipUnlocked)
             {
-                KtSkipUnlockTime = DateTime.Now;
+                _ktSkipUnlockTime = DateTime.Now;
             }
         }
     }
 
     public void CheckKefkaTowerStart()
     {
-        if ((MapId == 0x14E || MapId == 0x163) && IsKefkaTowerUnlocked  && !IsKefkaTowerStarted)
+        if ((_mapId == 0x14E || _mapId == 0x163) && _isKefkaTowerUnlocked  && !_isKefkaTowerStarted) // TODO: rename _isKefkaTowerStarted to _hasKefkaTowerStarted
         {
-            KefkaTowerStartTime = DateTime.Now;
-            IsKefkaTowerStarted = true;
+            _kefkaTowerStartTime = DateTime.Now;
+            _isKefkaTowerStarted = true;
         }
     }
 
     public void GetListOfCompletedChecks()
     {
+        // TODO: rename item to event
         foreach (var item in WCData.EventBitDict)
         {
-            byte checkByte = EventBitData[item.Value / 8];
+            byte checkByte = _eventBitData[item.Value / 8];
             bool checkDone = DataHandler.CheckBitByOffset(checkByte, item.Value);
             if (checkDone)
             {
-                ChecksCompleted.Add(WCData.CheckNamesDict[item.Key]);
+                _checksCompleted.Add(WCData.CheckNamesDict[item.Key]);
             }
         }
     }
 
     public void GetListOfPeekedChecks()
     {
-        // Peeks by map ID.
+        // Peeks by map ID. TODO: rename item to map
         foreach (var item in WCData.PeeksByMapId)
         {
-            if (!ChecksCompleted.Contains(item.Value) && MapsVisited.Contains(item.Key))
+            if (!_checksCompleted.Contains(item.Value) && _mapsVisited.Contains(item.Key))
             {
-                ChecksPeeked.Add(item.Value);
+                _checksPeeked.Add(item.Value);
             }
         }
 
-        // Peeks by event bits.
-        foreach (var item in EventBitsPeeked)
+        // Peeks by event bits. TODO: rename to event
+        foreach (var item in _eventBitsPeeked)
         {
-            if (!ChecksCompleted.Contains(item))
+            if (!_checksCompleted.Contains(item))
             {
-                ChecksPeeked.Add(item);
+                _checksPeeked.Add(item);
             }
         }
 
         // Multiple condition peeks. Check manually for each.
-        if (!ChecksCompleted.Contains("South Figaro Prisoner") && IsSouthFigaroBasementPeeked)
+        if (!_checksCompleted.Contains("South Figaro Prisoner") && _isSouthFigaroBasementPeeked)
         {
-            ChecksPeeked.Add("South Figaro Prisoner");
+            _checksPeeked.Add("South Figaro Prisoner");
         }
-        if (!ChecksCompleted.Contains("Esper Mountain") && IsEsperMountainPeeked)
+        if (!_checksCompleted.Contains("Esper Mountain") && _isEsperMountainPeeked)
         {
-            ChecksPeeked.Add("Esper Mountain");
+            _checksPeeked.Add("Esper Mountain");
         }
-        if (!ChecksCompleted.Contains("Whelk Gate") && IsWhelkPeeked)
+        if (!_checksCompleted.Contains("Whelk Gate") && _isWhelkPeeked)
         {
-            ChecksPeeked.Add("Whelk Gate");
+            _checksPeeked.Add("Whelk Gate");
         }
-        if (!ChecksCompleted.Contains("Auction House 1") && !ChecksCompleted.Contains("Auction House 2") && MapsVisited.Contains(0x0C8))
+        if (!_checksCompleted.Contains("Auction House 1") && !_checksCompleted.Contains("Auction House 2") && _mapsVisited.Contains(0x0C8))
         {
-            ChecksPeeked.Add("Auction House");
+            _checksPeeked.Add("Auction House");
         }
     }
 
     public void CheckEventBitPeeks()
     {
-        foreach (var item in WCData.PeeksByEventBit)
+        foreach (var item in WCData.PeeksByEventBit) // TODO: rename item to event
         {
-            if (!EventBitsPeeked.Contains(item.Value))
+            if (!_eventBitsPeeked.Contains(item.Value))
             {
-                byte eventByte = EventBitData[item.Key / 8];
+                byte eventByte = _eventBitData[item.Key / 8];
                 bool eventBit = DataHandler.CheckBitByOffset(eventByte, item.Key);
                 if (eventBit)
                 {
-                    EventBitsPeeked.Add(item.Value);
+                    _eventBitsPeeked.Add(item.Value);
                 }
             }
         }
@@ -601,82 +604,87 @@ public class Run
 
     public void GetTzenThiefData()
     {
-        if (TzenThiefBought == "")
+        // TODO: refactor this code!
+        // Get rid of strings, use bools, enums or maybe constants instead. Literally ANYTHING but strings.
+        // Restore string text and replace underscores in JSON instead.
+        if (_tzenThiefBought == "")
         {
-            if (TzenThiefPeekWob != "Did_not_check")
+            if (_tzenThiefPeekWob != "Did_not_check")
             {
-                TzenThiefReward = $"Did_not_buy__{TzenThiefPeekWob}";
-                ChecksPeeked.Add("Tzen Thief");
+                _tzenThiefReward = $"Did_not_buy__{_tzenThiefPeekWob}";
+                _checksPeeked.Add("Tzen Thief");
             }
-            else if (TzenThiefPeekWor != "Did_not_check")
+            else if (_tzenThiefPeekWor != "Did_not_check")
             {
-                TzenThiefReward = $"Did_not_buy__{TzenThiefPeekWor}";
-                ChecksPeeked.Add("Tzen Thief");
+                _tzenThiefReward = $"Did_not_buy__{_tzenThiefPeekWor}";
+                _checksPeeked.Add("Tzen Thief");
             }
             else
             {
-                TzenThiefReward = $"Did_not_buy__Unknown";
+                _tzenThiefReward = $"Did_not_buy__Unknown";
             }
         }
         else
         {
-            TzenThiefReward = $"Bought_{TzenThiefBought}";
+            _tzenThiefReward = $"Bought_{_tzenThiefBought}";
         }
 
-        if (TzenThiefPeekWob == "Did_not_check" && TzenThiefPeekWor == "Did_not_check")
+        if (_tzenThiefPeekWob == "Did_not_check" && _tzenThiefPeekWor == "Did_not_check")
         {
-            TzenThief = "Did_not_check";
+            _tzenThief = "Did_not_check";
         }
-        else if (TzenThiefPeekWob != "Did_not_check" && TzenThiefPeekWor == "Did_not_check")
+        else if (_tzenThiefPeekWob != "Did_not_check" && _tzenThiefPeekWor == "Did_not_check")
         {
-            TzenThief = "Checked_WOB_only";
+            _tzenThief = "Checked_WOB_only";
         }
-        else if (TzenThiefPeekWob == "Did_not_check" && TzenThiefPeekWor != "Did_not_check")
+        else if (_tzenThiefPeekWob == "Did_not_check" && _tzenThiefPeekWor != "Did_not_check")
         {
-            TzenThief = "Checked_WOR_only";
+            _tzenThief = "Checked_WOR_only";
         }
         else
         {
-            TzenThief = "Checked_both";
+            _tzenThief = "Checked_both";
         }
     }
 
     public void CheckColiseumVisit()
     {
-        if (WonColiseumMatch  && MapsVisited.Contains(0x19D))
+        // Restore string text and replace underscores in JSON instead.
+        if (_wonColiseumMatch  && _mapsVisited.Contains(0x19D))
         {
-            ColiseumVisit = "Visited_and_fought";
+            _coliseumVisit = "Visited_and_fought";
         }
-        else if (!WonColiseumMatch && MapsVisited.Contains(0x19D))
+        else if (!_wonColiseumMatch && _mapsVisited.Contains(0x19D))
         {
-            ColiseumVisit = "Visited_but_did_not_fight";
+            _coliseumVisit = "Visited_but_did_not_fight";
         }
     }
 
     public void CreateAuctionHouseString()
     {
-        switch (AuctionHouseEsperCount)
+        switch (_auctionHouseEsperCount)
         {
             case 0:
-                AuctionHouseEsperCountText = "Zero";
+                _auctionHouseEsperCountText = "Zero";
                 break;
             case 1:
-                AuctionHouseEsperCountText = "One";
+                _auctionHouseEsperCountText = "One";
                 break;
             case 2:
-                AuctionHouseEsperCountText = "Two";
+                _auctionHouseEsperCountText = "Two";
                 break;
         }
     }
 
     public void CreateTimestampedRoute()
     {
-        foreach (var item in Route)
+        // TODO: rename item to map
+        foreach (var item in _route)
         {
-            RouteJson.Add($"{item.Item2} {item.Item1}");
+            _routeJson.Add($"{item.Item2} {item.Item1}");
             if (item.Item1 == "Reset")
             {
-                ResetCount++;
+                _resetCount++;
             }
         }
     }
@@ -686,73 +694,77 @@ public class Run
         for (int i = 0; i < 4; i++)
         {
             // Get character data.
-            byte[] characterData = CharacterData[(FinalBattleLineup[i] * 37)..(FinalBattleLineup[i] * 37 + 37)];
+            byte[] characterData = _characterData[(_finalBattleLineup[i] * 37)..(_finalBattleLineup[i] * 37 + 37)];
 
             // Get character skill data.
             byte[] characterSkillData;
             
-            if (FinalBattleLineup[i] < 0x0C)
+            if (_finalBattleLineup[i] < 0x0C)
             {
-                characterSkillData = CharacterSkillData[(FinalBattleLineup[i] * 54)..(FinalBattleLineup[i] * 54 + 54)];
+                characterSkillData = _characterSkillData[(_finalBattleLineup[i] * 54)..(_finalBattleLineup[i] * 54 + 54)];
             }
             else
             {
                 // If character is Gogo or Umaro, create an empty array.
                 characterSkillData = Array.Empty<byte>();
             }
-            string name = WCData.CharacterNames[FinalBattleLineup[i]];
-            FinalBattleCharacters[i] = new Character(characterData, characterSkillData, name);
+            
+            // Get character name.
+            string name = WCData.CharacterNames[_finalBattleLineup[i]];
+
+            // Add character to the final battle character array.
+            _finalBattleCharacters[i] = new Character(characterData, characterSkillData, name);
         }
     }
 
     public void GetSwdTechList()
     {
-        byte swdTechData = CharacterSkillData[WCData.SwdTechOffset];
+        byte swdTechData = _characterSkillData[WCData.SwdTechOffset];
         for (byte i = 0; i < 8; i++)
         {
             bool isSwdTechKnown = DataHandler.CheckBitSet(swdTechData, WCData.BitFlags[i]);
             if (isSwdTechKnown)
             {
-                KnownSwdTechs.Add(WCData.SwdTechDict[i]);
+                _knownSwdTechs.Add(WCData.SwdTechDict[i]);
             }
         }
     }
 
     public void GetBlitzList()
     {
-        byte blitzData = CharacterSkillData[WCData.BlitzOffset];
+        byte blitzData = _characterSkillData[WCData.BlitzOffset];
         for (byte i = 0; i < 8; i++)
         {
             bool isBlitzKnown = DataHandler.CheckBitSet(blitzData, WCData.BitFlags[i]);
             if (isBlitzKnown)
             {
-                KnownBlitzes.Add(WCData.BlitzDict[i]);
+                _knownBlitzes.Add(WCData.BlitzDict[i]);
             }
         }
     }
 
     public void GetLoreList()
     {
-        int loreData = DataHandler.ConcatenateByteArray(CharacterSkillData[WCData.LoreOffset..(WCData.LoreOffset+3)]);
+        int loreData = DataHandler.ConcatenateByteArray(_characterSkillData[WCData.LoreOffset..(WCData.LoreOffset+3)]);
         for (byte i = 0; i < 24; i++)
         {
             bool isLoreKnown = DataHandler.CheckBitSet(loreData, WCData.BitFlags[i%8] << 8*(i/8));
             if (isLoreKnown)
             {
-                KnownLores.Add(WCData.LoreDict[i]);
+                _knownLores.Add(WCData.LoreDict[i]);
             }
         }
     }
 
     public void CheckForMute()
     {
-        foreach (var character in FinalBattleCharacters)
+        foreach (var character in _finalBattleCharacters)
         {
             if (character.Spells.Contains("Mute") ||
                 character.Esper == "Siren" ||
-               (character.Commands.Contains("Lore") && KnownLores.Contains("SourMouth")))
+               (character.Commands.Contains("Lore") && _knownLores.Contains("SourMouth")))
             {
-                FinalBattlePrep.Add("Mute");
+                _finalBattlePrep.Add("Mute");
                 return;
             }
         }
@@ -760,14 +772,14 @@ public class Run
 
     public void CheckForInstantDeath()
     {
-        foreach (var character in FinalBattleCharacters)
+        foreach (var character in _finalBattleCharacters)
         {
             if (character.Spells.Contains("X-Zone") || character.Spells.Contains("Doom") ||
                 character.Esper == "Raiden" || character.Esper == "Odin" ||
-               (character.Commands.Contains("SwdTech") && KnownSwdTechs.Contains("Cleave")) ||
-               (character.Commands.Contains("Tools") && DataHandler.CheckIfItemExistsInInventory(Inventory, 169)))
+               (character.Commands.Contains("SwdTech") && _knownSwdTechs.Contains("Cleave")) ||
+               (character.Commands.Contains("Tools") && DataHandler.CheckIfItemExistsInInventory(_inventory, 169)))
             {
-                FinalBattlePrep.Add("Instant_Death"); // TODO: replace characters in RunJson
+                _finalBattlePrep.Add("Instant_Death"); // TODO: replace characters in RunJson
                 return;
             }
         }
@@ -775,12 +787,12 @@ public class Run
 
     public void CheckForCalmnessProtection()
     {
-        foreach (var character in FinalBattleCharacters)
+        foreach (var character in _finalBattleCharacters)
         {
             if (character.Esper == "Fenrir" || character.Esper == "Golem" || 
                 character.Esper == "Phantom" || character.Spells.Contains("Life3"))
             {
-                FinalBattlePrep.Add("Calmness_Protection"); // TODO: replace characters in RunJson
+                _finalBattlePrep.Add("Calmness_Protection"); // TODO: replace characters in RunJson
                 return;
             }
         }
@@ -788,16 +800,16 @@ public class Run
 
     public void UpdateGPSpent()
     {
-        if (GPCurrent < GPPrevious && !IsInSaveMenu())
+        if (_gpCurrent < _gpPrevious && !IsInSaveMenu())
         {
-            GPSpent += (GPPrevious - GPCurrent);
+            _gpSpent += (_gpPrevious - _gpCurrent);
         }
-        GPPrevious = GPCurrent;
+        _gpPrevious = _gpCurrent;
     }
 
     private bool IsInSaveMenu()
     {
-        return MapId == 3 || (IsMenuTimerRunning && NextMenuState >= 19 && NextMenuState <= 22);
+        return _mapId == 3 || (_isMenuTimerRunning && _nextMenuState >= 19 && _nextMenuState <= 22);
     }
 
     /// <summary>
@@ -805,41 +817,41 @@ public class Run
     /// </summary>
     public void GetGameStatus()
     {
-        int firstTwoBytes = DataHandler.ConcatenateByteArray(GameStatusData[0..2]);
-        byte lastByte = GameStatusData[2];
+        int firstTwoBytes = DataHandler.ConcatenateByteArray(_gameStatusData[0..2]);
+        byte lastByte = _gameStatusData[2];
 
         if (firstTwoBytes == 0x0ba7 && lastByte == 0xC1)
         {
-            GameStatus = WCData.BattleKey;
+            _gameStatus = WCData.BattleKey;
         }
         else if (firstTwoBytes == 0x0182 && lastByte == 0xC0)
         {
-            GameStatus = WCData.FieldKey;
+            _gameStatus = WCData.FieldKey;
         }
         else if (firstTwoBytes == 0xa728 && lastByte == 0xEE)
         {
-            GameStatus = WCData.WorldKey;
+            _gameStatus = WCData.WorldKey;
         }
         else if (firstTwoBytes == 0x1387 && lastByte == 0xC3)
         {
-            GameStatus = WCData.MenuKey;
+            _gameStatus = WCData.MenuKey;
         }
         else if ((firstTwoBytes == 0xa509 && lastByte == 0xEE) ||
                  (firstTwoBytes == 0xa94d && lastByte == 0xEE))
         {
-            GameStatus = WCData.Mode7Key;
+            _gameStatus = WCData.Mode7Key;
         }
     }
 
     public void CheckResetFalsePositive()
     {
-        if (Route.Count > 1 && MenuNumber != 2)
+        if (_route.Count > 1 && _menuNumber != 2)
         {
             for (int i = 0; i < 2; i++)
             {
-                Route.RemoveAt(Route.Count - 1);
+                _route.RemoveAt(_route.Count - 1);
             }
         }
-        IsReset = false;
+        _isReset = false;
     }
 }

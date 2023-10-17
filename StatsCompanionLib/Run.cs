@@ -198,7 +198,6 @@ public class Run
     public bool IsSouthFigaroBasementPeeked { get => _isSouthFigaroBasementPeeked; set => _isSouthFigaroBasementPeeked = value; }
     public bool IsKefkaTowerUnlocked { get => _isKefkaTowerUnlocked; set => _isKefkaTowerUnlocked = value; }
     public bool IsKTSkipUnlocked { get => _isKTSkipUnlocked; set => _isKTSkipUnlocked = value; }
-    public bool IsKefkaTowerStarted { get => _isKefkaTowerStarted; set => _isKefkaTowerStarted = value; }
     public bool IsFinalBattle { get => _isFinalBattle; set => _isFinalBattle = value; }
     public byte MenuNumber { get => _menuNumber; set => _menuNumber = value; }
     public byte NewGameSelected { get => _newGameSelected; set => _newGameSelected = value; }
@@ -212,7 +211,6 @@ public class Run
     public byte DialogWaitingForInput { get => _dialogWaitingForInput; set => _dialogWaitingForInput = value; }
     public byte DialogPointer { get => _dialogPointer; set => _dialogPointer = value; }
     public byte DialogChoiceSelected { get => _dialogChoiceSelected; set => _dialogChoiceSelected = value; }
-    public byte AuctionHouseEsperCount { get => _auctionHouseEsperCount; set => _auctionHouseEsperCount = value; }
     public byte KefkaTowerEventByte { get => _kefkaTowerEventByte; set => _kefkaTowerEventByte = value; }
     public byte[] Inventory { get => _inventory; set => _inventory = value; }
     public byte[] CharactersBytes { get => _charactersBytes; set => _charactersBytes = value; }
@@ -233,10 +231,6 @@ public class Run
     public int GPPrevious { get => _gpPrevious; set => _gpPrevious = value; }
     public DateTime StartTime { get => _startTime; set => _startTime = value; }
     public DateTime EndTime { get => _endTime; set => _endTime = value; }
-    public DateTime MenuOpen { get => _menuOpen; set => _menuOpen = value; }
-    public DateTime MenuClose { get => _menuClose; set => _menuClose = value; }
-    public DateTime AirshipStart { get => _airshipStart; set => _airshipStart = value; }
-    public DateTime AirshipStop { get => _airshipStop; set => _airshipStop = value; }
     public DateTime KefkaTowerUnlockTime { get => _kefkaTowerUnlockTime; set => _kefkaTowerUnlockTime = value; }
     public DateTime KtSkipUnlockTime { get => _ktSkipUnlockTime; set => _ktSkipUnlockTime = value; }
     public DateTime KefkaTowerStartTime { get => _kefkaTowerStartTime; set => _kefkaTowerStartTime = value; }
@@ -253,7 +247,6 @@ public class Run
     public List<string> DragonsKilled { get => _dragonsKilled; set => _dragonsKilled = value; }
     public List<string> ChecksCompleted { get => _checksCompleted; set => _checksCompleted = value; }
     public List<string> ChecksPeeked { get => _checksPeeked; set => _checksPeeked = value; }
-    public List<int> MapsVisited { get => _mapsVisited; set => _mapsVisited = value; }
     public byte EsperMountainPeekByte { get => _esperMountainPeekByte; set => _esperMountainPeekByte = value; }
     public byte PartyXPosition { get => _partyXPosition; set => _partyXPosition = value; }
     public bool WonColiseumMatch { get => _wonColiseumMatch; set => _wonColiseumMatch = value; }
@@ -263,14 +256,12 @@ public class Run
     public byte PartyYPosition { get => _partyYPosition; set => _partyYPosition = value; }
     public int ResetCount { get => _resetCount; set => _resetCount = value; }
     public string KtSkipUnlockTimeString { get => _ktSkipUnlockTimeString; set => _ktSkipUnlockTimeString = value; }
-    public byte Character1GraphicPrevious { get => _character1GraphicPrevious; set => _character1GraphicPrevious = value; }
     public bool TzenThiefBit { get => _tzenThiefBit; set => _tzenThiefBit = value; }
     public byte EsperCountPrevious { get => _esperCountPrevious; set => _esperCountPrevious = value; }
     public bool InTzenThiefArea { get => _inTzenThiefArea; set => _inTzenThiefArea = value; }
     public byte EnableDialogWindow { get => _enableDialogWindow; set => _enableDialogWindow = value; }
     public Character[] FinalBattleCharacters { get => _finalBattleCharacters; set => _finalBattleCharacters = value; }
     public List<(string, string)> Route { get => _route; set => _route = value; }
-    public DateTime LastMapTimestamp { get => _lastMapTimestamp; set => _lastMapTimestamp = value; }
     public byte[] CharacterSkillData { get => _characterSkillData; set => _characterSkillData = value; }
     public List<string> KnownSwdTechs { get => _knownSwdTechs; set => _knownSwdTechs = value; }
     public List<string> KnownBlitzes { get => _knownBlitzes; set => _knownBlitzes = value; }
@@ -278,15 +269,10 @@ public class Run
     public List<string> FinalBattlePrep { get => _finalBattlePrep; set => _finalBattlePrep = value; }
     public bool IsBattleTimerRunning { get => _isBattleTimerRunning; set => _isBattleTimerRunning = value; }
     public TimeSpan TimeSpentOnBattles { get => _timeSpentOnBattles; set => _timeSpentOnBattles = value; }
-    public DateTime BattleStart { get => _battleStart; set => _battleStart = value; }
-    public DateTime BattleEnd { get => _battleEnd; set => _battleEnd = value; }
     public int BattlesFought { get => _battlesFought; set => _battlesFought = value; }
     public bool InAuctionHouse { get => _inAuctionHouse; set => _inAuctionHouse = value; }
     public byte[] MonsterBytes { get => _monsterBytes; set => _monsterBytes = value; }
-    public byte[] MonsterBytesPrevious { get => _monsterBytesPrevious; set => _monsterBytesPrevious = value; }
-    public string BattleFormation { get => _battleFormation; set => _battleFormation = value; }
     public int GPSpent { get => _gpSpent; set => _gpSpent = value; }
-    public DateTime LastAddedBattleFormation { get => _lastAddedBattleFormation; set => _lastAddedBattleFormation = value; }
     public byte NextMenuState { get => _nextMenuState; set => _nextMenuState = value; }
     public TimeSpan TimeSpentOnMenus { get => _timeSpentOnMenus; set => _timeSpentOnMenus = value; }
     public TimeSpan TimeSpentOnShops { get => _timeSpentOnShops; set => _timeSpentOnShops = value; }
@@ -294,7 +280,6 @@ public class Run
     public byte[] GameStatusData { get => _gameStatusData; set => _gameStatusData = value; }
     public string GameStatus { get => _gameStatus; set => _gameStatus = value; }
     public bool IsReset { get => _isReset; set => _isReset = value; }
-    public List<string> EventBitsPeeked { get => _eventBitsPeeked; set => _eventBitsPeeked = value; }
     public string[] SeedInfo { get => _seedInfo; set => _seedInfo = value; }
     public TimeSpan FinalTime { get => _finalTime; set => _finalTime = value; }
 

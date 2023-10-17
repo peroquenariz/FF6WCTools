@@ -9,6 +9,8 @@ namespace StatsCompanionLib;
 /// </summary>
 public class Run
 {
+    // TODO: move all game memory-related stuff to a new class
+    
     private bool _isMenuTimerRunning;
     private bool _isBattleTimerRunning;
     private bool _isAirshipTimerRunning;
@@ -121,71 +123,6 @@ public class Run
     private List<int> _mapsVisited;
     private List<(string, string)> _route;
 
-    public Run()
-    {
-        _seedHasBeenAbandoned = false;
-        _hasFinished = false;
-        _steppedOnKTSwitches = false;
-        _hasExpEgg = "No";
-        _hasSuperBall = "No";
-        _characterMaxLevel = 0;
-        _menuOpenCounter = 0;
-        _isMenuTimerRunning = false;
-        _isBattleTimerRunning = false;
-        _menuOpen = _menuClose = _airshipStart = _airshipStop = _battleStart = _battleEnd = DateTime.Now;
-        _timeSpentOnMenus = _timeSpentOnShops = _timeSpentOnBattles = _timeSpentOnAirship = new(0, 0, 0);
-        _isAirshipTimerRunning = false;
-        _airshipCounter = 0;
-        _isWhelkPeeked = false;
-        _isEsperMountainPeeked = false;
-        _isSouthFigaroBasementPeeked = false;
-        _isKefkaTowerUnlocked = false;
-        _isKTSkipUnlocked = false;
-        _isKefkaTowerStarted = false;
-        _isFinalBattle = false;
-        _tzenThiefBit = false;
-        _inTzenThiefArea = false;
-        _isReset = false;
-        _ktSkipUnlockTimeString = "";
-        _battleFormation = "";
-        _tzenThiefPeekWob = "Did_not_check"; // TODO: replace all these underscores in the JSON
-        _tzenThiefPeekWor = "Did_not_check";
-        _tzenThiefBought = "";
-        _tzenThief = "Did_not_check";
-        _tzenThiefReward = "Did_not_buy__Unknown";
-        _coliseumVisit = "Did_not_visit";
-        _auctionHouseEsperCount = 0;
-        _auctionHouseEsperCountText = "Zero";
-        _gameStatus = "field";
-        _startingCharacters = new List<string>();
-        _startingCommands = new List<string>();
-        _dragonsKilled = new List<string>();
-        _checksCompleted = new List<string>();
-        _checksPeeked = new List<string>();
-        _eventBitsPeeked = new List<string>();
-        _mapsVisited = new List<int>();
-        _routeJson = new List<string>();
-        _route = new List<(string, string)>();
-        _knownBlitzes = new List<string>();
-        _knownLores = new List<string>();
-        _knownSwdTechs = new List<string>();
-        _finalBattlePrep = new List<string>();
-        _inventory = Array.Empty<byte>();
-        _charactersBytes = Array.Empty<byte>();
-        _characterData = Array.Empty<byte>();
-        _characterSkillData = Array.Empty<byte>();
-        _characterCommands = Array.Empty<byte>();
-        _dragonsBytes = Array.Empty<byte>();
-        _chestData = Array.Empty<byte>();
-        _eventBitData = Array.Empty<byte>();
-        _finalBattleLineup = Array.Empty<byte>();
-        _monsterBytes = Array.Empty<byte>();
-        _monsterBytesPrevious = Array.Empty<byte>();
-        _gameStatusData = Array.Empty<byte>();
-        _finalBattleCharacters = new Character[4];
-        _seedInfo = new string[9];
-    }
-
     public bool IsMenuTimerRunning { get => _isMenuTimerRunning; set => _isMenuTimerRunning = value; }
     public bool IsAirshipTimerRunning { get => _isAirshipTimerRunning; set => _isAirshipTimerRunning = value; }
     public bool SeedHasBeenAbandoned { get => _seedHasBeenAbandoned; set => _seedHasBeenAbandoned = value; }
@@ -282,6 +219,64 @@ public class Run
     public bool IsReset { get => _isReset; set => _isReset = value; }
     public string[] SeedInfo { get => _seedInfo; set => _seedInfo = value; }
     public TimeSpan FinalTime { get => _finalTime; set => _finalTime = value; }
+
+    public Run()
+    {
+        // Initialize all default run parameters.
+
+        // DateTimes
+        _menuOpen = DateTime.Now;
+        _menuClose = DateTime.Now;
+        _airshipStart = DateTime.Now;
+        _airshipStop = DateTime.Now;
+        _battleStart = DateTime.Now;
+        _battleEnd = DateTime.Now;
+
+        // Strings
+        _hasExpEgg = "No"; // TODO: switch to booleans
+        _hasSuperBall = "No";
+        _ktSkipUnlockTimeString = "";
+        _battleFormation = "";
+        _tzenThiefBought = "";
+        _tzenThiefPeekWob = "Did_not_check"; // TODO: replace all these underscores in the JSON
+        _tzenThiefPeekWor = "Did_not_check"; // TODO: switch to ANYTHING but strings
+        _tzenThief = "Did_not_check";
+        _tzenThiefReward = "Did_not_buy__Unknown";
+        _coliseumVisit = "Did_not_visit";
+        _auctionHouseEsperCountText = "Zero";
+        _gameStatus = WCData.FieldKey;
+
+        // Lists
+        _startingCharacters = new List<string>();
+        _startingCommands = new List<string>();
+        _dragonsKilled = new List<string>();
+        _checksCompleted = new List<string>();
+        _checksPeeked = new List<string>();
+        _eventBitsPeeked = new List<string>();
+        _mapsVisited = new List<int>();
+        _routeJson = new List<string>();
+        _route = new List<(string, string)>();
+        _knownBlitzes = new List<string>();
+        _knownLores = new List<string>();
+        _knownSwdTechs = new List<string>();
+        _finalBattlePrep = new List<string>();
+
+        // Arrays
+        _inventory = Array.Empty<byte>();
+        _charactersBytes = Array.Empty<byte>();
+        _characterData = Array.Empty<byte>();
+        _characterSkillData = Array.Empty<byte>();
+        _characterCommands = Array.Empty<byte>();
+        _dragonsBytes = Array.Empty<byte>();
+        _chestData = Array.Empty<byte>();
+        _eventBitData = Array.Empty<byte>();
+        _finalBattleLineup = Array.Empty<byte>();
+        _monsterBytes = Array.Empty<byte>();
+        _monsterBytesPrevious = Array.Empty<byte>();
+        _gameStatusData = Array.Empty<byte>();
+        _finalBattleCharacters = new Character[4];
+        _seedInfo = new string[9];
+    }
 
     public bool CheckIfRunStarted()
     {

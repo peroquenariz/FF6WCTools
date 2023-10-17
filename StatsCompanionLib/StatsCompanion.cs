@@ -46,7 +46,7 @@ public class StatsCompanion
 
             OnExecutionLoopStart?.Invoke(this, EventArgs.Empty);
 
-            bool isValidDirectory = true;
+            bool isValidDirectory = true; // TODO: possibly move this to FileHandler?
 
             // Open a connection to SNI
             _sniClient.ResetConnection();

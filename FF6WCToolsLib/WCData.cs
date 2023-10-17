@@ -212,8 +212,9 @@ public static class WCData
     
     /// <summary>
     /// Size in bytes of the memory area that contains character data.
+    /// 14 characters, 37 bytes each.
     /// </summary>
-    public const int CharacterDataSize = 519;
+    public const int CharacterDataSize = 518;
 
     /// <summary>
     /// Address that contains the start of the inventory.

@@ -10,7 +10,8 @@ namespace StatsCompanionLib;
 public class Run
 {
     // TODO: move all game memory-related stuff to a new class
-    
+    private const string TIME_FORMAT = "hh\\:mm\\:ss";
+
     private bool _isMenuTimerRunning;
     private bool _isBattleTimerRunning;
     private bool _isAirshipTimerRunning;
@@ -376,7 +377,7 @@ public class Run
             {
                 _battleFormation = _battleFormation.Remove(_battleFormation.Length - 2, 2);
                 _lastAddedBattleFormation = DateTime.Now;
-                _route.Add((_battleFormation, (_lastAddedBattleFormation - _startTime).ToString(@"hh\:mm\:ss")));
+                _route.Add((_battleFormation, (_lastAddedBattleFormation - _startTime).ToString(@TIME_FORMAT)));
             }
         }
         _monsterBytesPrevious = _monsterBytes;
@@ -432,6 +433,7 @@ public class Run
         {
             _endTime = DateTime.Now;
             _finalTime = _endTime - _startTime - WCData.TimeFromKefkaFlashToAnimation;
+            _route.Add(("Kefka kill", _finalTime.ToString(@TIME_FORMAT)));
             _hasFinished = true;
         }
     }
@@ -444,7 +446,7 @@ public class Run
             {
                 _mapsVisited.Add(_mapId);
                 _lastMapTimestamp = DateTime.Now;
-                _route.Add((WCData.MapsDict[(uint)_mapId], (_lastMapTimestamp - _startTime).ToString(@"hh\:mm\:ss")));
+                _route.Add((WCData.MapsDict[(uint)_mapId], (_lastMapTimestamp - _startTime).ToString(@TIME_FORMAT)));
             }
         }
     }

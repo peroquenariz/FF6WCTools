@@ -363,10 +363,6 @@ public class StatsCompanion
                 run.KtSkipUnlockTimeString = (run.KtSkipUnlockTime - run.StartTime).ToString(@"hh\:mm\:ss");
             }
 
-            // Add Kefka kill time to event list.
-            // TODO: move this to Run class.
-            run.Route.Add(("Kefka kill", run.FinalTime.ToString(@"hh\:mm\:ss")));
-
             // Get data after Kefka kill.
             run.CharactersBytes = _sniClient.ReadMemory(WCData.CharactersByte, 2);
             run.DragonsBytes = _sniClient.ReadMemory(WCData.DragonsByte, 2);

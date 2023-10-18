@@ -15,6 +15,7 @@ public class StatsCompanion
     public event EventHandler? OnSeedAbandoned;
     public event EventHandler? OnWaitingForNewGame;
     public event EventHandler? OnTrackingRun;
+    public event EventHandler? OnCheckKeypress;
     public event EventHandler<DebugInformationEventArgs>? OnShowDebugInformation;
     public event EventHandler<RunSuccessfulEventArgs>? OnRunSuccessful;
     
@@ -22,6 +23,7 @@ public class StatsCompanion
     private readonly FileHandler _fileHandler;
     
     private readonly string? _libVersion;
+    private static bool _enableForceRunReset;
 
     public string? LibVersion { get => _libVersion; }
 
@@ -44,7 +46,9 @@ public class StatsCompanion
             }
 
             OnExecutionLoopStart?.Invoke(this, EventArgs.Empty);
-
+            
+            _enableForceRunReset = false;
+            
             bool isValidDirectory = true; // TODO: possibly move this to FileHandler?
 
             // Open a connection to SNI
@@ -306,20 +310,16 @@ public class StatsCompanion
                     // Either skip or regular KT is logged, whatever happens first.
                     run.CheckKefkaTowerStart();
 
-                    // If escape key is pressed, abandon the seed.
-                    if (Console.KeyAvailable)
-                    {
-                        ConsoleKeyInfo cki = Console.ReadKey(true);
-                        while (Console.KeyAvailable)
-                        {
-                            Console.ReadKey(true);
-                        }
+                    // Ask the console application if a key has been pressed.
+                    // For now it's just escape for a force reset. More keys might be implemented in the future.
+                    // TODO: maybe send an interface as argument and only expose functionality to event subscribers?
+                    OnCheckKeypress?.Invoke(this, EventArgs.Empty);
 
-                        if (cki.Key == ConsoleKey.Escape)
-                        {
-                            run.SeedHasBeenAbandoned = true;
-                            break;
-                        }
+                    // If a force reset has been triggered, reset the run.
+                    if (_enableForceRunReset)
+                    {
+                        run.SeedHasBeenAbandoned = true;
+                        break;
                     }
 
                     // If a new seed is found in the directory, abandon the seed.
@@ -422,14 +422,16 @@ public class StatsCompanion
             // Show final time in console.
             OnRunSuccessful?.Invoke(this, new RunSuccessfulEventArgs(run.FinalTime.ToString(@"hh\:mm\:ss\.fff")));
             _fileHandler.ResetLastLoadedSeed();
-
-            // TODO: move this ReadKey to Log and make an event
-            // Same with other console stuff
-
-#if JSON_DEBUG
-            Console.ReadKey();
-#endif
         }
+    }
+
+    /// <summary>
+    /// Forces a run reset.
+    /// TODO: this shouldn't be available on non-UI classes.
+    /// </summary>
+    public static void ForceRunReset()
+    {
+        _enableForceRunReset = true;
     }
 }
 

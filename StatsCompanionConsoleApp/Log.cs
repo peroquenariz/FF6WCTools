@@ -43,6 +43,12 @@ internal class Log
         statsCompanion.OnTrackingRun += StatsCompanion_OnTrackingRun;
         statsCompanion.OnShowDebugInformation += StatsCompanion_OnShowDebugInformation;
         statsCompanion.OnRunSuccessful += StatsCompanion_OnRunSuccessful;
+        statsCompanion.OnCheckKeypress += StatsCompanion_OnCheckKeypress;
+    }
+
+    private void StatsCompanion_OnCheckKeypress(object? sender, EventArgs e)
+    {
+        CheckForEscapeKeypress();
     }
 
     private void SniClient_OnCountdownTick(object? sender, CountdownEventArgs e)
@@ -209,6 +215,11 @@ internal class Log
         Console.CursorTop = 5;
         Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine($"JSON file successfully saved. Final time: {finalTime}.".PadRight(RIGHT_PADDING));
+
+#if JSON_DEBUG
+        Console.WriteLine("JSON_DEBUG: Press a key to write another JSON file.".PadRight(RIGHT_PADDING));
+        Console.ReadKey(); // Wait for a keypress to avoid spamming JSONs
+#endif
     }
 
     public static void ConnectionSuccessful(string uri)
@@ -329,5 +340,27 @@ internal class Log
         Console.CursorTop = 8;
         Console.ForegroundColor = ConsoleColor.Yellow;
         Console.WriteLine($"No matching .txt found for {filename} - not collecting seed information!".PadRight(RIGHT_PADDING));
+    }
+
+    /// <summary>
+    /// Checks if escape key was pressed and resets Stats Companion.
+    /// TODO: this should be moved to an InputHandler of some sorts.
+    /// It has no reason to live in the logger.
+    /// </summary>
+    private static void CheckForEscapeKeypress()
+    {
+        if (Console.KeyAvailable)
+        {
+            ConsoleKeyInfo cki = Console.ReadKey(true);
+            while (Console.KeyAvailable)
+            {
+                Console.ReadKey(true);
+            }
+
+            if (cki.Key == ConsoleKey.Escape)
+            {
+                StatsCompanion.ForceRunReset();
+            }
+        }
     }
 }

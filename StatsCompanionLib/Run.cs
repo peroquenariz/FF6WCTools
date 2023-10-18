@@ -570,7 +570,7 @@ public class Run
 
     public void CheckEventBitPeeks()
     {
-        foreach (var eventBit in WCData.PeeksByEventBit) // TODO: rename item to event
+        foreach (var eventBit in WCData.PeeksByEventBit)
         {
             if (!_eventBitsPeeked.Contains(eventBit.Value))
             {

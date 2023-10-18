@@ -154,12 +154,21 @@ public class StatsCompanion
                 // Tzen thief peek WoB.
                 if (run.MapId == 0x132 && run.TzenThiefPeekWob == "Did_not_check") // TODO: get rid of underscores here too!
                 {
+                    // Read dialog index and only execute if the dialog is the WoB Tzen Thief dialogue
                     run.DialogIndex = DataHandler.ConcatenateByteArray(_sniClient.ReadMemory(WCData.DialogIndex, 2));
                     if (run.DialogIndex == 1569)
                     {
+                        // Wait for the dialogue options to be available
                         run.DialogWaitingForInput = _sniClient.ReadMemory(WCData.DialogWaitingForInput, 1)[0];
+                        
+                        // Get dialog pointer, value will be different if esper or item
+                        // due to the amount of lines in the dialog box
                         run.DialogPointer = _sniClient.ReadMemory(WCData.DialogPointer, 1)[0];
+
+                        // Get which dialog choice is selected
                         run.DialogChoiceSelected = _sniClient.ReadMemory(WCData.DialogChoiceSelected, 1)[0];
+
+                        // Store the peek data.
                         run.TzenThiefPeekWob = DataHandler.PeekTzenThiefRewardWob(run.DialogWaitingForInput, run.DialogPointer, run.DialogChoiceSelected);
                     }
                 }
@@ -266,24 +275,35 @@ public class StatsCompanion
                     // Tzen thief peek WoR.
                     if (run.MapId == 0x131 && run.TzenThiefPeekWor == "Did_not_check")
                     {
+                        // Get dialog index for the WoR Tzen Thief
                         run.DialogIndex = DataHandler.ConcatenateByteArray(_sniClient.ReadMemory(WCData.DialogIndex, 2));
+                        
+                        // Store the peek data.
                         run.TzenThiefPeekWor = DataHandler.PeekTzenThiefRewardWor(run.DialogIndex);
                     }
 
                     // Check if Tzen thief was bought, and if it was an esper or an item.
                     // Works by checking esper changes against Tzen Thief bit.
-                    // TODO: cleanup and properly comment this code!
+                    
+                    // If map is Tzen WoB or WoR and Thief hasn't been bought yet
                     if ((run.MapId == 0x131 || run.MapId == 0x132) && run.TzenThiefBought == "")
                     {
+                        // Check party Y position in map, only check if in the Tzen Thief area
                         run.PartyYPosition = _sniClient.ReadMemory(WCData.PartyYPosition, 1)[0];
                         if (run.PartyYPosition < 7)
                         {
+                            // Store esper count
                             run.EsperCount = _sniClient.ReadMemory(WCData.EsperCount, 1)[0];
+                            
+                            // Check if the event bit was set.
                             run.TzenThiefBit = DataHandler.CheckBitByOffset(_sniClient.ReadMemory(WCData.EventBitStartAddress + 0x27c / 8, 1)[0], 0x27c);
+                            
+                            // If event bit was changed, set the reward based on esper count change.
                             run.TzenThiefBought = DataHandler.CheckTzenThiefBought(run.EsperCount, run.EsperCountPrevious, run.TzenThiefBit);
+                            
                             if (!run.InTzenThiefArea)
                             {
-                                run.EsperCountPrevious = run.EsperCount;
+                                run.EsperCountPrevious = run.EsperCount; // Keep track of esper count changes
                                 run.InTzenThiefArea = true;
                             }
                         }

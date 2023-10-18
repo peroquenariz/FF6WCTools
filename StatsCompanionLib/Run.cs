@@ -22,7 +22,7 @@ public class Run
     private bool _isSouthFigaroBasementPeeked;
     private bool _isKefkaTowerUnlocked;
     private bool _isKTSkipUnlocked;
-    private bool _isKefkaTowerStarted;
+    private bool _hasKefkaTowerStarted;
     private bool _isFinalBattle;
     private bool _wonColiseumMatch;
     private bool _tzenThiefBit;
@@ -121,7 +121,7 @@ public class Run
     private List<string> _knownLores;
     private List<string> _finalBattlePrep;
     private List<int> _mapsVisited;
-    private List<(string, string)> _route;
+    private List<(string, string)> _route; // TODO: add field names for the tuple -> (EventName: string, Time: string)
 
     public bool IsMenuTimerRunning { get => _isMenuTimerRunning; set => _isMenuTimerRunning = value; }
     public bool IsAirshipTimerRunning { get => _isAirshipTimerRunning; set => _isAirshipTimerRunning = value; }
@@ -461,9 +461,8 @@ public class Run
     {
         if (_hasExpEgg == "No")
         {
-            // TODO: rename bools
-            bool expEgg = DataHandler.CheckIfItemExistsInInventory(_inventory, 228);
-            if (expEgg)
+            bool hasExpEgg = DataHandler.CheckIfItemExistsInInventory(_inventory, 228);
+            if (hasExpEgg)
             {
                 _hasExpEgg = "Yes";
             }
@@ -471,9 +470,8 @@ public class Run
         }
         if (_hasSuperBall == "No")
         {
-            // TODO: rename bools
-            bool superBall = DataHandler.CheckIfItemExistsInInventory(_inventory, 250);
-            if (superBall)
+            bool hasSuperBall = DataHandler.CheckIfItemExistsInInventory(_inventory, 250);
+            if (hasSuperBall)
             {
                 _hasSuperBall = "Yes";
             }
@@ -506,61 +504,65 @@ public class Run
 
     public void CheckKefkaTowerStart()
     {
-        if ((_mapId == 0x14E || _mapId == 0x163) && _isKefkaTowerUnlocked  && !_isKefkaTowerStarted) // TODO: rename _isKefkaTowerStarted to _hasKefkaTowerStarted
+        if ((_mapId == 0x14E || _mapId == 0x163) && _isKefkaTowerUnlocked  && !_hasKefkaTowerStarted)
         {
             _kefkaTowerStartTime = DateTime.Now;
-            _isKefkaTowerStarted = true;
+            _hasKefkaTowerStarted = true;
         }
     }
 
     public void GetListOfCompletedChecks()
     {
-        // TODO: rename item to event
-        foreach (var item in WCData.EventBitDict)
+        foreach (var eventBitOffset in WCData.EventBitDict)
         {
-            byte checkByte = _eventBitData[item.Value / 8];
-            bool checkDone = DataHandler.CheckBitByOffset(checkByte, item.Value);
-            if (checkDone)
+            byte checkByte = _eventBitData[eventBitOffset.Value / 8];
+            bool isCheckCompleted = DataHandler.CheckBitByOffset(checkByte, eventBitOffset.Value);
+            if (isCheckCompleted)
             {
-                _checksCompleted.Add(WCData.CheckNamesDict[item.Key]);
+                _checksCompleted.Add(WCData.CheckNamesDict[eventBitOffset.Key]);
             }
         }
     }
 
     public void GetListOfPeekedChecks()
     {
-        // Peeks by map ID. TODO: rename item to map
-        foreach (var item in WCData.PeeksByMapId)
+        // Peeks by map ID.
+        foreach (var mapIdPeek in WCData.PeeksByMapId)
         {
-            if (!_checksCompleted.Contains(item.Value) && _mapsVisited.Contains(item.Key))
+            if (!_checksCompleted.Contains(mapIdPeek.Value) && _mapsVisited.Contains(mapIdPeek.Key))
             {
-                _checksPeeked.Add(item.Value);
+                _checksPeeked.Add(mapIdPeek.Value);
             }
         }
 
-        // Peeks by event bits. TODO: rename to event
-        foreach (var item in _eventBitsPeeked)
+        // Peeks by event bits.
+        foreach (var eventBitPeek in _eventBitsPeeked)
         {
-            if (!_checksCompleted.Contains(item))
+            if (!_checksCompleted.Contains(eventBitPeek))
             {
-                _checksPeeked.Add(item);
+                _checksPeeked.Add(eventBitPeek);
             }
         }
 
         // Multiple condition peeks. Check manually for each.
-        if (!_checksCompleted.Contains("South Figaro Prisoner") && _isSouthFigaroBasementPeeked)
+        if (!_checksCompleted.Contains("South Figaro Prisoner") &&
+            _isSouthFigaroBasementPeeked)
         {
             _checksPeeked.Add("South Figaro Prisoner");
         }
-        if (!_checksCompleted.Contains("Esper Mountain") && _isEsperMountainPeeked)
+        if (!_checksCompleted.Contains("Esper Mountain") &&
+            _isEsperMountainPeeked)
         {
             _checksPeeked.Add("Esper Mountain");
         }
-        if (!_checksCompleted.Contains("Whelk Gate") && _isWhelkPeeked)
+        if (!_checksCompleted.Contains("Whelk Gate") &&
+            _isWhelkPeeked)
         {
             _checksPeeked.Add("Whelk Gate");
         }
-        if (!_checksCompleted.Contains("Auction House 1") && !_checksCompleted.Contains("Auction House 2") && _mapsVisited.Contains(0x0C8))
+        if (!_checksCompleted.Contains("Auction House 1") &&
+            !_checksCompleted.Contains("Auction House 2") &&
+            _mapsVisited.Contains(0x0C8))
         {
             _checksPeeked.Add("Auction House");
         }
@@ -568,15 +570,15 @@ public class Run
 
     public void CheckEventBitPeeks()
     {
-        foreach (var item in WCData.PeeksByEventBit) // TODO: rename item to event
+        foreach (var eventBit in WCData.PeeksByEventBit) // TODO: rename item to event
         {
-            if (!_eventBitsPeeked.Contains(item.Value))
+            if (!_eventBitsPeeked.Contains(eventBit.Value))
             {
-                byte eventByte = _eventBitData[item.Key / 8];
-                bool eventBit = DataHandler.CheckBitByOffset(eventByte, item.Key);
-                if (eventBit)
+                byte eventByte = _eventBitData[eventBit.Key / 8];
+                bool isEventBitSet = DataHandler.CheckBitByOffset(eventByte, eventBit.Key);
+                if (isEventBitSet)
                 {
-                    _eventBitsPeeked.Add(item.Value);
+                    _eventBitsPeeked.Add(eventBit.Value);
                 }
             }
         }
@@ -629,7 +631,7 @@ public class Run
 
     public void CheckColiseumVisit()
     {
-        // Restore string text and replace underscores in JSON instead.
+        // TODO: Restore string text and replace underscores in JSON instead.
         if (_wonColiseumMatch  && _mapsVisited.Contains(0x19D))
         {
             _coliseumVisit = "Visited_and_fought";
@@ -658,11 +660,10 @@ public class Run
 
     public void CreateTimestampedRoute()
     {
-        // TODO: rename item to map
-        foreach (var item in _route)
+        foreach (var routeEvent in _route)
         {
-            _routeJson.Add($"{item.Item2} {item.Item1}");
-            if (item.Item1 == "Reset")
+            _routeJson.Add($"{routeEvent.Item2} {routeEvent.Item1}");
+            if (routeEvent.Item1 == "Reset")
             {
                 _resetCount++;
             }

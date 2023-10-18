@@ -285,9 +285,6 @@ public static class WCData
     public static readonly TimeSpan TimeFromMenuToOverworld = new(0, 0, 0, 0, 750);
     public static readonly TimeSpan TimeFromBattleToOverworld = new(0, 0, 0, 2, 500);
 
-    public static readonly TimeSpan TimeZero = new(0);
-
-
     /// <summary>
     /// List containing the maps that are used to determine if the airship is being flown.
     /// </summary>

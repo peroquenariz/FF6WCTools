@@ -350,7 +350,7 @@ public class Run
     {
         TimeSpan timeDifference = _battleEnd - _lastAddedBattleFormation;
         if (timeDifference < WCData.TimeBattleFormationFalsePositives &&
-            timeDifference > WCData.TimeZero) // TODO: replace with TimeSpan.Zero
+            timeDifference > TimeSpan.Zero)
         {
             _route.RemoveAt(_route.Count - 1);
         }

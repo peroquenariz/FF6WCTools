@@ -65,22 +65,22 @@ public class RunJson
     public List<string> knownLores { get; set; }
     public List<string> route { get; set; }
     
-    private const string TIME_FORMAT = "hh\\:mm\\:ss";
-    private const string TIME_FORMAT_PRECISE = "hh\\:mm\\:ss\\.fff";
+    private const string TIME_FORMAT = @"hh\:mm\:ss";
+    private const string TIME_FORMAT_PRECISE = @"hh\:mm\:ss\.fff";
     private const string DATE_FORMAT = "yyyy-MM-ddTHH:mm:ss";
 
     public RunJson(Run run, string? appVersion, string seedFilename)
     {
         this.appVersion = appVersion;
         filename = seedFilename;
-        if (this.filename.Length > 4) filename = filename[..^4];
-        runTime = run.FinalTime.ToString(@TIME_FORMAT);
-        runTimePrecise = run.FinalTime.ToString(@TIME_FORMAT_PRECISE);
+        if (filename.Length > 4) filename = filename[..^4];
+        runTime = run.FinalTime.ToString(TIME_FORMAT);
+        runTimePrecise = run.FinalTime.ToString(TIME_FORMAT_PRECISE);
         runDate = run.StartTime.ToString(DATE_FORMAT);
         flagset = "Other";
         otherFlagset = "";
-        ktStartTime = (run.KefkaTowerStartTime - run.StartTime).ToString(@TIME_FORMAT);
-        kefkaTime = (run.KefkaStartTime - run.StartTime).ToString(@TIME_FORMAT);
+        ktStartTime = (run.KefkaTowerStartTime - run.StartTime).ToString(TIME_FORMAT);
+        kefkaTime = (run.KefkaStartTime - run.StartTime).ToString(TIME_FORMAT);
         userId = "";
         chars = run.StartingCharacters;
         abilities = ReplaceCharactersInList(run.StartingCommands);
@@ -91,7 +91,7 @@ public class RunJson
         numOfPeekedChecks = run.ChecksPeeked.Count;
         numOfBosses = run.BossCount;
         numOfChests = run.ChestCount;
-        kefkaTowerUnlockTime = (run.KefkaTowerUnlockTime - run.StartTime).ToString(@TIME_FORMAT);
+        kefkaTowerUnlockTime = (run.KefkaTowerUnlockTime - run.StartTime).ToString(TIME_FORMAT);
         skip = run.IsKTSkipUnlocked;
         ktSkipUnlockTime = run.KtSkipUnlockTimeString;
         dragons = ReplaceCharactersInList(run.DragonsKilled);
@@ -107,14 +107,14 @@ public class RunJson
         mood = "Not_recorded";
         raceId = "";
         countResets = run.ResetCount;
-        timeSpentOnMenus = run.TimeSpentOnMenus.ToString(@TIME_FORMAT);
+        timeSpentOnMenus = run.TimeSpentOnMenus.ToString(TIME_FORMAT);
         countTimesMenuWasOpened = run.MenuOpenCounter;
-        timeSpentOnShops = run.TimeSpentOnShops.ToString(@TIME_FORMAT);
+        timeSpentOnShops = run.TimeSpentOnShops.ToString(TIME_FORMAT);
         countTimesShopsWereVisited = run.ShopOpenCounter;
-        totalMenuTime = (run.TimeSpentOnMenus + run.TimeSpentOnShops).ToString(@TIME_FORMAT);
-        timeSpentDrivingAirship = run.TimeSpentOnAirship.ToString(@TIME_FORMAT);
+        totalMenuTime = (run.TimeSpentOnMenus + run.TimeSpentOnShops).ToString(TIME_FORMAT);
+        timeSpentDrivingAirship = run.TimeSpentOnAirship.ToString(TIME_FORMAT);
         countTimesAirshipWasUsed = run.AirshipCounter;
-        timeSpentonBattles = run.TimeSpentOnBattles.ToString(@TIME_FORMAT);
+        timeSpentonBattles = run.TimeSpentOnBattles.ToString(TIME_FORMAT);
         countBattlesFought = run.BattlesFought;
         gpSpent = run.GPSpent;
         checksCompleted = run.ChecksCompleted;

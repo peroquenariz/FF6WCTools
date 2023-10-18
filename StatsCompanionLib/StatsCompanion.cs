@@ -60,14 +60,10 @@ public class StatsCompanion
 #if RELEASE
             // Wait for the player to start a new game.
             // Only exit the loop if current menu is FF6WC custom pre-game menu and new game has been selected.
-            OnWaitingForNewGame?.Invoke(this, EventArgs.Empty);
 
             while (true)
             {
-                if (Console.CursorTop == 6) // TODO: don't check cursor position for this!
-                {
-                    
-                }
+                OnWaitingForNewGame?.Invoke(this, EventArgs.Empty);
 
                 // TODO: move this to FileHandler and make it a function (get rid of copypasted auto-reset code)
                 if (isValidDirectory &&

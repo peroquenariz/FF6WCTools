@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using Google.Protobuf;
 using Grpc.Net.Client;
 
@@ -11,6 +12,7 @@ public class SniClient
 {
     public event EventHandler<ConnectionSuccessfulEventArgs>? OnConnectionSuccessful;
     public event EventHandler<ConnectionErrorEventArgs>? OnConnectionError;
+    public event EventHandler<CountdownEventArgs>? OnCountdownTick;
     
     private const string SniAddress = "http://localhost:8191/";
     private readonly GrpcChannel _sniChannel = GrpcChannel.ForAddress(SniAddress);
@@ -89,6 +91,11 @@ public class SniClient
                 {
                     string message = "Device not found! Make sure your device/emulator is correctly connected to SNI.";
                     OnConnectionError?.Invoke(this, new ConnectionErrorEventArgs(message));
+                    for (int i = 5; i > 0; i--)
+                    {
+                        OnCountdownTick?.Invoke(this, new CountdownEventArgs(i));
+                        Thread.Sleep(1000);
+                    }
                     var firstDevice = _devicesClient.ListDevices(new DevicesRequest { }).Devices[0];
                     _isValidConnection = true;
                 }
@@ -104,6 +111,11 @@ public class SniClient
                 {
                     string message = "Error - SNI not found! Make sure it's open and connected to your device/emulator.";
                     OnConnectionError?.Invoke(this, new ConnectionErrorEventArgs(message));
+                    for (int i = 5; i > 0; i--)
+                    {
+                        OnCountdownTick?.Invoke(this, new CountdownEventArgs(i));
+                        Thread.Sleep(1000);
+                    }
                     var firstDevice = _devicesClient.ListDevices(new DevicesRequest { }).Devices[0];
                     _isValidConnection = true;
                 }
@@ -156,6 +168,15 @@ public class SniClient
             ResetConnection();
             WriteMemory(address, data);
         }
+    }
+}
+
+public class CountdownEventArgs : EventArgs
+{
+    public int Counter { get; }
+    public CountdownEventArgs(int counter)
+    {
+        Counter = counter;
     }
 }
 

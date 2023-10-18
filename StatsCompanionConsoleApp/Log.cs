@@ -28,6 +28,7 @@ internal class Log
 
         sniClient.OnConnectionError += SniClient_OnConnectionError;
         sniClient.OnConnectionSuccessful += SniClient_OnConnectionSuccessful;
+        sniClient.OnCountdownTick += SniClient_OnCountdownTick;
 
         fileHandler.OnSeedDirectoryNotFound += FileHandler_OnSeedDirectoryNotFound;
         fileHandler.OnSeedDirectoryInvalid += FileHandler_OnSeedDirectoryInvalid;
@@ -42,6 +43,11 @@ internal class Log
         statsCompanion.OnTrackingRun += StatsCompanion_OnTrackingRun;
         statsCompanion.OnShowDebugInformation += StatsCompanion_OnShowDebugInformation;
         statsCompanion.OnRunSuccessful += StatsCompanion_OnRunSuccessful;
+    }
+
+    private void SniClient_OnCountdownTick(object? sender, CountdownEventArgs e)
+    {
+        RetryCounter(e.Counter);
     }
 
     private void StatsCompanion_OnExecutionLoopStart(object? sender, EventArgs e)
@@ -140,9 +146,12 @@ internal class Log
 
     public static void WaitingForNewGame()
     {
-        Console.ForegroundColor = ConsoleColor.DarkCyan;
-        Console.WriteLine("Waiting for new game...".PadRight(RIGHT_PADDING));
-        ClearLines(1);
+        if (Console.CursorTop == 6)
+        {
+            Console.ForegroundColor = ConsoleColor.DarkCyan;
+            Console.WriteLine("Waiting for new game...".PadRight(RIGHT_PADDING));
+            ClearLines(1);
+        }
     }
 
     public static void NoSeedsFound()
@@ -204,6 +213,7 @@ internal class Log
 
     public static void ConnectionSuccessful(string uri)
     {
+        ClearLines(1);
         ResetConsoleCursor();
         Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine("Connection to SNI successful!".PadRight(RIGHT_PADDING));
@@ -220,13 +230,12 @@ internal class Log
         Console.ForegroundColor = ConsoleColor.White;
         ClearLines(3);
         Console.CursorTop -= 2;
-        for (int i = 5; i > 0; i--)
-        {
-            Console.Write($"Retrying in {i} seconds...".PadRight(RIGHT_PADDING));
-            Thread.Sleep(1000);
-            Console.CursorLeft = 0;
-        }
-        ClearLines(1);
+    }
+
+    public static void RetryCounter(int counter)
+    {
+        Console.Write($"Retrying in {counter} seconds...".PadRight(RIGHT_PADDING));
+        Console.CursorLeft = 0;
     }
 
     public static void DebugInformation(Run run)

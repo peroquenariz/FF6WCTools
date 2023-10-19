@@ -122,7 +122,7 @@ public class Run
     private List<string> _knownLores;
     private List<string> _finalBattlePrep;
     private List<int> _mapsVisited;
-    private List<(string, string)> _route; // TODO: add field names for the tuple -> (EventName: string, Time: string)
+    private List<(string EventName, string Time)> _route;
 
     public bool IsMenuTimerRunning { get => _isMenuTimerRunning; set => _isMenuTimerRunning = value; }
     public bool IsAirshipTimerRunning { get => _isAirshipTimerRunning; set => _isAirshipTimerRunning = value; }
@@ -664,8 +664,8 @@ public class Run
     {
         foreach (var routeEvent in _route)
         {
-            _routeJson.Add($"{routeEvent.Item2} {routeEvent.Item1}");
-            if (routeEvent.Item1 == "Reset")
+            _routeJson.Add($"{routeEvent.Time} {routeEvent.EventName}");
+            if (routeEvent.EventName == "Reset")
             {
                 _resetCount++;
             }

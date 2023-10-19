@@ -152,7 +152,7 @@ public class StatsCompanion
                 }
 
                 // Tzen thief peek WoB.
-                if (run.MapId == 0x132 && run.TzenThiefPeekWob == "Did_not_check") // TODO: get rid of underscores here too!
+                if (run.MapId == 0x132 && run.TzenThiefPeekWob == "Did not check")
                 {
                     // Read dialog index and only execute if the dialog is the WoB Tzen Thief dialogue
                     run.DialogIndex = DataHandler.ConcatenateByteArray(_sniClient.ReadMemory(WCData.DialogIndex, 2));
@@ -273,7 +273,7 @@ public class StatsCompanion
                     }
 
                     // Tzen thief peek WoR.
-                    if (run.MapId == 0x131 && run.TzenThiefPeekWor == "Did_not_check")
+                    if (run.MapId == 0x131 && run.TzenThiefPeekWor == "Did not check")
                     {
                         // Get dialog index for the WoR Tzen Thief
                         run.DialogIndex = DataHandler.ConcatenateByteArray(_sniClient.ReadMemory(WCData.DialogIndex, 2));

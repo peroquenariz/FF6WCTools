@@ -78,10 +78,9 @@ public static class DataHandler
     /// <returns></returns>
     public static string PeekTzenThiefRewardWob (byte dialogWaitingForInput, byte dialogPointer, byte dialogChoiceSelected)
     {
-        // TODO: get rid of underscores and replace characters in JSON instead.
-        // Use variables instead of magic numbers.
-        // Get rid of strings in the logic.
-        string tzenThiefRewardWob = "Did_not_check";
+        // TODO: Use variables instead of magic numbers.
+        // TODO: Get rid of strings in the logic.
+        string tzenThiefRewardWob = "Did not check";
         if (dialogWaitingForInput != 0)
         {
             if ((dialogChoiceSelected == 0 && dialogPointer == 4) || (dialogChoiceSelected == 1 && dialogPointer == 6))
@@ -103,10 +102,9 @@ public static class DataHandler
     /// <returns></returns>
     public static string PeekTzenThiefRewardWor(int dialogIndex)
     {
-        // TODO: get rid of underscores and replace characters in JSON instead.
-        // Use variables instead of magic numbers.
-        // Get rid of strings in the logic.
-        string tzenThiefRewardWor = "Did_not_check";
+        // TODO: Use variables instead of magic numbers.
+        // TODO: Get rid of strings in the logic.
+        string tzenThiefRewardWor = "Did not check";
         
         if (dialogIndex == 1570)
         {

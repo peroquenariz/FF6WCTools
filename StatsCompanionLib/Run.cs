@@ -239,11 +239,11 @@ public class Run
         _ktSkipUnlockTimeString = "";
         _battleFormation = "";
         _tzenThiefBought = "";
-        _tzenThiefPeekWob = "Did_not_check"; // TODO: replace all these underscores in the JSON
-        _tzenThiefPeekWor = "Did_not_check"; // TODO: switch to ANYTHING but strings
-        _tzenThief = "Did_not_check";
-        _tzenThiefReward = "Did_not_buy__Unknown";
-        _coliseumVisit = "Did_not_visit";
+        _tzenThiefPeekWob = "Did not check";
+        _tzenThiefPeekWor = "Did not check"; // TODO: switch to ANYTHING but strings
+        _tzenThief = "Did not check";
+        _tzenThiefReward = "Did not buy - Unknown";
+        _coliseumVisit = "Did not visit";
         _auctionHouseEsperCountText = "Zero";
         _gameStatus = WCData.FieldKey;
 
@@ -590,57 +590,55 @@ public class Run
     {
         // TODO: refactor this code!
         // Get rid of strings, use bools, enums or maybe constants instead. Literally ANYTHING but strings.
-        // Restore string text and replace underscores in JSON instead.
         if (_tzenThiefBought == "")
         {
-            if (_tzenThiefPeekWob != "Did_not_check")
+            if (_tzenThiefPeekWob != "Did not check")
             {
-                _tzenThiefReward = $"Did_not_buy__{_tzenThiefPeekWob}";
+                _tzenThiefReward = $"Did not buy - {_tzenThiefPeekWob}";
                 _checksPeeked.Add("Tzen Thief");
             }
-            else if (_tzenThiefPeekWor != "Did_not_check")
+            else if (_tzenThiefPeekWor != "Did not check")
             {
-                _tzenThiefReward = $"Did_not_buy__{_tzenThiefPeekWor}";
+                _tzenThiefReward = $"Did not buy - {_tzenThiefPeekWor}";
                 _checksPeeked.Add("Tzen Thief");
             }
             else
             {
-                _tzenThiefReward = $"Did_not_buy__Unknown";
+                _tzenThiefReward = $"Did not buy - Unknown";
             }
         }
         else
         {
-            _tzenThiefReward = $"Bought_{_tzenThiefBought}";
+            _tzenThiefReward = $"Bought {_tzenThiefBought}";
         }
 
-        if (_tzenThiefPeekWob == "Did_not_check" && _tzenThiefPeekWor == "Did_not_check")
+        if (_tzenThiefPeekWob == "Did not check" && _tzenThiefPeekWor == "Did not check")
         {
-            _tzenThief = "Did_not_check";
+            _tzenThief = "Did not check";
         }
-        else if (_tzenThiefPeekWob != "Did_not_check" && _tzenThiefPeekWor == "Did_not_check")
+        else if (_tzenThiefPeekWob != "Did not check" && _tzenThiefPeekWor == "Did not check")
         {
-            _tzenThief = "Checked_WOB_only";
+            _tzenThief = "Checked WOB only";
         }
-        else if (_tzenThiefPeekWob == "Did_not_check" && _tzenThiefPeekWor != "Did_not_check")
+        else if (_tzenThiefPeekWob == "Did not check" && _tzenThiefPeekWor != "Did not check")
         {
-            _tzenThief = "Checked_WOR_only";
+            _tzenThief = "Checked WOR only";
         }
         else
         {
-            _tzenThief = "Checked_both";
+            _tzenThief = "Checked both";
         }
     }
 
     public void CheckColiseumVisit()
     {
-        // TODO: Restore string text and replace underscores in JSON instead.
         if (_wonColiseumMatch  && _mapsVisited.Contains(0x19D))
         {
-            _coliseumVisit = "Visited_and_fought";
+            _coliseumVisit = "Visited and fought";
         }
         else if (!_wonColiseumMatch && _mapsVisited.Contains(0x19D))
         {
-            _coliseumVisit = "Visited_but_did_not_fight";
+            _coliseumVisit = "Visited but did not fight";
         }
     }
 
@@ -762,7 +760,7 @@ public class Run
                (character.Commands.Contains("SwdTech") && _knownSwdTechs.Contains("Cleave")) ||
                (character.Commands.Contains("Tools") && DataHandler.CheckIfItemExistsInInventory(_inventory, 169)))
             {
-                _finalBattlePrep.Add("Instant_Death"); // TODO: replace characters in RunJson
+                _finalBattlePrep.Add("Instant Death");
                 return;
             }
         }
@@ -775,7 +773,7 @@ public class Run
             if (character.Esper == "Fenrir" || character.Esper == "Golem" || 
                 character.Esper == "Phantom" || character.Spells.Contains("Life3"))
             {
-                _finalBattlePrep.Add("Calmness_Protection"); // TODO: replace characters in RunJson
+                _finalBattlePrep.Add("Calmness Protection");
                 return;
             }
         }

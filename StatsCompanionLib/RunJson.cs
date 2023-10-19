@@ -82,7 +82,7 @@ public class RunJson
         ktStartTime = (run.KefkaTowerStartTime - run.StartTime).ToString(TIME_FORMAT);
         kefkaTime = (run.KefkaStartTime - run.StartTime).ToString(TIME_FORMAT);
         userId = "";
-        chars = run.StartingCharacters;
+        chars = ReplaceCharactersInList(run.StartingCharacters);
         abilities = ReplaceCharactersInList(run.StartingCommands);
         disableAbilityCheck = false;
         numOfChars = run.CharacterCount;
@@ -95,16 +95,16 @@ public class RunJson
         skip = run.IsKTSkipUnlocked;
         ktSkipUnlockTime = run.KtSkipUnlockTimeString;
         dragons = ReplaceCharactersInList(run.DragonsKilled);
-        finalBattle = run.FinalBattlePrep;
+        finalBattle = ReplaceCharactersInList(run.FinalBattlePrep);
         highestLevel = run.CharacterMaxLevel;
-        superBalls = run.HasSuperBall;
-        egg = run.HasExpEgg;
-        auction = run.AuctionHouseEsperCountText;
-        thiefPeek = run.TzenThief;
-        thiefReward = run.TzenThiefReward;
-        coliseum = run.ColiseumVisit;
-        race = "No_Race";
-        mood = "Not_recorded";
+        superBalls = ReplaceCharacters(run.HasSuperBall);
+        egg = ReplaceCharacters(run.HasExpEgg);
+        auction = ReplaceCharacters(run.AuctionHouseEsperCountText);
+        thiefPeek = ReplaceCharacters(run.TzenThief);
+        thiefReward = ReplaceCharacters(run.TzenThiefReward);
+        coliseum = ReplaceCharacters(run.ColiseumVisit);
+        race = ReplaceCharacters("No Race");
+        mood = ReplaceCharacters("Not recorded");
         raceId = "";
         countResets = run.ResetCount;
         timeSpentOnMenus = run.TimeSpentOnMenus.ToString(TIME_FORMAT);
@@ -218,7 +218,7 @@ public class RunJson
     /// Required for submitting JSONs to StatsCollide.
     /// </summary>
     /// <param name="inputList"></param>
-    /// <returns></returns>
+    /// <returns>A list of strings with replaced characters.</returns>
     private List<string> ReplaceCharactersInList (List<string> inputList)
     {
         List<string> replacedList = new List<string>();

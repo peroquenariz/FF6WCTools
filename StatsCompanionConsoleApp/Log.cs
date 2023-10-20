@@ -44,6 +44,8 @@ internal class Log
         statsCompanion.OnShowDebugInformation += StatsCompanion_OnShowDebugInformation;
         statsCompanion.OnRunSuccessful += StatsCompanion_OnRunSuccessful;
         statsCompanion.OnCheckKeypress += StatsCompanion_OnCheckKeypress;
+
+        Version();
     }
 
     private void StatsCompanion_OnCheckKeypress(object? sender, EventArgs e)

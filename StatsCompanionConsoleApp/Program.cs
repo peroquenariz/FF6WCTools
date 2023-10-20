@@ -29,9 +29,6 @@ internal class Program
         StatsCompanion statsCompanion = new StatsCompanion(sniClient, fileHandler);
         Log log = new(consoleAppVersion, statsCompanion, sniClient, fileHandler);
         
-        // Print version.
-        log.Version();
-
         try
         {
             // Execute Stats Companion.

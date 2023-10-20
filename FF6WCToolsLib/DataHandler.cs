@@ -3,15 +3,13 @@
 namespace FF6WCToolsLib;
 
 /// <summary>
-/// A class that contains methods for processing game memory.
+/// Contains methods for processing game memory.
 /// </summary>
 public static class DataHandler
 {
     /// <summary>
-    /// Method that takes 2 arrays of the same size and type and checks if they have the same data.
+    /// Takes 2 arrays of the same size and type and checks if they have the same data.
     /// </summary>
-    /// <param name="monsterBytes"></param>
-    /// <param name="monsterBytesPrevious"></param>
     /// <returns>true if they're equal, otherwise false.</returns>
     public static bool AreArraysEqual(byte[] arr1, byte[] arr2)
     {
@@ -32,7 +30,7 @@ public static class DataHandler
     }
 
     /// <summary>
-    /// Method that concatenates the monster indexes.
+    /// Concatenates the monster indexes.
     /// </summary>
     /// <param name="monsterBytes">The array containing the bytes of the monster indexes.</param>
     /// <returns>An array of integers with the concatenated monster indexes.</returns>
@@ -49,7 +47,7 @@ public static class DataHandler
     }
 
     /// <summary>
-    /// Method that checks if the Tzen Thief reward was bought.
+    /// Checks if the Tzen Thief reward was bought.
     /// </summary>
     /// <param name="esperCount">Number of espers owned when entering Tzen Thief area.</param>
     /// <param name="esperCountPrevious">Number of espers owned when exiting Tzen Thief area.</param>
@@ -70,7 +68,7 @@ public static class DataHandler
     }
 
     /// <summary>
-    /// Method that checks if the player peeked what reward World of Balance Tzen thief has.
+    /// Checks if the player peeked what reward World of Balance Tzen thief has.
     /// </summary>
     /// <param name="dialogWaitingForInput">If the dialog is waiting for an input.</param>
     /// <param name="dialogPointer">Pointer, "2": item, "4": esper.</param>
@@ -96,7 +94,7 @@ public static class DataHandler
     }
 
     /// <summary>
-    /// Method that checks if the player peeked World of Ruin Tzen thief.
+    /// Checks if the player peeked World of Ruin Tzen thief.
     /// </summary>
     /// <param name="dialogIndex">The dialog index.</param>
     /// <returns></returns>
@@ -114,7 +112,7 @@ public static class DataHandler
     }
 
     /// <summary>
-    /// Method that takes the character bytes and counts the characters currently available.
+    /// Takes the character bytes and counts the characters currently available.
     /// </summary>
     /// <param name="charactersBytes">An array that contains the bytes of the available characters.</param>
     /// <returns>The amount of characters available.</returns>
@@ -126,7 +124,7 @@ public static class DataHandler
     }
 
     /// <summary>
-    /// Method that iterates through character data and extracts the list of available commands in the seed.
+    /// Iterates through character data and extracts the list of available commands in the seed.
     /// </summary>
     /// <param name="characterData">An array containing the full character data.</param>
     /// <returns>An array containing all available commands in the seed.</returns>
@@ -146,7 +144,7 @@ public static class DataHandler
     }
 
     /// <summary>
-    /// Method that creates a list of the available characters at the current point in the game.
+    /// Creates a list of the available characters at the current point in the game.
     /// </summary>
     /// <param name="charactersBytes">An array that contains the bytes of the available characters.</param>
     /// <returns>A list with the available characters.</returns>
@@ -174,17 +172,13 @@ public static class DataHandler
     }
 
     /// <summary>
-    /// Method that creates a list of the available commands at the current point in the game.
+    /// Creates a list of the available commands at the current point in the game.
     /// </summary>
     /// <param name="charactersBytes">An array that contains the bytes of the available characters.</param>
     /// <param name="characterCommands">An array that contains the full list of commands available in the seed.</param>
     /// <returns>A list with the available commands.</returns>
     public static List<string> GetAvailableCommands(byte[] charactersBytes, byte[] characterCommands)
     {
-        // TODO: DITCH THIS CODE!
-        // Starting characters are already listed! No need to check the bits again.
-        // Use run.StartingCharacters instead!
-        
         var availableCommands = new List<string>();
         
         for (int i = 0; i < 8; i++) // First byte check.
@@ -219,11 +213,12 @@ public static class DataHandler
                 availableCommands.Add(command);
             }
         }
+
         return availableCommands;
     }
 
     /// <summary>
-    /// Method that creates a list of killed dragons at the current point in the game.
+    /// Creates a list of killed dragons at the current point in the game.
     /// </summary>
     /// <param name="dragonsBytes">An array that contains the bytes of the killed dragons.</param>
     /// <returns></returns>
@@ -252,7 +247,7 @@ public static class DataHandler
     }
 
     /// <summary>
-    /// Method that takes the chest data and counts the amount of chests opened at the current point in the game.
+    /// Takes the chest data and counts the amount of chests opened at the current point in the game.
     /// </summary>
     /// <param name="chestData">An array containing the bytes of chests opened.</param>
     /// <returns>The count of chests opened.</returns>
@@ -269,7 +264,7 @@ public static class DataHandler
     }
 
     /// <summary>
-    /// Method that takes the character data and gets the maximum character level at the current point in the game.
+    /// Takes the character data and gets the maximum character level at the current point in the game.
     /// </summary>
     /// <param name="characterData">An array containing the full character data.</param>
     /// <returns>The maximum level of all characters.</returns>
@@ -290,7 +285,7 @@ public static class DataHandler
     }
 
     /// <summary>
-    /// Method that checks if a given item exists in the inventory.
+    /// Checks if a given item exists in the inventory.
     /// </summary>
     /// <param name="inventoryData">The inventory byte array.</param>
     /// <param name="itemValue">Byte value of the item to check.</param>
@@ -312,7 +307,7 @@ public static class DataHandler
     }
 
     /// <summary>
-    /// Method that takes a byte and a flag and checks if the bit is set.
+    /// Takes a byte and a bit flag and checks if the bit is set.
     /// </summary>
     /// <param name="data">The byte to check.</param>
     /// <param name="flag">The bit flag to use.</param>
@@ -330,10 +325,10 @@ public static class DataHandler
     }
 
     /// <summary>
-    /// Method that takes a byte and a bit offset and checks if the bit is set.
+    /// Takes a byte and a bit offset and checks if the bit is set.
     /// </summary>
-    /// <param name="data"></param>
-    /// <param name="offset"></param>
+    /// <param name="data">The byte to check.</param>
+    /// <param name="offset">The byte offset.</param>
     /// <returns></returns>
     public static bool CheckBitByOffset(byte data, int offset)
     {
@@ -348,7 +343,7 @@ public static class DataHandler
     }
 
     /// <summary>
-    /// Method that takes a byte and checks how many bits are set.
+    /// Takes a byte and checks how many bits are set.
     /// </summary>
     /// <param name="value">The byte to check.</param>
     /// <returns></returns>
@@ -366,9 +361,9 @@ public static class DataHandler
     }
 
     /// <summary>
-    /// Method that takes a byte array and concatenates it into a single integer.
+    /// Takes a byte array and concatenates it into a single integer.
     /// </summary>
-    /// <param name="byteArray">The byte array to concatenate</param>
+    /// <param name="byteArray">The byte array to concatenate.</param>
     /// <returns></returns>
     public static int ConcatenateByteArray(byte[] byteArray)
     {

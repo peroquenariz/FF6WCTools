@@ -78,12 +78,18 @@ public static class DataHandler
     public static TzenThiefPeekWob PeekTzenThiefRewardWob (byte dialogWaitingForInput, byte dialogPointer, byte dialogChoiceSelected)
     {
         TzenThiefPeekWob tzenThiefRewardWob = TzenThiefPeekWob.Did_not_check;
+        
+        // Tzen Thief WoB dialog box height is different due to it having more lines if it has the "glowing stone" text.
+        // If the dialog box is waiting for an input (Yes/No)
         if (dialogWaitingForInput != 0)
         {
+            // If it's an esper, the "glowing stone" text will make the textbox have an extra line, so dialogPointer will be a higher value.
+            // "Yes" choice will be dialogPointer value 4, "No" choice will be 6
             if ((dialogChoiceSelected == 0 && dialogPointer == 4) || (dialogChoiceSelected == 1 && dialogPointer == 6))
             {
                 tzenThiefRewardWob = TzenThiefPeekWob.Esper;
             }
+            // If it's an esper, "Yes" choice will be dialogPointer value 2, "No" choice will be 4
             else if ((dialogChoiceSelected == 0 && dialogPointer == 2) || (dialogChoiceSelected == 1 && dialogPointer == 4))
             {
                 tzenThiefRewardWob = TzenThiefPeekWob.Item;

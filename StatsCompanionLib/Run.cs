@@ -101,7 +101,6 @@ public class Run
     private TimeSpan _finalTime;
     private string _hasExpEgg;
     private string _hasSuperBall;
-    private string _coliseumVisit;
     private string _auctionHouseEsperCountText;
     private string _ktSkipUnlockTimeString;
     private string _battleFormation;
@@ -125,6 +124,7 @@ public class Run
     private TzenThiefBought _tzenThiefBought;
     private ThiefPeek _tzenThief;
     private ThiefReward _tzenThiefReward;
+    private ColiseumVisit _coliseumVisit;
 
     public bool IsMenuTimerRunning { get => _isMenuTimerRunning; set => _isMenuTimerRunning = value; }
     public bool IsAirshipTimerRunning { get => _isAirshipTimerRunning; set => _isAirshipTimerRunning = value; }
@@ -181,6 +181,7 @@ public class Run
     public TzenThiefBought TzenThiefBought { get => _tzenThiefBought; set => _tzenThiefBought = value; }
     public ThiefPeek TzenThief { get => _tzenThief; set => _tzenThief = value; }
     public ThiefReward TzenThiefReward { get => _tzenThiefReward; set => _tzenThiefReward = value; }
+    public ColiseumVisit ColiseumVisit { get => _coliseumVisit; set => _coliseumVisit = value; }
     public List<string> StartingCharacters { get => _startingCharacters; set => _startingCharacters = value; }
     public List<string> StartingCommands { get => _startingCommands; set => _startingCommands = value; }
     public List<string> DragonsKilled { get => _dragonsKilled; set => _dragonsKilled = value; }
@@ -239,7 +240,6 @@ public class Run
         _hasSuperBall = "No";
         _ktSkipUnlockTimeString = "";
         _battleFormation = "";
-        _coliseumVisit = "Did not visit";
         _auctionHouseEsperCountText = "Zero";
         _gameStatus = WCData.FieldKey;
 
@@ -280,6 +280,7 @@ public class Run
         _tzenThiefPeekWor = TzenThiefPeekWor.Did_not_check;
         _tzenThief = ThiefPeek.Did_not_check;
         _tzenThiefReward = ThiefReward.Did_not_buy__Unknown;
+        _coliseumVisit = ColiseumVisit.Did_not_visit;
     }
 
     public bool CheckIfRunStarted()
@@ -669,11 +670,11 @@ public class Run
     {
         if (_wonColiseumMatch  && _mapsVisited.Contains(0x19D))
         {
-            _coliseumVisit = "Visited and fought";
+            _coliseumVisit = ColiseumVisit.Visited_and_fought;
         }
         else if (!_wonColiseumMatch && _mapsVisited.Contains(0x19D))
         {
-            _coliseumVisit = "Visited but did not fight";
+            _coliseumVisit = ColiseumVisit.Visited_but_did_not_fight;
         }
     }
 

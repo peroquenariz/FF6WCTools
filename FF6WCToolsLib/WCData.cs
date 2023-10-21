@@ -45,6 +45,13 @@ public static class WCData
         Bought_Esper
     }
 
+    public enum ColiseumVisit
+    {
+        Did_not_visit,
+        Visited_but_did_not_fight,
+        Visited_and_fought
+    }
+
     public const string BattleKey = "battle";
     public const string MenuKey = "menu";
     public const string WorldKey = "world";

@@ -100,9 +100,9 @@ public class RunJson
         superBalls = ReplaceCharacters(run.HasSuperBall);
         egg = ReplaceCharacters(run.HasExpEgg);
         auction = ReplaceCharacters(run.AuctionHouseEsperCountText);
-        thiefPeek = ReplaceCharacters(run.TzenThief);
-        thiefReward = ReplaceCharacters(run.TzenThiefReward);
         coliseum = ReplaceCharacters(run.ColiseumVisit);
+        thiefPeek = run.TzenThief.ToString();
+        thiefReward = run.TzenThiefReward.ToString();
         race = ReplaceCharacters("No Race");
         mood = ReplaceCharacters("Not recorded");
         raceId = "";

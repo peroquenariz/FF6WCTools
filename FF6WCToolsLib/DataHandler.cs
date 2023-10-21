@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using static FF6WCToolsLib.WCData;
 
 namespace FF6WCToolsLib;
 
@@ -53,16 +54,16 @@ public static class DataHandler
     /// <param name="esperCountPrevious">Number of espers owned when exiting Tzen Thief area.</param>
     /// <param name="tzenThiefBit">Event bit that indicates if Tzen Thief was bought.</param>
     /// <returns></returns>
-    public static string CheckTzenThiefBought(byte esperCount, byte esperCountPrevious, bool tzenThiefBit)
+    public static TzenThiefBought CheckTzenThiefBought(byte esperCount, byte esperCountPrevious, bool tzenThiefBit)
     {
-        string tzenThiefBought = "";
+        TzenThiefBought tzenThiefBought = TzenThiefBought.None;
         if (tzenThiefBit && esperCount == esperCountPrevious)
         {
-            tzenThiefBought = "Item";
+            tzenThiefBought = TzenThiefBought.Item;
         }
         else if (tzenThiefBit && esperCount > esperCountPrevious)
         {
-            tzenThiefBought = "Esper";
+            tzenThiefBought = TzenThiefBought.Esper;
         }
         return tzenThiefBought;
     }
@@ -70,24 +71,24 @@ public static class DataHandler
     /// <summary>
     /// Checks if the player peeked what reward World of Balance Tzen thief has.
     /// </summary>
-    /// <param name="dialogWaitingForInput">If the dialog is waiting for an input.</param>
+    /// <param name="dialogWaitingForInput">Value is 1 if the dialog box is waiting for an input.</param>
     /// <param name="dialogPointer">Pointer, "2": item, "4": esper.</param>
     /// <param name="dialogChoiceSelected">Zero based index of selected dialog choice.</param>
     /// <returns></returns>
-    public static string PeekTzenThiefRewardWob (byte dialogWaitingForInput, byte dialogPointer, byte dialogChoiceSelected)
+    public static TzenThiefPeekWob PeekTzenThiefRewardWob (byte dialogWaitingForInput, byte dialogPointer, byte dialogChoiceSelected)
     {
         // TODO: Use variables instead of magic numbers.
         // TODO: Get rid of strings in the logic.
-        string tzenThiefRewardWob = "Did not check";
+        TzenThiefPeekWob tzenThiefRewardWob = TzenThiefPeekWob.Did_not_check;
         if (dialogWaitingForInput != 0)
         {
             if ((dialogChoiceSelected == 0 && dialogPointer == 4) || (dialogChoiceSelected == 1 && dialogPointer == 6))
             {
-                tzenThiefRewardWob = "Esper";
+                tzenThiefRewardWob = TzenThiefPeekWob.Esper;
             }
             else if ((dialogChoiceSelected == 0 && dialogPointer == 2) || (dialogChoiceSelected == 1 && dialogPointer == 4))
             {
-                tzenThiefRewardWob = "Item";
+                tzenThiefRewardWob = TzenThiefPeekWob.Item;
             }
         }
         return tzenThiefRewardWob;
@@ -98,15 +99,15 @@ public static class DataHandler
     /// </summary>
     /// <param name="dialogIndex">The dialog index.</param>
     /// <returns></returns>
-    public static string PeekTzenThiefRewardWor(int dialogIndex)
+    public static TzenThiefPeekWor PeekTzenThiefRewardWor(int dialogIndex)
     {
         // TODO: Use variables instead of magic numbers.
         // TODO: Get rid of strings in the logic.
-        string tzenThiefRewardWor = "Did not check";
+        TzenThiefPeekWor tzenThiefRewardWor = TzenThiefPeekWor.Did_not_check;
         
         if (dialogIndex == 1570)
         {
-            tzenThiefRewardWor = "Unknown";
+            tzenThiefRewardWor = TzenThiefPeekWor.Unknown;
         }
         return tzenThiefRewardWor;
     }

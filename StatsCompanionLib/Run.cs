@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using FF6WCToolsLib;
+using static FF6WCToolsLib.WCData;
 
 namespace StatsCompanionLib;
 
@@ -100,11 +101,6 @@ public class Run
     private TimeSpan _finalTime;
     private string _hasExpEgg;
     private string _hasSuperBall;
-    private string _tzenThiefPeekWob;
-    private string _tzenThiefPeekWor;
-    private string _tzenThiefBought;
-    private string _tzenThief;
-    private string _tzenThiefReward;
     private string _coliseumVisit;
     private string _auctionHouseEsperCountText;
     private string _ktSkipUnlockTimeString;
@@ -123,6 +119,12 @@ public class Run
     private List<string> _finalBattlePrep;
     private List<int> _mapsVisited;
     private List<(string EventName, string Time)> _route;
+
+    private TzenThiefPeekWob _tzenThiefPeekWob;
+    private TzenThiefPeekWor _tzenThiefPeekWor;
+    private TzenThiefBought _tzenThiefBought;
+    private ThiefPeek _tzenThief;
+    private ThiefReward _tzenThiefReward;
 
     public bool IsMenuTimerRunning { get => _isMenuTimerRunning; set => _isMenuTimerRunning = value; }
     public bool IsAirshipTimerRunning { get => _isAirshipTimerRunning; set => _isAirshipTimerRunning = value; }
@@ -174,12 +176,11 @@ public class Run
     public DateTime KefkaTowerStartTime { get => _kefkaTowerStartTime; set => _kefkaTowerStartTime = value; }
     public DateTime KefkaStartTime { get => _kefkaStartTime; set => _kefkaStartTime = value; }
     public TimeSpan TimeSpentOnAirship { get => _timeSpentOnAirship; set => _timeSpentOnAirship = value; }
-    public string TzenThiefPeekWob { get => _tzenThiefPeekWob; set => _tzenThiefPeekWob = value; }
-    public string TzenThiefPeekWor { get => _tzenThiefPeekWor; set => _tzenThiefPeekWor = value; }
-    public string TzenThiefBought { get => _tzenThiefBought; set => _tzenThiefBought = value; }
-    public string TzenThief { get => _tzenThief; set => _tzenThief = value; }
-    public string TzenThiefReward { get => _tzenThiefReward; set => _tzenThiefReward = value; }
-    public string ColiseumVisit { get => _coliseumVisit; set => _coliseumVisit = value; }
+    public TzenThiefPeekWob TzenThiefPeekWob { get => _tzenThiefPeekWob; set => _tzenThiefPeekWob = value; }
+    public TzenThiefPeekWor TzenThiefPeekWor { get => _tzenThiefPeekWor; set => _tzenThiefPeekWor = value; }
+    public TzenThiefBought TzenThiefBought { get => _tzenThiefBought; set => _tzenThiefBought = value; }
+    public ThiefPeek TzenThief { get => _tzenThief; set => _tzenThief = value; }
+    public ThiefReward TzenThiefReward { get => _tzenThiefReward; set => _tzenThiefReward = value; }
     public List<string> StartingCharacters { get => _startingCharacters; set => _startingCharacters = value; }
     public List<string> StartingCommands { get => _startingCommands; set => _startingCommands = value; }
     public List<string> DragonsKilled { get => _dragonsKilled; set => _dragonsKilled = value; }
@@ -238,11 +239,6 @@ public class Run
         _hasSuperBall = "No";
         _ktSkipUnlockTimeString = "";
         _battleFormation = "";
-        _tzenThiefBought = "";
-        _tzenThiefPeekWob = "Did not check";
-        _tzenThiefPeekWor = "Did not check"; // TODO: switch to ANYTHING but strings
-        _tzenThief = "Did not check";
-        _tzenThiefReward = "Did not buy - Unknown";
         _coliseumVisit = "Did not visit";
         _auctionHouseEsperCountText = "Zero";
         _gameStatus = WCData.FieldKey;
@@ -277,6 +273,13 @@ public class Run
         _gameStatusData = Array.Empty<byte>();
         _finalBattleCharacters = new Character[4];
         _seedInfo = new string[9];
+
+        // Enums
+        _tzenThiefBought = TzenThiefBought.None;
+        _tzenThiefPeekWob = TzenThiefPeekWob.Did_not_check;
+        _tzenThiefPeekWor = TzenThiefPeekWor.Did_not_check;
+        _tzenThief = ThiefPeek.Did_not_check;
+        _tzenThiefReward = ThiefReward.Did_not_buy__Unknown;
     }
 
     public bool CheckIfRunStarted()
@@ -588,45 +591,77 @@ public class Run
 
     public void GetTzenThiefData()
     {
-        // TODO: refactor this code!
-        // Get rid of strings, use bools, enums or maybe constants instead. Literally ANYTHING but strings.
-        if (_tzenThiefBought == "")
+        // Tzen Thief reward - peeked/bought logic.
+        // If Tzen Thief wasn't bought, check if it was peeked.
+        if (_tzenThiefBought == TzenThiefBought.None)
         {
-            if (_tzenThiefPeekWob != "Did not check")
+            // If WoB Thief was peeked, store the appropiate esper/item peek and add it to the peek list.
+            if (_tzenThiefPeekWob != TzenThiefPeekWob.Did_not_check)
             {
-                _tzenThiefReward = $"Did not buy - {_tzenThiefPeekWob}";
+                switch (_tzenThiefPeekWob)
+                {
+                    case TzenThiefPeekWob.Esper:
+                        _tzenThiefReward = ThiefReward.Did_not_buy__Esper;
+                        _checksPeeked.Add("Tzen Thief");
+                        break;
+                    case TzenThiefPeekWob.Item:
+                        _tzenThiefReward = ThiefReward.Did_not_buy__Item;
+                        _checksPeeked.Add("Tzen Thief");
+                        break;
+                    default:
+                        break;
+                }
+            }
+            // If WoR Thief was peeked, store it as Unknown BUT add it to the peek list.
+            else if (_tzenThiefPeekWor != TzenThiefPeekWor.Did_not_check)
+            {
+                _tzenThiefReward = ThiefReward.Did_not_buy__Unknown;
                 _checksPeeked.Add("Tzen Thief");
             }
-            else if (_tzenThiefPeekWor != "Did not check")
-            {
-                _tzenThiefReward = $"Did not buy - {_tzenThiefPeekWor}";
-                _checksPeeked.Add("Tzen Thief");
-            }
+            // If none of the thieves were peeked, don't store the peek.
             else
             {
-                _tzenThiefReward = $"Did not buy - Unknown";
+                _tzenThiefReward = ThiefReward.Did_not_buy__Unknown;
             }
         }
+        // If the reward was bought, store the reward.
         else
         {
-            _tzenThiefReward = $"Bought {_tzenThiefBought}";
+            switch (_tzenThiefBought)
+            {
+                case TzenThiefBought.Esper:
+                    _tzenThiefReward = ThiefReward.Bought_Esper;
+                    break;
+                case TzenThiefBought.Item:
+                    _tzenThiefReward = ThiefReward.Bought_Item;
+                    break;
+                default:
+                    break;
+            }
         }
 
-        if (_tzenThiefPeekWob == "Did not check" && _tzenThiefPeekWor == "Did not check")
+        // If none of the thieves were visited
+        if (_tzenThiefPeekWob == TzenThiefPeekWob.Did_not_check &&
+            _tzenThiefPeekWor == TzenThiefPeekWor.Did_not_check)
         {
-            _tzenThief = "Did not check";
+            _tzenThief = ThiefPeek.Did_not_check;
         }
-        else if (_tzenThiefPeekWob != "Did not check" && _tzenThiefPeekWor == "Did not check")
+        // If WoB Thief was visited
+        else if (_tzenThiefPeekWob != TzenThiefPeekWob.Did_not_check &&
+                 _tzenThiefPeekWor == TzenThiefPeekWor.Did_not_check)
         {
-            _tzenThief = "Checked WOB only";
+            _tzenThief = ThiefPeek.Checked_WOB_only;
         }
-        else if (_tzenThiefPeekWob == "Did not check" && _tzenThiefPeekWor != "Did not check")
+        // If WoR Thief was visited
+        else if (_tzenThiefPeekWob == TzenThiefPeekWob.Did_not_check &&
+                 _tzenThiefPeekWor != TzenThiefPeekWor.Did_not_check)
         {
-            _tzenThief = "Checked WOR only";
+            _tzenThief = ThiefPeek.Checked_WOR_only;
         }
+        // If both thieves were visited
         else
         {
-            _tzenThief = "Checked both";
+            _tzenThief = ThiefPeek.Checked_both;
         }
     }
 

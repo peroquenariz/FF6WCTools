@@ -2,6 +2,7 @@
 using System.Reflection;
 using System.Threading;
 using FF6WCToolsLib;
+using static FF6WCToolsLib.WCData;
 
 namespace StatsCompanionLib;
 
@@ -152,7 +153,7 @@ public class StatsCompanion
                 }
 
                 // Tzen thief peek WoB.
-                if (run.MapId == 0x132 && run.TzenThiefPeekWob == "Did not check")
+                if (run.MapId == 0x132 && run.TzenThiefPeekWob == TzenThiefPeekWob.Did_not_check)
                 {
                     // Read dialog index and only execute if the dialog is the WoB Tzen Thief dialogue
                     run.DialogIndex = DataHandler.ConcatenateByteArray(_sniClient.ReadMemory(WCData.DialogIndex, 2));
@@ -273,7 +274,7 @@ public class StatsCompanion
                     }
 
                     // Tzen thief peek WoR.
-                    if (run.MapId == 0x131 && run.TzenThiefPeekWor == "Did not check")
+                    if (run.MapId == 0x131 && run.TzenThiefPeekWor == TzenThiefPeekWor.Did_not_check)
                     {
                         // Get dialog index for the WoR Tzen Thief
                         run.DialogIndex = DataHandler.ConcatenateByteArray(_sniClient.ReadMemory(WCData.DialogIndex, 2));
@@ -286,7 +287,7 @@ public class StatsCompanion
                     // Works by checking esper changes against Tzen Thief bit.
                     
                     // If map is Tzen WoB or WoR and Thief hasn't been bought yet
-                    if ((run.MapId == 0x131 || run.MapId == 0x132) && run.TzenThiefBought == "")
+                    if ((run.MapId == 0x131 || run.MapId == 0x132) && run.TzenThiefBought == TzenThiefBought.None)
                     {
                         // Check party Y position in map, only check if in the Tzen Thief area
                         run.PartyYPosition = _sniClient.ReadMemory(WCData.PartyYPosition, 1)[0];

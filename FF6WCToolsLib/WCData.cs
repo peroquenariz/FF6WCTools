@@ -8,6 +8,43 @@ namespace FF6WCToolsLib;
 /// </summary>
 public static class WCData
 {
+    public enum TzenThiefBought
+    {
+        None,
+        Esper,
+        Item
+    }
+
+    public enum TzenThiefPeekWob
+    {
+        Did_not_check,
+        Esper,
+        Item
+    }
+
+    public enum TzenThiefPeekWor
+    {
+        Did_not_check,
+        Unknown
+    }
+
+    public enum ThiefPeek
+    {
+        Did_not_check,
+        Checked_WOB_only,
+        Checked_WOR_only,
+        Checked_both
+    }
+
+    public enum ThiefReward
+    {
+        Did_not_buy__Item,
+        Did_not_buy__Esper,
+        Did_not_buy__Unknown,
+        Bought_Item,
+        Bought_Esper
+    }
+
     public const string BattleKey = "battle";
     public const string MenuKey = "menu";
     public const string WorldKey = "world";

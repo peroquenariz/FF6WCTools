@@ -185,6 +185,9 @@ public static class WCData
     
     public const byte DIALOG_INDEX_SIZE = 2;
 
+    public const int DIALOG_INDEX_WOB_TZEN_THIEF = 1569;
+    public const int DIALOG_INDEX_WOR_TZEN_THIEF = 1570;
+
     /// <summary>
     /// Changes depending if the dialog box is waiting for an input.
     /// 0: not waiting, 1: waiting for key press, 2: waiting for key release.

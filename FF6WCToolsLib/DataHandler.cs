@@ -72,13 +72,11 @@ public static class DataHandler
     /// Checks if the player peeked what reward World of Balance Tzen thief has.
     /// </summary>
     /// <param name="dialogWaitingForInput">Value is 1 if the dialog box is waiting for an input.</param>
-    /// <param name="dialogPointer">Pointer, "2": item, "4": esper.</param>
+    /// <param name="dialogPointer">Position of the dialog choice pointer.</param>
     /// <param name="dialogChoiceSelected">Zero based index of selected dialog choice.</param>
     /// <returns></returns>
     public static TzenThiefPeekWob PeekTzenThiefRewardWob (byte dialogWaitingForInput, byte dialogPointer, byte dialogChoiceSelected)
     {
-        // TODO: Use variables instead of magic numbers.
-        // TODO: Get rid of strings in the logic.
         TzenThiefPeekWob tzenThiefRewardWob = TzenThiefPeekWob.Did_not_check;
         if (dialogWaitingForInput != 0)
         {
@@ -101,11 +99,9 @@ public static class DataHandler
     /// <returns></returns>
     public static TzenThiefPeekWor PeekTzenThiefRewardWor(int dialogIndex)
     {
-        // TODO: Use variables instead of magic numbers.
-        // TODO: Get rid of strings in the logic.
         TzenThiefPeekWor tzenThiefRewardWor = TzenThiefPeekWor.Did_not_check;
         
-        if (dialogIndex == 1570)
+        if (dialogIndex == DIALOG_INDEX_WOR_TZEN_THIEF)
         {
             tzenThiefRewardWor = TzenThiefPeekWor.Unknown;
         }

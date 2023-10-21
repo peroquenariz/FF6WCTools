@@ -157,7 +157,7 @@ public class StatsCompanion
                 {
                     // Read dialog index and only execute if the dialog is the WoB Tzen Thief dialogue
                     run.DialogIndex = DataHandler.ConcatenateByteArray(_sniClient.ReadMemory(DIALOG_INDEX_START, 2));
-                    if (run.DialogIndex == 1569)
+                    if (run.DialogIndex == DIALOG_INDEX_WOB_TZEN_THIEF)
                     {
                         // Wait for the dialogue options to be available
                         run.DialogWaitingForInput = _sniClient.ReadMemory(DIALOG_WAITING_FOR_INPUT, 1)[0];

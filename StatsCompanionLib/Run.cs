@@ -31,6 +31,8 @@ public class Run
     private bool _inTzenThiefArea;
     private bool _inAuctionHouse;
     private bool _isReset;
+    private bool _hasExpEgg;
+    private bool _hasSuperBall;
     private byte _auctionHouseEsperCount;
     private byte _menuNumber;
     private byte _newGameSelected;
@@ -99,8 +101,6 @@ public class Run
     private TimeSpan _timeSpentOnBattles;
     private TimeSpan _timeSpentOnAirship;
     private TimeSpan _finalTime;
-    private string _hasExpEgg;
-    private string _hasSuperBall;
     private string _auctionHouseEsperCountText;
     private string _ktSkipUnlockTimeString;
     private string _battleFormation;
@@ -131,8 +131,8 @@ public class Run
     public bool SeedHasBeenAbandoned { get => _seedHasBeenAbandoned; set => _seedHasBeenAbandoned = value; }
     public bool SteppedOnKTSwitches { get => _steppedOnKTSwitches; set => _steppedOnKTSwitches = value; }
     public bool HasFinished { get => _hasFinished; set => _hasFinished = value; }
-    public string HasExpEgg { get => _hasExpEgg; set => _hasExpEgg = value; }
-    public string HasSuperBall { get => _hasSuperBall; set => _hasSuperBall = value; }
+    public bool HasExpEgg { get => _hasExpEgg; set => _hasExpEgg = value; }
+    public bool HasSuperBall { get => _hasSuperBall; set => _hasSuperBall = value; }
     public bool IsWhelkPeeked { get => _isWhelkPeeked; set => _isWhelkPeeked = value; }
     public bool IsEsperMountainPeeked { get => _isEsperMountainPeeked; set => _isEsperMountainPeeked = value; }
     public bool IsSouthFigaroBasementPeeked { get => _isSouthFigaroBasementPeeked; set => _isSouthFigaroBasementPeeked = value; }
@@ -236,8 +236,6 @@ public class Run
         _battleEnd = DateTime.Now;
 
         // Strings
-        _hasExpEgg = "No"; // TODO: switch to booleans
-        _hasSuperBall = "No";
         _ktSkipUnlockTimeString = "";
         _battleFormation = "";
         _auctionHouseEsperCountText = "Zero";
@@ -465,22 +463,13 @@ public class Run
 
     public void CheckForItemsInInventory()
     {
-        if (_hasExpEgg == "No")
+        if (!_hasExpEgg)
         {
-            bool hasExpEgg = DataHandler.CheckIfItemExistsInInventory(_inventory, 228);
-            if (hasExpEgg)
-            {
-                _hasExpEgg = "Yes";
-            }
-            
+            _hasExpEgg = DataHandler.CheckIfItemExistsInInventory(_inventory, 228);
         }
-        if (_hasSuperBall == "No")
+        if (!_hasSuperBall)
         {
-            bool hasSuperBall = DataHandler.CheckIfItemExistsInInventory(_inventory, 250);
-            if (hasSuperBall)
-            {
-                _hasSuperBall = "Yes";
-            }
+            _hasSuperBall = DataHandler.CheckIfItemExistsInInventory(_inventory, 250);
         }
     }
 

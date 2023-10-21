@@ -97,8 +97,8 @@ public class RunJson
         dragons = ReplaceCharactersInList(run.DragonsKilled);
         finalBattle = ReplaceCharactersInList(run.FinalBattlePrep);
         highestLevel = run.CharacterMaxLevel;
-        superBalls = ReplaceCharacters(run.HasSuperBall);
-        egg = ReplaceCharacters(run.HasExpEgg);
+        superBalls = run.HasSuperBall ? "Yes" : "No";
+        egg = run.HasExpEgg ? "Yes" : "No";
         auction = ReplaceCharacters(run.AuctionHouseEsperCountText);
         thiefPeek = run.TzenThief.ToString();
         thiefReward = run.TzenThiefReward.ToString();

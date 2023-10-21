@@ -155,17 +155,17 @@ public static class DataHandler
         
         for (int i = 0; i < 8; i++) // First byte check.
         {
-            if (CheckBitSet(charactersBytes[0], WCData.BitFlags[i]))
+            if (CheckBitSet(charactersBytes[0], BIT_FLAGS[i]))
             {
-                availableCharacters.Add(WCData.CharacterNames[i]);
+                availableCharacters.Add(CHARACTER_NAMES[i]);
             }
         }
         
         for (int i = 0; i < 6; i++) // Second byte check.
         {
-            if (CheckBitSet(charactersBytes[1], WCData.BitFlags[i]))
+            if (CheckBitSet(charactersBytes[1], BIT_FLAGS[i]))
             {
-                availableCharacters.Add(WCData.CharacterNames[i + 8]);
+                availableCharacters.Add(CHARACTER_NAMES[i + 8]);
             }
         }
         
@@ -184,9 +184,9 @@ public static class DataHandler
         
         for (int i = 0; i < 8; i++) // First byte check.
         {
-            if (CheckBitSet(charactersBytes[0], WCData.BitFlags[i]))
+            if (CheckBitSet(charactersBytes[0], BIT_FLAGS[i]))
             {
-                string command = WCData.CommandDict[characterCommands[i]];
+                string command = COMMAND_DICT[characterCommands[i]];
                 if (!availableCommands.Contains(command))
                 {
                     availableCommands.Add(command);
@@ -196,9 +196,9 @@ public static class DataHandler
         
         for (int i = 0; i < 4; i++) // Second byte check. Skip Gogo and Umaro (they don't have commands).
         {
-            if (CheckBitSet(charactersBytes[1], WCData.BitFlags[i]))
+            if (CheckBitSet(charactersBytes[1], BIT_FLAGS[i]))
             {
-                string command = WCData.CommandDict[characterCommands[i + 8]];
+                string command = COMMAND_DICT[characterCommands[i + 8]];
                 if (!availableCommands.Contains(command))
                 {
                     availableCommands.Add(command);
@@ -206,9 +206,9 @@ public static class DataHandler
             }
         }
         
-        if (CheckBitSet(charactersBytes[1], WCData.BitFlags[3])) // If Gau is in the party, get his 2nd command.
+        if (CheckBitSet(charactersBytes[1], BIT_FLAGS[3])) // If Gau is in the party, get his 2nd command.
         {
-            string command = WCData.CommandDict[characterCommands[12]];
+            string command = COMMAND_DICT[characterCommands[12]];
             if (!availableCommands.Contains(command))
             {
                 availableCommands.Add(command);
@@ -229,18 +229,18 @@ public static class DataHandler
         
         for (int i = 0; i < 6; i++)
         {
-            if (CheckBitSet(dragonsBytes[0], WCData.DragonFlags1[i]))
+            if (CheckBitSet(dragonsBytes[0], DRAGON_FLAGS_1[i]))
             {
-                string dragon = WCData.DragonDict[WCData.DragonFlags1[i]];
+                string dragon = DRAGON_DICT[DRAGON_FLAGS_1[i]];
                 dragonsKilled.Add(dragon);
             }
         }
         
         for (int i = 0; i < 2; i++)
         {
-            if (CheckBitSet(dragonsBytes[1], WCData.DragonFlags2[i]))
+            if (CheckBitSet(dragonsBytes[1], DRAGON_FLAGS_2[i]))
             {
-                string dragon = WCData.DragonDict[WCData.DragonFlags2[i]];
+                string dragon = DRAGON_DICT[DRAGON_FLAGS_2[i]];
                 dragonsKilled.Add(dragon);
             }
         }
@@ -295,7 +295,7 @@ public static class DataHandler
     {
         bool itemExists = false;
         
-        for (int i = 0; i < WCData.InventorySize; i++)
+        for (int i = 0; i < INVENTORY_SIZE; i++)
         {
             if (inventoryData[i] == itemValue)
             {
@@ -335,7 +335,7 @@ public static class DataHandler
     {
         bool isSet = false;
         
-        if ((data & WCData.BitFlags[offset % 8]) != 0)
+        if ((data & BIT_FLAGS[offset % 8]) != 0)
         {
             isSet = true;
         }

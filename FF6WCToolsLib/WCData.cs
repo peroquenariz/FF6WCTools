@@ -52,255 +52,295 @@ public static class WCData
         Visited_and_fought
     }
 
-    public const string BattleKey = "battle";
-    public const string MenuKey = "menu";
-    public const string WorldKey = "world";
-    public const string FieldKey = "field";
-    public const string Mode7Key = "mode7";
+    // Game mode constants.
+    public const string BATTLE_KEY = "battle";
+    public const string MENU_KEY = "menu";
+    public const string WORLD_KEY = "world";
+    public const string FIELD_KEY = "field";
+    public const string MODE7_KEY = "mode7";
     
     /// <summary>
-    /// Address that can be used to determine game mode. Size: 3 bytes.
+    /// Data used to determine game mode. Size: 3 bytes.
     /// </summary>
-    public const uint NMIJumpCode = 0x7E1501;
+    public const uint NMI_JUMP_CODE = 0x7E1501;
 
     /// <summary>
-    /// Address that points to the start of the monster indexes.
+    /// Start of the monster indexes.
     /// 6 monsters, 2 bytes each: 12 bytes total.
     /// </summary>
-    public const uint MonsterIndexStart = 0x7E2001;
+    public const uint MONSTER_INDEX_START = 0x7E2001;
+
+    /// <summary>
+    /// Size of the monster index data.
+    /// </summary>
+    public const byte MONSTER_INDEX_DATA_SIZE = 12;
     
     /// <summary>
-    /// Address that contains the start of the character skill data.
+    /// Start of the character skill data.
     /// </summary>
-    public const uint CharacterSkillData = 0x7E1A6E;
-
-    public const int SwdTechOffset = 649;
-    public const int BlitzOffset = 698;
-    public const int LoreOffset = 699; // 3 bytes
-
-
+    public const uint CHARACTER_SKILL_DATA_START = 0x7E1A6E;
+    
     /// <summary>
-    /// Address that contains the size of the character skill data.
+    /// Size of the character skill data.
     /// </summary>
-    public const int CharacterSkillDataSize = 734;
+    public const int CHARACTER_SKILL_DATA_SIZE = 734;
+
+    public const int SWDTECH_OFFSET = 649;
+    public const int BLITZ_OFFSET = 698;
+    public const int LORE_OFFSET = 699; // 3 bytes
 
     /// <summary>
     /// Time interval to avoid false positives on map changes.
     /// </summary>
-    public static readonly TimeSpan TimeBetweenMapChanges = new(0, 0, 0, 0, 500);
+    public static readonly TimeSpan TIME_BETWEEN_MAP_CHANGES = new(0, 0, 0, 0, 500);
     
     /// <summary>
-    /// Address that changes when a dialog box is opened.
+    /// Changes when a dialog box is opened.
     /// </summary>
-    public const uint EnableDialogWindow = 0x7E00BA;
+    public const uint ENABLE_DIALOG_WINDOW = 0x7E00BA;
     
     /// <summary>
-    /// Address that contains the party X position on the field.
+    /// Party X position on the field.
     /// </summary>
-    public const uint PartyXPosition = 0x7E00AF;
+    public const uint PARTY_X_POSITION = 0x7E00AF;
 
     /// <summary>
-    /// Address that contains the party X position on the field.
+    /// Party Y position on the field.
     /// </summary>
-    public const uint PartyYPosition = 0x7E00B0;
+    public const uint PARTY_Y_POSITION = 0x7E00B0;
 
     /// <summary>
-    /// Address that contains the beginning of the character list selected right before the final battle.
+    /// Start of the character list selected right before the final battle.
     /// Character values range from 0x00 (Terra) to 0x0D (Umaro).
-    /// Size: 12 bytes.
     /// </summary>
-    public const uint FinalBattleCharacterListStart = 0x7E0205;
+    public const uint FINAL_BATTLE_CHARACTER_LIST_START = 0x7E0205;
+
+    /// <summary>
+    /// Size of the final battle character list.
+    /// </summary>
+    public const byte FINAL_BATTLE_CHARACTER_LIST_SIZE = 12;
     
     /// <summary>
-    /// Address that contains the state of the character overworld sprite.
+    /// State of the character overworld sprite.
     /// 1: flying the airship. 6-9: airship transitions.
     /// </summary>
-    public const uint Character1Graphic = 0x7E00CA;
+    public const uint CHARACTER_1_GRAPHIC = 0x7E00CA;
     
     /// <summary>
-    /// Address that contains the current amount of GP. 3 bytes.
+    /// Current amount of GP. 3 bytes.
     /// </summary>
-    public const uint CurrentGP = 0x7E1860;
+    public const uint CURRENT_GP_START = 0x7E1860;
+
+    public const byte CURRENT_GP_SIZE = 3;
     
     /// <summary>
-    /// Address that contains the start of the known espers. Size: 4 bytes.
+    /// Start of the known espers.
     /// </summary>
-    public const uint KnownEspers = 0x7E1A69;
+    public const uint KNOWN_ESPERS_START = 0x7E1A69;
     
     /// <summary>
-    /// Address that contains the start of the known lores. Size: 3 bytes.
+    /// Size of the known espers data.
     /// </summary>
-    public const uint KnownLores = 0x7E1D29;
+    public const byte KNOWN_ESPERS_SIZE = 4;
     
     /// <summary>
-    /// Address that contains the known SwdTechs.
+    /// Start of the known lores.
     /// </summary>
-    public const uint KnownSwdTechs = 0x7E1CF7;
+    public const uint KNOWN_LORES_START = 0x7E1D29;
     
     /// <summary>
-    /// Address that contains the start of the known spells.
+    /// Size of the known lores data.
+    /// </summary>
+    public const byte KNOWN_LORES_SIZE = 3;
+    
+    /// <summary>
+    /// Known SwdTechs.
+    /// </summary>
+    public const uint KNOWN_SWDTECHS = 0x7E1CF7;
+    
+    /// <summary>
+    /// Known spells.
     /// 12 characters, 54 spells each, 1 byte per spell.
     /// </summary>
-    public const uint KnownSpells = 0x7E1A6E;
+    public const uint KNOWN_SPELLS_DATA = 0x7E1A6E;
+
+    public const uint KNOWN_SPELLS_SIZE = 648;
 
     /// <summary>
-    /// Address that contains which choice is selected in a dialogue.
+    /// Which choice is selected in a dialogue.
     /// </summary>
-    public const uint DialogChoiceSelected = 0x7E056E;
+    public const uint DIALOG_CHOICE_SELECTED = 0x7E056E;
 
     /// <summary>
-    /// Address that contains the pointer to current tile in VRAM.
+    /// Pointer to current tile in VRAM.
+    /// Position of the dialog choice cursor.
     /// 2: WoB Tzen Thief is an item, 4: is an esper.
     /// </summary>
-    public const uint DialogPointer = 0x7E00C4;
+    public const uint DIALOG_POINTER = 0x7E00C4;
 
     /// <summary>
-    /// Address that contains the dialog index. Check alongside MapId to avoid false positives.
-    /// Size: 2 bytes.
+    /// Dialog index. Check alongside MapId to avoid false positives.
     /// </summary>
-    public const uint DialogIndex = 0x7E00D0;
+    public const uint DIALOG_INDEX_START = 0x7E00D0;
+    
+    public const byte DIALOG_INDEX_SIZE = 2;
 
     /// <summary>
-    /// Address that changes depending if the dialog box is waiting for an input.
+    /// Changes depending if the dialog box is waiting for an input.
     /// 0: not waiting, 1: waiting for key press, 2: waiting for key release.
     /// 0x04 = Item, 0x06 = Esper.
     /// </summary>
-    public const uint DialogWaitingForInput = 0x7E00D3;
+    public const uint DIALOG_WAITING_FOR_INPUT = 0x7E00D3;
 
     /// <summary>
-    /// Address that contains the map identifier. Size: 2 bytes.
+    /// Data for the map ID.
     /// Top 7 bits of the second byte have complementary information.
     /// </summary>
-    public const uint MapId = 0x7E1F64;
+    public const uint MAP_ID_START = 0x7E1F64;
+    
+    /// <summary>
+    /// Size of the map ID data.
+    /// </summary>
+    public const byte MAP_ID_SIZE = 2;
 
     /// <summary>
-    /// Address that contains the start of the event bits.
+    /// Start of the event bits data.
     /// </summary>
-    public const uint EventBitStartAddress = 0x7E1E80;
+    public const uint EVENT_BIT_START_ADDRESS = 0x7E1E80;
 
     /// <summary>
     /// Size of the event bits data.
     /// </summary>
-    public const byte EventBitDataSize = 223;
+    public const byte EVENT_BIT_DATA_SIZE = 223;
 
     /// <summary>
-    /// Address that contains the start of the field object data. 50 items, 41 bytes each.
+    /// Start of the field object data. 50 items, 41 bytes each.
     /// $00-$0F are characters, $10-$2F are NPC's, $30 is camera ($07B0), $31 is showing character or for unused objects ($07D9)
     /// </summary>
-    public const uint FieldObjectStartAddress = 0x7E0867;
+    public const uint FIELD_OBJECT_START_ADDRESS = 0x7E0867;
 
     /// <summary>
     /// Menu number address. Doesn't get cleared on menu close.
     /// 9 = pregame custom menu, 3 = shop, 2 = restore save game.
     /// </summary>
-    public const uint MenuNumber = 0x7E0200;
+    public const uint MENU_NUMBER = 0x7E0200;
 
     /// <summary>
-    /// Address that contains the "next menu state". Value changes depending on which menu is active.
+    /// Contains the "next menu state". Value changes depending on which menu is active.
     /// Values 19-22 are for the save menu ingame (NOT the load screen on reset).
     /// </summary>
-    public const uint NextMenuState = 0x7E0027;
+    public const uint NEXT_MENU_STATE = 0x7E0027;
     
     /// <summary>
-    /// Address that changes value from 0 to 1 on the new game screen, but also changes if you select a save game.
-    /// Combined with MenuNumber, should be easy to determine when a new game has been started.
+    /// Changes value from 0 to 1 on the new game screen, but also changes if you select a save game.
+    /// Combined with MenuNumber, can be used to determine when a new game has been started.
     /// </summary>
-    public const uint NewGameSelected = 0x7E0224;
+    public const uint NEW_GAME_SELECTED = 0x7E0224;
 
     // Addresses for checking if Kefka has been killed.
-    public const uint BattleIndex = 0x7E11E0; // 2 bytes. Set to 0x0202 at tier 4. Shared between field, world and battle modules.
-    public const uint EnableKefkaFinalAnimation = 0x7E009A; // 1 byte. Set to 01 when enabling Kefka's death animation.
+    public const uint ENABLE_KEFKA_FINAL_ANIMATION = 0x7E009A; // 1 byte. Set to 01 when enabling Kefka's death animation.
+    public const uint BATTLE_INDEX_START = 0x7E11E0; // Set to 0x0202 at tier 4. Shared between field, world and battle modules.
+    public const byte BATTLE_INDEX_SIZE = 2;
 
     /// <summary>
-    /// Address that contains a counter that counts up when in a battle.
+    /// Counter that goes up by 1 when in a battle.
     /// Also gets used to control screen effects like flashes, Kefka lair animation, etc.
+    /// Deprecated due to the NMI Jump Code game mode detection.
     /// </summary>
-    public const uint BattleCounter = 0x7E000E;
-    
-    /// <summary>
-    /// Address that contains a counter that only changes if the player is currently in a menu or shop.
-    /// Size: 2 bytes.
-    /// </summary>
-    public const uint MenuCounter = 0x7E00CF;
+    public const uint BATTLE_COUNTER = 0x7E000E;
 
     /// <summary>
-    /// Address that appears to control the brightness of the screen during menus. Goes from 1 to 15 in a menu.
+    /// contains a counter that only changes if the player is currently in a menu or shop.
+    /// Size: 2 bytes.
+    /// Deprecated due to the NMI Jump Code game mode detection.
+    /// </summary>
+    public const uint MENU_COUNTER = 0x7E00CF;
+
+    /// <summary>
+    /// Appears to control the brightness of the screen during menus. Goes from 1 to 15 in a menu.
     /// Is 0 when outside a menu.
     /// </summary>
-    public const uint ScreenDisplayRegister = 0x7E0044;
+    public const uint SCREEN_DISPLAY_REGISTER = 0x7E0044;
 
     // Counters.
-    public const uint BossCount = 0x7E1FF8;
-    public const uint CheckCount = 0x7E1FCA;
-    public const uint DragonCount = 0x7E1FCE;
-    public const uint EsperCount = 0x7E1FC8;
+    public const uint BOSS_COUNT = 0x7E1FF8;
+    public const uint CHECK_COUNT = 0x7E1FCA;
+    public const uint DRAGON_COUNT = 0x7E1FCE;
+    public const uint ESPER_COUNT = 0x7E1FC8;
 
     /// <summary>
-    /// Address that contains the start of the chest data.
-    /// Size: 48 bytes.
+    /// Start of the chest data.
     /// </summary>
-    public const uint ChestDataStart = 0x7E1E40;
+    public const uint CHEST_DATA_START = 0x7E1E40;
 
     /// <summary>
     /// Size of the chest data.
     /// </summary>
-    public const byte ChestDataSize = 48;
+    public const byte CHEST_DATA_SIZE = 48;
 
     /// <summary>
-    /// Address that contains the start of the character data.
+    /// Start of the character data.
     /// From this address you can offset to get the rest of the data.
-    /// Each character takes up 37 bytes. More info in the SRAM section: 
+    /// Each character takes up 37 bytes.
+    /// More info in the SRAM section:
     /// https://www.ff6hacking.com/wiki/doku.php?id=ff3:ff3us:doc:asm:ram:field_ram
     /// </summary>
-    public const uint CharacterDataStart = 0x7E1600;
+    public const uint CHARACTER_DATA_START = 0x7E1600;
     
     /// <summary>
-    /// Size in bytes of the memory area that contains character data.
+    /// Size of the memory area that contains the character data.
     /// 14 characters, 37 bytes each.
+    /// There's memory allocated for 2 extra characters but I have no idea
+    /// what that extra memory is used for. This value is for the 14 playable characters.
     /// </summary>
-    public const int CharacterDataSize = 518;
+    public const int CHARACTER_DATA_SIZE = 518;
 
     /// <summary>
-    /// Address that contains the start of the inventory.
+    /// Start of the inventory.
     /// </summary>
-    public const uint InventoryStart = 0x7E1869;
+    public const uint INVENTORY_START = 0x7E1869;
 
     /// <summary>
-    /// Address that contains the start of the inventory item count.
+    /// Start of the inventory item count.
     /// </summary>
-    public const uint InventoryCountStart = 0x7E1969;
+    public const uint INVENTORY_COUNT_START = 0x7E1969;
     
     /// <summary>
-    /// Size in bytes of the inventory in memory.
+    /// Size of the inventory (and inventory count).
     /// </summary>
-    public const byte InventorySize = 255;
+    public const byte INVENTORY_SIZE = 255;
     
 
     /// <summary>
-    /// Memory address that contains which character has been found.
+    /// Data of which character has been found.
     /// Info is split through 2 bytes. Top 2 bits of second byte aren't used.
     /// </summary>
-    public const uint CharactersByte = 0x7E1EDE;
+    public const uint CHARACTERS_AVAILABLE_START = 0x7E1EDE;
 
     /// <summary>
-    /// Array that contains the flags for each bit.
+    /// Size of the characters found data.
     /// </summary>
-    public static readonly byte[] BitFlags = new byte[] { 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80 };
+    public const byte CHARACTERS_AVAILABLE_SIZE = 2;
 
     /// <summary>
-    /// Memory address that contains which dragon has been killed.
+    /// Contains the flags for each bit.
+    /// </summary>
+    public static readonly byte[] BIT_FLAGS = new byte[] { 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80 };
+
+    /// <summary>
+    /// Data of which dragon has been killed.
     /// Info is split through 2 bytes.
     /// </summary>
-    public const uint DragonsByte = 0x7E1EA3;
+    public const uint DRAGONS_KILLED_DATA = 0x7E1EA3;
 
     // Dragon flags.
-    public static readonly byte[] DragonFlags1 = new byte[] { 0x04, 0x08, 0x10, 0x20, 0x40, 0x80 };
-    public static readonly byte[] DragonFlags2 = new byte[] { 0x01, 0x02 };
+    public static readonly byte[] DRAGON_FLAGS_1 = new byte[] { 0x04, 0x08, 0x10, 0x20, 0x40, 0x80 };
+    public static readonly byte[] DRAGON_FLAGS_2 = new byte[] { 0x01, 0x02 };
     
     /// <summary>
-    /// Array that contains an ordered list of the characters for ease of indexing.
+    /// Ordered list of the characters for ease of indexing.
     /// </summary>
-    public static readonly string[] CharacterNames = new string[] {
+    public static readonly string[] CHARACTER_NAMES = new string[] {
         "Terra",
         "Locke",
         "Cyan",
@@ -317,42 +357,38 @@ public static class WCData
         "Umaro"
     };
 
-    public static readonly TimeSpan TimeFromKefkaFlashToAnimation = new(0, 0, 0, 4, 967); // 298 frames at 60FPS.
-    public static readonly TimeSpan TimeFromSwitchesToKefkaLair = new(0, 0, 0, 13, 50); // 783 frames at 60FPS.
+    // These are time offsets for the JSON data.
+    public static readonly TimeSpan TIME_FROM_KEFKA_FLASH_TO_ANIMATION = new(0, 0, 0, 4, 967); // 298 frames at 60FPS.
+    public static readonly TimeSpan TIME_FROM_SWITCHES_TO_KEFKA_LAIR = new(0, 0, 0, 13, 50); // 783 frames at 60FPS.
     
     // These are used to avoid false positives with frame counters stopping and resuming too fast.
-    public static readonly TimeSpan TimeBattleFalsePositives = new(0, 0, 3);
-    public static readonly TimeSpan TimeBattleFormationFalsePositives = new(0, 0, 2);
-    //public static readonly TimeSpan TimeMenuFalsePositives = new(0, 0, 0, 0, 500);
-
-    public static readonly TimeSpan TimeFromFadeToBattle = new(0, 0, 0, 0, 617);
-    public static readonly TimeSpan TimeFromMenuToOverworld = new(0, 0, 0, 0, 750);
-    public static readonly TimeSpan TimeFromBattleToOverworld = new(0, 0, 0, 2, 500);
+    public static readonly TimeSpan TIME_BATTLE_FALSE_POSITIVES = new(0, 0, 3);
+    public static readonly TimeSpan TIME_BATTLE_FORMATION_FALSE_POSITIVES = new(0, 0, 2);
 
     /// <summary>
-    /// List containing the maps that are used to determine if the airship is being flown.
+    /// Maps that are used to determine if the airship is being flown.
     /// </summary>
-    public static readonly List<int> AirshipMapIds = new List<int>() { 0x000, 0x001, 0x006, 0x00B, 0x00A, 0x011 };
+    public static readonly List<int> AIRSHIP_MAP_IDS = new List<int>() { 0x000, 0x001, 0x006, 0x00B, 0x00A, 0x011 };
 
     /// <summary>
-    /// List containing the overworld maps.
+    /// Overworld maps.
     /// </summary>
-    public static readonly List<int> OverworldMapIds = new List<int>() { 0x000, 0x001 };
+    public static readonly List<int> OVERWORLD_MAP_IDS = new List<int>() { 0x000, 0x001 };
 
     /// <summary>
-    /// List containing the airship deck maps.
+    /// Airship deck maps.
     /// </summary>
-    public static readonly List<int> AirshipDeckMapIds = new List<int>() { 0x006, 0x00B, 0x00A, 0x011 };
+    public static readonly List<int> AIRSHIP_DECK_MAP_IDS = new List<int>() { 0x006, 0x00B, 0x00A, 0x011 };
 
     /// <summary>
-    /// List with maps that are excluded in the airship check.
+    /// Maps that are excluded in the airship check.
     /// </summary>
-    public static readonly List<int> AirshipFalsePositives = new List<int>() { 0x161, 0x0BB, 0x046, 0x195 };
+    public static readonly List<int> AIRSHIP_FALSE_POSITIVES = new List<int>() { 0x161, 0x0BB, 0x046, 0x195 };
 
     /// <summary>
-    /// Dictionary holding the bit offsets of every check event.
+    /// Bit offsets of every check event.
     /// </summary>
-    public static readonly Dictionary<string, int> EventBitDict = new Dictionary<string, int>()
+    public static readonly Dictionary<string, int> EVENT_BIT_OFFSETS_DICT = new Dictionary<string, int>()
     {
         {"GOT_RAIDEN", 0x2dd},
         {"AUCTION_BOUGHT_ESPER1", 0x16c},
@@ -411,9 +447,9 @@ public static class WCData
     };
 
     /// <summary>
-    /// Dictionary holding the names of each event bit.
+    /// Names of each event bit.
     /// </summary>
-    public static readonly Dictionary<string, string> CheckNamesDict = new Dictionary<string, string>()
+    public static readonly Dictionary<string, string> EVENT_BIT_CHECK_NAMES_DICT = new Dictionary<string, string>()
     {
         {"GOT_RAIDEN", "Ancient Castle"},
         {"DEFEATED_ANCIENT_CASTLE_DRAGON", "Ancient Castle Dragon"},
@@ -480,9 +516,9 @@ public static class WCData
     };
 
     /// <summary>
-    /// Dictionary holding the bytes for each dragon.
+    /// Bytes for each dragon.
     /// </summary>
-    public static readonly Dictionary<byte, string> DragonDict = new Dictionary<byte, string>() {
+    public static readonly Dictionary<byte, string> DRAGON_DICT = new Dictionary<byte, string>() {
         [0x04] = "Narshe",
         [0x08] = "Mt Zozo",
         [0x10] = "Opera House",
@@ -494,9 +530,9 @@ public static class WCData
     };
 
     /// <summary>
-    /// Dictionary holding the map names for each value.
+    /// Map names for each map ID.
     /// </summary>
-    public static readonly Dictionary<uint, string> MapsDict = new Dictionary<uint, string>()
+    public static readonly Dictionary<uint, string> MAPS_DICT = new Dictionary<uint, string>()
     {
         {0x000, "World of Balance, World Map"},
         {0x001, "World of Ruin, World Map"},
@@ -916,9 +952,9 @@ public static class WCData
     };
 
     /// <summary>
-    /// A dictionary holding the check peeks that are determined by map ID.
+    /// Check peeks that are determined by map ID.
     /// </summary>
-    public static readonly Dictionary<int, string> PeeksByMapId = new Dictionary<int, string>()
+    public static readonly Dictionary<int, string> PEEKS_BY_MAP_ID = new Dictionary<int, string>()
     {
         {0x198, "Ancient Castle"},
         {0x09C, "Baren Falls"},
@@ -957,9 +993,9 @@ public static class WCData
     };
 
     /// <summary>
-    /// A dictionary holding the check peeks that are determined by event bits.
+    /// Check peeks that are determined by event bits.
     /// </summary>
-    public static readonly Dictionary<int, string> PeeksByEventBit = new Dictionary<int, string>()
+    public static readonly Dictionary<int, string> PEEKS_BY_EVENT_BIT = new Dictionary<int, string>()
     {
         {0x27d, "Collapsing House"},
         {0x2b6, "Darill's Tomb"},
@@ -969,9 +1005,9 @@ public static class WCData
     };
 
     /// <summary>
-    /// A dictionary holding the names for each item value.
+    /// Names for each item ID.
     /// </summary>
-    public static readonly Dictionary<byte, string> ItemDict = new Dictionary<byte, string>()
+    public static readonly Dictionary<byte, string> ITEM_DICT = new Dictionary<byte, string>()
     {
         {0, "Dirk"},
         {1, "MithrilKnife"},
@@ -1232,9 +1268,10 @@ public static class WCData
     };
 
     /// <summary>
-    /// Dictionary holding the index of each spell.
+    /// Index of each spell.
+    /// TODO: add the rest of the spells!
     /// </summary>
-    public static readonly Dictionary<byte, string> SpellDict = new Dictionary<byte, string>()
+    public static readonly Dictionary<byte, string> SPELL_DICT = new Dictionary<byte, string>()
     {
         {0x00, "Fire"},
         {0x01, "Ice"},
@@ -1293,9 +1330,9 @@ public static class WCData
     };
 
     /// <summary>
-    /// Dictionary holding the index of each SwdTech.
+    /// Index of each SwdTech.
     /// </summary>
-    public static readonly Dictionary<byte, string> SwdTechDict = new Dictionary<byte, string>()
+    public static readonly Dictionary<byte, string> SWDTECH_DICT = new Dictionary<byte, string>()
     {
         { 0, "Dispatch" },
         { 1, "Retort" },
@@ -1308,9 +1345,9 @@ public static class WCData
     };
 
     /// <summary>
-    /// Dictionary holding the index of each Blitz.
+    /// Index of each Blitz.
     /// </summary>
-    public static readonly Dictionary<byte, string> BlitzDict = new Dictionary<byte, string>()
+    public static readonly Dictionary<byte, string> BLITZ_DICT = new Dictionary<byte, string>()
     {
         { 0, "Pummel" },
         { 1, "AuraBolt" },
@@ -1323,9 +1360,9 @@ public static class WCData
     };
 
     /// <summary>
-    /// Dictionary holding the index of each Lore.
+    /// Index of each Lore.
     /// </summary>
-    public static readonly Dictionary<byte, string> LoreDict = new Dictionary<byte, string>()
+    public static readonly Dictionary<byte, string> LORE_DICT = new Dictionary<byte, string>()
     {
         { 0, "Condemned" },
         { 1, "Roulette" },
@@ -1354,9 +1391,9 @@ public static class WCData
     };
 
     /// <summary>
-    /// Dictionary holding the name for each esper byte.
+    /// Name for each esper byte.
     /// </summary>
-    public static readonly Dictionary<byte, string> EsperDict = new Dictionary<byte, string>()
+    public static readonly Dictionary<byte, string> ESPER_DICT = new Dictionary<byte, string>()
     {
         {0x00, "Ramuh"},
         {0x01, "Ifrit"},
@@ -1389,9 +1426,9 @@ public static class WCData
     };
 
     /// <summary>
-    /// Dictionary holding the byte value for each command in memory.
+    /// Byte value for each command in memory.
     /// </summary>
-    public static readonly Dictionary<byte, string> CommandDict = new Dictionary<byte, string>()
+    public static readonly Dictionary<byte, string> COMMAND_DICT = new Dictionary<byte, string>()
     {
         [0] = "Fight",
         [1] = "Item",
@@ -1427,9 +1464,9 @@ public static class WCData
     };
 
     /// <summary>
-    /// Dictionary holding the byte value for each letter and symbol.
+    /// Byte value for each letter and symbol.
     /// </summary>
-    public static readonly Dictionary<byte, string> CharDict = new Dictionary<byte, string>()
+    public static readonly Dictionary<byte, string> CHAR_DICT = new Dictionary<byte, string>()
     {
         { 0x80, "A" },
         { 0x81, "B" },
@@ -1518,7 +1555,7 @@ public static class WCData
     /// <summary>
     /// Monster index dictionary.
     /// </summary>
-    public static readonly Dictionary<int, string> MonsterDict = new Dictionary<int, string>()
+    public static readonly Dictionary<int, string> MONSTER_DICT = new Dictionary<int, string>()
     {
         {0, "Guard"},
         {1, "Soldier"},
@@ -1909,7 +1946,7 @@ public static class WCData
     /// <summary>
     /// Flagset dictionary.
     /// </summary>
-    public static readonly Dictionary<string, string> FlagsetDict = new Dictionary<string, string>()
+    public static readonly Dictionary<string, string> FLAGSET_DICT = new Dictionary<string, string>()
     {
         { "Ultros League - Season 4", "-cg -oa 2.2.2.2.6.6.4.9.9 -ob 3.1.1.2.9.9.4.12.12 -oc 30.8.8.1.1.11.8 -od 59.1.1.11.31 -sc1 random -sc2 random -sc3 random -sal -eu -csrp 80 125 -fst -brl -slr 3 5 -lmprp 75 125 -lel -srr 25 35 -rnl -rnc -sdr 1 2 -das -dda -dns -sch -scis -com 98989898989898989898989898 -rec1 28 -rec2 27 -xpm 3 -mpm 5 -gpm 5 -nxppd -lsced 2 -hmced 2 -xgced 2 -ase 2 -msl 40 -sed -bbs -drloc shuffle -stloc mix -be -bnu -res -fer 0 -escr 100 -dgne -wnz -mmnu -cmd -esr 2 5 -ebr 82 -emprp 75 125 -nm1 random -rnl1 -rns1 -nm2 random -rnl2 -rns2 -nmmi -mmprp 75 125 -gp 5000 -smc 3 -sto 1 -ieor 33 -ieror 33 -csb 3 14 -mca -stra -saw -sisr 20 -sprp 75 125 -sdm 5 -npi -sebr -sesb -ccsr 20 -chrm 0 0 -cms -frw -wmhc -cor 100 -crr 100 -crvr 80 100 -crm -ari -anca -adeh -ame 1 -nmc -noshoes -nu -nfps -fs -fe -fvd -fr -fj -fbs -fedc -fc -ond -rr -etn" },
         { "Ultros League - Season 5", "-cg -oa 2.2.2.2.6.6.4.9.9 -ob 3.1.1.2.9.9.4.12.12.10.21.21 -oc 30.8.8.1.1.11.8 -od 59.1.1.11.31 -sc1 random -sc2 random -sc3 random -sal -eu -csrp 80 125 -fst -brl -slr 3 5 -lmprp 75 125 -lel -srr 25 35 -rnl -rnc -sdr 1 2 -das -dda -dns -sch -scis -com 98989898989898989898989898 -rec1 28 -rec2 27 -xpm 3 -mpm 5 -gpm 5 -nxppd -lsced 2 -hmced 2 -xgced 2 -ase 2 -msl 40 -sed -bbs -drloc shuffle -stloc mix -be -bnu -res -fer 0 -escr 100 -dgne -wnz -mmnu -cmd -esr 2 5 -elrt -ebr 82 -emprp 75 125 -nm1 random -rnl1 -rns1 -nm2 random -rnl2 -rns2 -nmmi -mmprp 75 125 -gp 5000 -smc 3 -sto 1 -ieor 33 -ieror 33 -ir stronger -csb 6 14 -mca -stra -saw -sisr 20 -sprp 75 125 -sdm 5 -npi -sebr -snsb -snee -snil -ccsr 20 -chrm 0 0 -cms -frw -wmhc -cor 100 -crr 100 -crvr 100 120 -crm -ari -anca -adeh -ame 1 -nmc -noshoes -u254 -nfps -fs -fe -fvd -fr -fj -fbs -fedc -fc -ond -etn" },

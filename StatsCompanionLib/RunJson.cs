@@ -188,7 +188,7 @@ public class RunJson
         }
         
         // Find a matching flagset.
-        foreach (var flagsetValue in WCData.FlagsetDict)
+        foreach (var flagsetValue in WCData.FLAGSET_DICT)
         {
             if (flagsReplaced == flagsetValue.Value)
             {

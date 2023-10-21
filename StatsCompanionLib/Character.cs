@@ -46,22 +46,22 @@ public class Character
         _name = name;
         _level = characterData[0x08];
         _commands = new List<string>() {
-            WCData.CommandDict[characterData[0x16]], 
-            WCData.CommandDict[characterData[0x17]],
-            WCData.CommandDict[characterData[0x18]], 
-            WCData.CommandDict[characterData[0x19]] 
+            WCData.COMMAND_DICT[characterData[0x16]], 
+            WCData.COMMAND_DICT[characterData[0x17]],
+            WCData.COMMAND_DICT[characterData[0x18]], 
+            WCData.COMMAND_DICT[characterData[0x19]] 
         };
         _vigor = characterData[0x1A];
         _speed = characterData[0x1B];
         _stamina = characterData[0x1C];
         _magpower = characterData[0x1D];
-        _esper = WCData.EsperDict[characterData[0x1E]];
-        _rHand = WCData.ItemDict[characterData[0x1F]];
-        _lHand = WCData.ItemDict[characterData[0x20]];
-        _helmet = WCData.ItemDict[characterData[0x21]];
-        _armor = WCData.ItemDict[characterData[0x22]];
-        _relic1 = WCData.ItemDict[characterData[0x23]];
-        _relic2 = WCData.ItemDict[characterData[0x24]];
+        _esper = WCData.ESPER_DICT[characterData[0x1E]];
+        _rHand = WCData.ITEM_DICT[characterData[0x1F]];
+        _lHand = WCData.ITEM_DICT[characterData[0x20]];
+        _helmet = WCData.ITEM_DICT[characterData[0x21]];
+        _armor = WCData.ITEM_DICT[characterData[0x22]];
+        _relic1 = WCData.ITEM_DICT[characterData[0x23]];
+        _relic2 = WCData.ITEM_DICT[characterData[0x24]];
         _characterSpellsData = characterSkillsData;
         _spells = new List<string>();
         GetSpellList(_characterSpellsData);
@@ -73,7 +73,7 @@ public class Character
         {
             if (characterSpells[i] == 0xFF)
             {
-                Spells.Add(WCData.SpellDict[i]);
+                Spells.Add(WCData.SPELL_DICT[i]);
             }
         } 
     }

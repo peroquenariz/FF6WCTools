@@ -14,8 +14,8 @@ public class SniClient
     public event EventHandler<ConnectionErrorEventArgs>? OnConnectionError;
     public event EventHandler<CountdownEventArgs>? OnCountdownTick;
     
-    private const string SniAddress = "http://localhost:8191/";
-    private readonly GrpcChannel _sniChannel = GrpcChannel.ForAddress(SniAddress);
+    private const string SNI_ADDRESS = "http://localhost:8191/";
+    private readonly GrpcChannel _sniChannel = GrpcChannel.ForAddress(SNI_ADDRESS);
 
     // Devices client.
     private readonly Devices.DevicesClient _devicesClient;
@@ -83,14 +83,28 @@ public class SniClient
             _isValidConnection = true;
             OnConnectionSuccessful?.Invoke(this, new ConnectionSuccessfulEventArgs(firstDevice.Uri));
         }
-        catch (ArgumentOutOfRangeException)
+        catch (Exception e)
         {
+            string exceptionType = e.GetType().ToString();
             while (!_isValidConnection)
             {
+                string errorMessage;
+                
+                switch (exceptionType)
+                {
+                    case "System.ArgumentOutOfRangeException":
+                        errorMessage = "Error: Device not found! Make sure your device/emulator is correctly connected to SNI.";
+                        break;
+                    case "Grpc.Core.RpcException":
+                        errorMessage = "Error: SNI not found! Make sure it's running and connected to your device/emulator.";
+                        break;
+                    default:
+                        throw;
+                }
+
                 try
                 {
-                    string message = "Device not found! Make sure your device/emulator is correctly connected to SNI.";
-                    OnConnectionError?.Invoke(this, new ConnectionErrorEventArgs(message));
+                    OnConnectionError?.Invoke(this, new ConnectionErrorEventArgs(errorMessage));
                     for (int i = 5; i > 0; i--)
                     {
                         OnCountdownTick?.Invoke(this, new CountdownEventArgs(i));
@@ -99,27 +113,10 @@ public class SniClient
                     var firstDevice = _devicesClient.ListDevices(new DevicesRequest { }).Devices[0];
                     _isValidConnection = true;
                 }
-                catch (Exception) { }
-            }
-            ResetConnection();
-        }
-        catch (Grpc.Core.RpcException)
-        {
-            while (!_isValidConnection)
-            {
-                try
+                catch (Exception ex)
                 {
-                    string message = "Error - SNI not found! Make sure it's open and connected to your device/emulator.";
-                    OnConnectionError?.Invoke(this, new ConnectionErrorEventArgs(message));
-                    for (int i = 5; i > 0; i--)
-                    {
-                        OnCountdownTick?.Invoke(this, new CountdownEventArgs(i));
-                        Thread.Sleep(1000);
-                    }
-                    var firstDevice = _devicesClient.ListDevices(new DevicesRequest { }).Devices[0];
-                    _isValidConnection = true;
+                    exceptionType = ex.GetType().ToString();
                 }
-                catch (Exception) { }
             }
             ResetConnection();
         }

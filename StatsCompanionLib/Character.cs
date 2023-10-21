@@ -10,7 +10,6 @@ public class Character
 {
     private string _name;
     private byte _level;
-    private byte[] _characterSpellsData;
     private byte _vigor;
     private byte _speed;
     private byte _stamina;
@@ -41,15 +40,15 @@ public class Character
     public List<string> Commands { get => _commands; set => _commands = value; }
     public List<string> Spells { get => _spells; set => _spells = value; }
 
-    public Character(byte[] characterData, byte[] characterSkillsData, string name)
+    public Character(byte[] characterData, byte[] characterSpellsData, string name)
     {
         _name = name;
         _level = characterData[0x08];
         _commands = new List<string>() {
-            WCData.COMMAND_DICT[characterData[0x16]], 
+            WCData.COMMAND_DICT[characterData[0x16]],
             WCData.COMMAND_DICT[characterData[0x17]],
-            WCData.COMMAND_DICT[characterData[0x18]], 
-            WCData.COMMAND_DICT[characterData[0x19]] 
+            WCData.COMMAND_DICT[characterData[0x18]],
+            WCData.COMMAND_DICT[characterData[0x19]]
         };
         _vigor = characterData[0x1A];
         _speed = characterData[0x1B];
@@ -62,9 +61,8 @@ public class Character
         _armor = WCData.ITEM_DICT[characterData[0x22]];
         _relic1 = WCData.ITEM_DICT[characterData[0x23]];
         _relic2 = WCData.ITEM_DICT[characterData[0x24]];
-        _characterSpellsData = characterSkillsData;
         _spells = new List<string>();
-        GetSpellList(_characterSpellsData);
+        GetSpellList(characterSpellsData);
     }
 
     public void GetSpellList(byte[] characterSpells)

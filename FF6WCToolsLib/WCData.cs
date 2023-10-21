@@ -85,6 +85,8 @@ public static class WCData
     /// </summary>
     public const int CHARACTER_SKILL_DATA_SIZE = 734;
 
+    public const byte CHARACTER_SKILL_DATA_SPELL_BLOCK_SIZE = 54;
+
     public const int SWDTECH_OFFSET = 649;
     public const int BLITZ_OFFSET = 698;
     public const int LORE_OFFSET = 699; // 3 bytes
@@ -298,6 +300,11 @@ public static class WCData
     /// </summary>
     public const int CHARACTER_DATA_SIZE = 518;
 
+    public const byte CHARACTER_DATA_BLOCK_SIZE = 37;
+
+    public const byte CHARACTER_DATA_NAME_OFFSET = 0x02;
+    public const byte CHARACTER_DATA_NAME_SIZE = 6;
+
     /// <summary>
     /// Start of the inventory.
     /// </summary>
@@ -359,6 +366,24 @@ public static class WCData
         "Gogo",
         "Umaro"
     };
+
+    public enum Character : byte
+    {
+        Terra,
+        Locke,
+        Cyan,
+        Shadow,
+        Edgar,
+        Sabin,
+        Celes,
+        Strago,
+        Relm,
+        Setzer,
+        Mog,
+        Gau,
+        Gogo,
+        Umaro
+    }
 
     // These are time offsets for the JSON data.
     public static readonly TimeSpan TIME_FROM_KEFKA_FLASH_TO_ANIMATION = new(0, 0, 0, 4, 967); // 298 frames at 60FPS.

@@ -697,29 +697,35 @@ public class Run
 
     public void GetFinalLineup()
     {
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < 4; i++) // Only read the first 4 characters in the final lineup
         {
-            // Get character data.
-            byte[] characterData = _characterData[(_finalBattleLineup[i] * 37)..(_finalBattleLineup[i] * 37 + 37)];
+            byte characterIndex = _finalBattleLineup[i];
 
-            // Get character skill data.
-            byte[] characterSkillData;
+            // Get character data.
+            byte[] characterData = _characterData[
+                (characterIndex * CHARACTER_DATA_BLOCK_SIZE)..
+                ((characterIndex + 1) * CHARACTER_DATA_BLOCK_SIZE)];
+
+            // Get character spell data.
+            byte[] characterSpellData;
             
-            if (_finalBattleLineup[i] < 0x0C)
+            if (characterIndex < (byte)WCData.Character.Gogo) // Ignore Gogo and Umaro (they have no spells)
             {
-                characterSkillData = _characterSkillData[(_finalBattleLineup[i] * 54)..(_finalBattleLineup[i] * 54 + 54)];
+                characterSpellData = _characterSkillData[
+                    (characterIndex * CHARACTER_SKILL_DATA_SPELL_BLOCK_SIZE)..
+                    ((characterIndex + 1) * CHARACTER_SKILL_DATA_SPELL_BLOCK_SIZE)];
             }
             else
             {
                 // If character is Gogo or Umaro, create an empty array.
-                characterSkillData = Array.Empty<byte>();
+                characterSpellData = Array.Empty<byte>();
             }
             
             // Get character name.
-            string name = WCData.CHARACTER_NAMES[_finalBattleLineup[i]];
+            string name = CHARACTER_NAMES[characterIndex]; // TODO: read name from sram
 
             // Add character to the final battle character array.
-            _finalBattleCharacters[i] = new Character(characterData, characterSkillData, name);
+            _finalBattleCharacters[i] = new Character(characterData, characterSpellData, name);
         }
     }
 

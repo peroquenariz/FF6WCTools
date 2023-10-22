@@ -735,7 +735,7 @@ public class Run
     public void GetSwdTechList()
     {
         byte swdTechData = _characterSkillData[WCData.SWDTECH_OFFSET];
-        for (byte i = 0; i < 8; i++)
+        for (byte i = 0; i < SWDTECH_DICT.Count; i++)
         {
             bool isSwdTechKnown = DataHandler.CheckBitSet(swdTechData, WCData.BIT_FLAGS[i]);
             if (isSwdTechKnown)
@@ -748,7 +748,7 @@ public class Run
     public void GetBlitzList()
     {
         byte blitzData = _characterSkillData[WCData.BLITZ_OFFSET];
-        for (byte i = 0; i < 8; i++)
+        for (byte i = 0; i < BLITZ_DICT.Count; i++)
         {
             bool isBlitzKnown = DataHandler.CheckBitSet(blitzData, WCData.BIT_FLAGS[i]);
             if (isBlitzKnown)
@@ -761,7 +761,7 @@ public class Run
     public void GetLoreList()
     {
         int loreData = DataHandler.ConcatenateByteArray(_characterSkillData[WCData.LORE_OFFSET..(WCData.LORE_OFFSET+3)]);
-        for (byte i = 0; i < 24; i++)
+        for (byte i = 0; i < LORE_DICT.Count; i++)
         {
             bool isLoreKnown = DataHandler.CheckBitSet(loreData, WCData.BIT_FLAGS[i%8] << 8*(i/8));
             if (isLoreKnown)

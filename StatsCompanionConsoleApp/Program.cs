@@ -27,7 +27,7 @@ internal class Program
         FileHandler fileHandler = new(config.Get("seedDirectory")!);
         SniClient sniClient = new SniClient();
         StatsCompanion statsCompanion = new StatsCompanion(sniClient, fileHandler);
-        Log log = new(consoleAppVersion, statsCompanion, sniClient, fileHandler);
+        ConsoleViewer log = new(consoleAppVersion, statsCompanion, sniClient, fileHandler);
         
         try
         {
@@ -41,9 +41,7 @@ internal class Program
             string crashlogPath = fileHandler.WriteCrashlogFile(DateTime.Now, e.ToString());
             
             // Show crashlog in console
-            Log.CrashInformation(e, crashlogPath);
-            
-            Console.ReadLine();
+            ConsoleViewer.CrashInformation(e, crashlogPath);
         }
     }
 }

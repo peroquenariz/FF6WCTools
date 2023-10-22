@@ -7,9 +7,9 @@ using StatsCompanionLib;
 namespace StatsCompanionConsoleApp;
 
 /// <summary>
-/// Handles all console log messages.
+/// Handles the console view.
 /// </summary>
-internal class Log
+internal class ConsoleViewer
 {
     private const int RIGHT_PADDING = 90;
     private const string WINDOW_TITLE = "Stats Companion";
@@ -19,7 +19,7 @@ internal class Log
 
     private static int _cursorTopPosition;
 
-    public Log(string? appVersion, StatsCompanion statsCompanion, SniClient sniClient, FileHandler fileHandler)
+    public ConsoleViewer(string? appVersion, StatsCompanion statsCompanion, SniClient sniClient, FileHandler fileHandler)
     {
         Console.CursorVisible = false;
         Console.Title = WINDOW_TITLE;
@@ -309,6 +309,7 @@ internal class Log
         Console.WriteLine($"Crash log saved at {crashlogPath}");
         Console.WriteLine();
         Console.Write("Press enter to exit.");
+        Console.ReadLine();
     }
 
     private static void ResetConsoleCursor()

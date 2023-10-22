@@ -4,7 +4,7 @@ using static FF6WCToolsLib.WCData;
 namespace StatsCompanionLib;
 
 /// <summary>
-/// A class representing a Worlds Collide character.
+/// Represents a Worlds Collide character.
 /// </summary>
 public class Character
 {
@@ -65,7 +65,11 @@ public class Character
         GetSpellList(characterSpellsData);
     }
 
-    public void GetSpellList(byte[] characterSpells)
+    /// <summary>
+    /// Adds the known spells to the character spell list.
+    /// </summary>
+    /// <param name="characterSpells">Character spells data.</param>
+    private void GetSpellList(byte[] characterSpells)
     {
         for (byte i = 0; i < characterSpells.Length; i++)
         {

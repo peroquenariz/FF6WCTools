@@ -277,7 +277,7 @@ public static class DataHandler
         
         for (int i = 0; i < 14; i++)
         {
-            byte characterLevel = characterData[i * 37 + 8];
+            byte characterLevel = characterData[i * 37 + CHARACTER_DATA_LEVEL_OFFSET];
             if (characterLevel > characterMaxLevel)
             {
                 characterMaxLevel = characterLevel;

@@ -6,7 +6,7 @@ using static FF6WCToolsLib.WCData;
 namespace StatsCompanionLib;
 
 /// <summary>
-/// A class representing a Worlds Collide run.
+/// Represents a Worlds Collide run.
 /// </summary>
 public class Run
 {
@@ -370,7 +370,7 @@ public class Run
             _battleFormation = "Battle: ";
             for (int i = 0; i < 6; i++)
             {
-                if (monsterIndexes[i] <= 383) // Ignore if monster doesn't exist
+                if (monsterIndexes[i] <= MONSTER_DICT.Count) // Ignore if monster doesn't exist
                 {
                     _battleFormation += MONSTER_DICT[monsterIndexes[i]] + ", ";
                 }
@@ -390,7 +390,7 @@ public class Run
         if (!_isAirshipTimerRunning)
         {
             if ((_character1Graphic == 6 || // value when taking off from overworld
-                _character1Graphic == 1 && !CheckAirshipFalsePositives()) && // ignore Cave in the Veldt, Serpent Trench, South Figaro cave, Ebot's Rock
+                _character1Graphic == 1 && !CheckAirshipFalsePositives()) && // ignore false positives
                 !_isBattleTimerRunning &&
                 DateTime.Now - _battleEnd > TIME_BATTLE_FALSE_POSITIVES) // don't start timer after Search the Skies cutscene
             {
@@ -401,9 +401,9 @@ public class Run
         }
         else
         {
-            if ((_character1Graphic == 3 && _character1GraphicPrevious == 9) ||
-                (_character1Graphic == 0 && AIRSHIP_DECK_MAP_IDS.Contains(_mapId)) ||
-                _isMenuTimerRunning || _isBattleTimerRunning)
+            if ((_character1Graphic == 3 && _character1GraphicPrevious == 9) || // landing the airship
+                (_character1Graphic == 0 && AIRSHIP_DECK_MAP_IDS.Contains(_mapId)) || // exiting flight mode into airship deck
+                _isMenuTimerRunning || _isBattleTimerRunning) // Cancel flight if a battle starts or a menu opens
             {
                 _airshipStop = DateTime.Now;
                 _isAirshipTimerRunning = false;
@@ -413,6 +413,11 @@ public class Run
         _character1GraphicPrevious = _character1Graphic;
     }
 
+    /// <summary>
+    /// Checks if the second to last map is a false positive map for airship flight detection.
+    /// 
+    /// </summary>
+    /// <returns>true if it's a false positive map, otherwise false.</returns>
     public bool CheckAirshipFalsePositives()
     {
         bool airshipFalsePositive = false;
@@ -425,12 +430,14 @@ public class Run
 
     public void LogKefkaStartTime()
     {
+        // Kefka start time is used on StatsCollide, it's actually the moment you step on the 3 switches.
         _kefkaStartTime = DateTime.Now - TIME_FROM_SWITCHES_TO_KEFKA_LAIR;
         _steppedOnKTSwitches = true;
     }
 
     public void CheckKefkaKill()
     {
+        // These values are set when you're in tier 4 and Kefka starts the disintegration animation (byte set to 0x01)
         if (_isKefkaFight == 0x0202 && _isKefkaDead == 0x01)
         {
             _endTime = DateTime.Now;
@@ -442,13 +449,16 @@ public class Run
 
     public void UpdateMapsVisited()
     {
-        if (_mapId <= 0x19E)
+        if (_mapId < MAPS_DICT.Count)
         {
             if (_mapsVisited.Count == 0 || (_mapsVisited[_mapsVisited.Count - 1] != _mapId && !_isMenuTimerRunning))
             {
                 _mapsVisited.Add(_mapId);
                 _lastMapTimestamp = DateTime.Now;
-                _route.Add((MAPS_DICT[(uint)_mapId], (_lastMapTimestamp - _startTime).ToString(TIME_FORMAT)));
+                _route.Add((MAPS_DICT[
+                    (uint)_mapId],
+                    (_lastMapTimestamp - _startTime).ToString(TIME_FORMAT))
+                );
             }
         }
     }
@@ -477,7 +487,7 @@ public class Run
     {
         if (!_isKefkaTowerUnlocked)
         {
-            _isKefkaTowerUnlocked = DataHandler.CheckBitByOffset(KefkaTowerEventByte, 0x094);
+            _isKefkaTowerUnlocked = DataHandler.CheckBitByOffset(KefkaTowerEventByte, EVENT_BIT_OFFSET_KEFKA_TOWER_UNLOCK);
             if (_isKefkaTowerUnlocked)
             {
                 _kefkaTowerUnlockTime = DateTime.Now;
@@ -489,7 +499,7 @@ public class Run
     {
         if (!_isKTSkipUnlocked)
         {
-            _isKTSkipUnlocked = DataHandler.CheckBitByOffset(KefkaTowerEventByte, 0x093);
+            _isKTSkipUnlocked = DataHandler.CheckBitByOffset(KefkaTowerEventByte, EVENT_BIT_OFFSET_KT_SKIP_UNLOCK);
             if (_isKTSkipUnlocked)
             {
                 _ktSkipUnlockTime = DateTime.Now;
@@ -499,7 +509,8 @@ public class Run
 
     public void CheckKefkaTowerStart()
     {
-        if ((_mapId == 0x14E || _mapId == 0x163) && _isKefkaTowerUnlocked  && !_hasKefkaTowerStarted)
+        if ((_mapId == 0x14E || _mapId == 0x163) && // IDs for tower start or KT skip switches room
+            _isKefkaTowerUnlocked  && !_hasKefkaTowerStarted)
         {
             _kefkaTowerStartTime = DateTime.Now;
             _hasKefkaTowerStarted = true;
@@ -557,7 +568,7 @@ public class Run
         }
         if (!_checksCompleted.Contains("Auction House 1") &&
             !_checksCompleted.Contains("Auction House 2") &&
-            _mapsVisited.Contains(0x0C8))
+            _mapsVisited.Contains(0x0C8)) // Auction House map ID
         {
             _checksPeeked.Add("Auction House");
         }
@@ -824,17 +835,22 @@ public class Run
 
     private bool IsInSaveMenu()
     {
+        // If reset or menu open and menu state is save menu.
         return _mapId == 3 || (_isMenuTimerRunning && _nextMenuState >= 19 && _nextMenuState <= 22);
     }
 
     /// <summary>
-    /// Takes the 3 bytes array and gets the game status.
+    /// Takes the NMI jump code data and gets the game status.
     /// </summary>
     public void GetGameStatus()
     {
         int firstTwoBytes = DataHandler.ConcatenateByteArray(_gameStatusData[0..2]);
         byte lastByte = _gameStatusData[2];
-
+        
+        // Look at these magic numbers, aren't they beautiful?
+        // These values are taken from the FF6 TAS Lua script.
+        // I have no idea where they came from, but they work. :)
+        // Thanks JCMTG for showing me the script.
         if (firstTwoBytes == 0x0ba7 && lastByte == 0xC1)
         {
             _gameStatus = BATTLE_KEY;
@@ -858,6 +874,10 @@ public class Run
         }
     }
 
+    /// <summary>
+    /// Check if the reset is a false positive.
+    /// This is mostly to ignore tent usage in the overworld.
+    /// </summary>
     public void CheckResetFalsePositive()
     {
         if (_route.Count > 1 && _menuNumber != 2)

@@ -119,11 +119,14 @@ public class FileHandler
         seedInfo = seedInfoPrevious;
         bool seedFound = false;
 
+        // If a seed directory wasn't provided in the config file
         if (_seedDirectory.Length == 0)
         {
             if (writeSeedInfo) OnSeedDirectoryNotFound?.Invoke(this, EventArgs.Empty);
             return false;
         }
+
+        // If the seed directory provided is invalid
         if (!Directory.Exists(_seedDirectory))
         {
             if (writeSeedInfo) OnSeedDirectoryInvalid?.Invoke(this, EventArgs.Empty);
@@ -132,8 +135,11 @@ public class FileHandler
 
         // Scan directory
         DirectoryInfo directory = new(_seedDirectory);
+        
+        // Create an array of files, and order it by creation date.
         FileInfo[] files = directory.GetFiles("*.*").OrderBy(f => f.CreationTime).ToArray();
 
+        // If there are no files in the directory
         if (files.Length == 0)
         {
             if (writeSeedInfo) OnSeedNotFound?.Invoke(this, EventArgs.Empty);
@@ -142,11 +148,14 @@ public class FileHandler
         }
         
         FileInfo lastCreatedFile = files[0];
+        
+        // Iterate the file array and check if there are any seeds
         for (int i = files.Length-1; i >= 0 && !seedFound; i--)
         {
             FileInfo file = files[i];
             foreach (string prefix in _validSeedPrefixes)
             {
+                // If it matches one of the WC prefixes
                 if (file.Name.StartsWith(prefix))
                 {
                     lastCreatedFile = file;
@@ -156,6 +165,7 @@ public class FileHandler
             }
         }
 
+        // If no seeds were found in the file array
         if (!seedFound)
         {
             if (writeSeedInfo) OnSeedNotFound?.Invoke(this, EventArgs.Empty);
@@ -163,6 +173,7 @@ public class FileHandler
             return true;
         }
         
+        // If a valid seed filename was found
         if (lastCreatedFile.Name != _lastLoadedSeed)
         {
             _lastLoadedSeed = lastCreatedFile.Name;
@@ -228,6 +239,11 @@ public class FileHandler
         return true;
     }
 
+    /// <summary>
+    /// Takes a text stream and writes the first 9 lines into a string array.
+    /// </summary>
+    /// <param name="seedTextStream">The text file stream.</param>
+    /// <param name="seedInfo">The seed information array</param>
     private static void ReadSeedTextFile(Stream seedTextStream, string[] seedInfo)
     {
         StreamReader reader = new(seedTextStream);
@@ -238,15 +254,23 @@ public class FileHandler
         reader.Close();
     }
 
+    /// <summary>
+    /// Resets the name of the last loaded seed.
+    /// </summary>
     public void ResetLastLoadedSeed()
     {
         _lastLoadedSeed = "";
     }
 
-    public void WriteJSONFile(DateTime endTime, RunJson runArguments)
+    /// <summary>
+    /// Writes the run JSON file.
+    /// </summary>
+    /// <param name="endTime">Timestamp of the end of the run.</param>
+    /// <param name="runJson">The run JSON data to write.</param>
+    public void WriteJSONFile(DateTime endTime, RunJson runJson)
     {
         // Serialize the JSON.
-        string jsonRunData = SerializeJson(runArguments);
+        string jsonRunData = SerializeJson(runJson);
 
         // Create a timestamped filename.
         string jsonPath = $"{RunsDirectory}{DirectorySeparator}{endTime.ToString(JSON_TIMESTAMP_FORMAT)}.json";
@@ -255,6 +279,12 @@ public class FileHandler
         WriteStringToFile(jsonPath, jsonRunData);
     }
 
+    /// <summary>
+    /// Writes a crashlog file.
+    /// </summary>
+    /// <param name="crashTime">Timestamp of the crash.</param>
+    /// <param name="crashlog">Crash log data.</param>
+    /// <returns>A string with the crashlog path.</returns>
     public string WriteCrashlogFile(DateTime crashTime, string crashlog)
     {
         // Crash log path.

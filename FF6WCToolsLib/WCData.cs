@@ -52,7 +52,9 @@ public static class WCData
         Visited_and_fought
     }
 
-    public const int EVENT_BIT_OFFSET_WON_COLISEUM_MATCH = 0x1ef;
+    public const int EVENT_BIT_OFFSET_WON_COLISEUM_MATCH = 0x1EF;
+    public const int EVENT_BIT_OFFSET_KT_SKIP_UNLOCK = 0x093;
+    public const int EVENT_BIT_OFFSET_KEFKA_TOWER_UNLOCK = 0x094;
 
     // Game mode constants.
     public const string BATTLE_KEY = "battle";
@@ -306,6 +308,7 @@ public static class WCData
 
     public const byte CHARACTER_DATA_NAME_OFFSET = 0x02;
     public const byte CHARACTER_DATA_NAME_SIZE = 6;
+    public const byte CHARACTER_DATA_LEVEL_OFFSET = 0x08;
 
     /// <summary>
     /// Start of the inventory.

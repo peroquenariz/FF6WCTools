@@ -144,17 +144,17 @@ public class RunJson
             {
                 return;
             }
-            else if (line.StartsWith("Seed"))
+            else if (line.StartsWith("Seed")) // Randomizer seed
             {
                 seedRaw = seedInfo[i].Substring(10);
             }
-            else if (line.StartsWith("Flags"))
+            else if (line.StartsWith("Flags")) // Flagset
             {
                 string flags = seedInfo[i].Substring(10);
                 flagsetRaw = flags;
                 flagset = ReplaceCharacters(GetFlagset(flags));
             }
-            else if (line.StartsWith("Website"))
+            else if (line.StartsWith("Website")) // Website seed ID
             {
                 seed = line.Substring(line.Length - 12);
             }
@@ -176,6 +176,7 @@ public class RunJson
             @"(-cspp [0123456789\.]* )",
         };
         
+        // Ignore &palette and sprite changes for flagset comparison.
         // Regex replace palette, portrait and sprite swaps.
         foreach (var pattern in patterns)
         {

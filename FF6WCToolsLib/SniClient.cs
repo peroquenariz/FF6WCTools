@@ -6,7 +6,7 @@ using Grpc.Net.Client;
 namespace FF6WCToolsLib;
 
 /// <summary>
-/// A class for handling the connection to SNI and requesting memory reads.
+/// Handles the connection to SNI.
 /// </summary>
 public class SniClient
 {
@@ -62,12 +62,11 @@ public class SniClient
             Request = _writeMemoryRequest
         };
 
-        _isValidConnection = false;
         RequestTimer = 0;
     }
 
     /// <summary>
-    /// Method that attempts to retrieve the first device connected to SNI.
+    /// Attempts to retrieve the first device connected to SNI.
     /// If it succeeds, it will set the request URI for that device.
     /// Otherwise, it will keep retrying until it succeeds.
     /// </summary>
@@ -123,11 +122,11 @@ public class SniClient
     }
 
     /// <summary>
-    /// Method that reads a specific memory address in the game through the gRPC API and returns its value.
+    /// Reads a specific game memory section and returns its value.
     /// </summary>
     /// <param name="address">The memory address to read.</param>
     /// <param name="size">The size of the request in bytes.</param>
-    /// <returns>A byte array containing the data of each byte.</returns>
+    /// <returns>A byte array containing the game memory data requested.</returns>
     public byte[] ReadMemory(uint address, uint size)
     {
         try

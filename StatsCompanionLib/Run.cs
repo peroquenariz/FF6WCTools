@@ -657,6 +657,9 @@ public class Run
 
     public void CheckColiseumVisit()
     {
+        _wonColiseumMatch = DataHandler.CheckBitByOffset(
+            _eventBitData[EVENT_BIT_OFFSET_WON_COLISEUM_MATCH / 8], EVENT_BIT_OFFSET_WON_COLISEUM_MATCH);
+
         if (_wonColiseumMatch  && _mapsVisited.Contains(0x19D))
         {
             _coliseumVisit = ColiseumVisit.Visited_and_fought;

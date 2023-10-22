@@ -397,7 +397,6 @@ public class StatsCompanion
             run.ChestCount = DataHandler.GetChestCount(run.ChestData);
             run.CharacterMaxLevel = DataHandler.GetMaximumCharacterLevel(run.CharacterData);
             run.DragonsKilled = DataHandler.GetDragonsKilled(run.DragonsBytes);
-            run.WonColiseumMatch = DataHandler.CheckBitByOffset(run.EventBitData[0x1ef / 8], 0x1ef);
 
             // Get checks data.
             run.GetListOfCompletedChecks();

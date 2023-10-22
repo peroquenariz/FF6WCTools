@@ -52,6 +52,8 @@ public static class WCData
         Visited_and_fought
     }
 
+    public const int EVENT_BIT_OFFSET_WON_COLISEUM_MATCH = 0x1ef;
+
     // Game mode constants.
     public const string BATTLE_KEY = "battle";
     public const string MENU_KEY = "menu";

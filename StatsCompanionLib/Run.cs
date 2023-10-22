@@ -239,7 +239,7 @@ public class Run
         _ktSkipUnlockTimeString = "";
         _battleFormation = "";
         _auctionHouseEsperCountText = "Zero";
-        _gameStatus = WCData.FIELD_KEY;
+        _gameStatus = FIELD_KEY;
 
         // Lists
         _startingCharacters = new List<string>();
@@ -295,7 +295,7 @@ public class Run
     {
         if (!_isMenuTimerRunning)
         {
-            if (_gameStatus == WCData.MENU_KEY)
+            if (_gameStatus == MENU_KEY)
             {
                 _menuOpen = DateTime.Now;
                 _isMenuTimerRunning = true;
@@ -303,7 +303,7 @@ public class Run
         }
         else
         {
-            if (_gameStatus != WCData.MENU_KEY)
+            if (_gameStatus != MENU_KEY)
             {
                 _menuClose = DateTime.Now;
                 _isMenuTimerRunning = false;
@@ -325,7 +325,7 @@ public class Run
     {
         if (!_isBattleTimerRunning)
         {
-            if (_gameStatus == WCData.BATTLE_KEY)
+            if (_gameStatus == BATTLE_KEY)
             {
                 _battleStart = DateTime.Now;
                 _battlesFought++;
@@ -334,7 +334,7 @@ public class Run
         }
         else
         {
-            if (_gameStatus != WCData.BATTLE_KEY || _hasFinished)
+            if (_gameStatus != BATTLE_KEY || _hasFinished)
             {
                 _battleEnd = DateTime.Now;
                 _monsterBytesPrevious = Array.Empty<byte>();
@@ -352,7 +352,7 @@ public class Run
     private void CleanupBattleFormationFalsePositives()
     {
         TimeSpan timeDifference = _battleEnd - _lastAddedBattleFormation;
-        if (timeDifference < WCData.TIME_BATTLE_FORMATION_FALSE_POSITIVES &&
+        if (timeDifference < TIME_BATTLE_FORMATION_FALSE_POSITIVES &&
             timeDifference > TimeSpan.Zero)
         {
             _route.RemoveAt(_route.Count - 1);
@@ -372,7 +372,7 @@ public class Run
             {
                 if (monsterIndexes[i] <= 383) // Ignore if monster doesn't exist
                 {
-                    _battleFormation += WCData.MONSTER_DICT[monsterIndexes[i]] + ", ";
+                    _battleFormation += MONSTER_DICT[monsterIndexes[i]] + ", ";
                 }
             }
             if (_battleFormation != "Battle: ")
@@ -392,7 +392,7 @@ public class Run
             if ((_character1Graphic == 6 || // value when taking off from overworld
                 _character1Graphic == 1 && !CheckAirshipFalsePositives()) && // ignore Cave in the Veldt, Serpent Trench, South Figaro cave, Ebot's Rock
                 !_isBattleTimerRunning &&
-                DateTime.Now - _battleEnd > WCData.TIME_BATTLE_FALSE_POSITIVES) // don't start timer after Search the Skies cutscene
+                DateTime.Now - _battleEnd > TIME_BATTLE_FALSE_POSITIVES) // don't start timer after Search the Skies cutscene
             {
                 _airshipStart = DateTime.Now;
                 _isAirshipTimerRunning = true;
@@ -402,7 +402,7 @@ public class Run
         else
         {
             if ((_character1Graphic == 3 && _character1GraphicPrevious == 9) ||
-                (_character1Graphic == 0 && WCData.AIRSHIP_DECK_MAP_IDS.Contains(_mapId)) ||
+                (_character1Graphic == 0 && AIRSHIP_DECK_MAP_IDS.Contains(_mapId)) ||
                 _isMenuTimerRunning || _isBattleTimerRunning)
             {
                 _airshipStop = DateTime.Now;
@@ -418,14 +418,14 @@ public class Run
         bool airshipFalsePositive = false;
         if (_mapsVisited.Count>2)
         {
-            airshipFalsePositive = WCData.AIRSHIP_FALSE_POSITIVES.Contains(_mapsVisited[^2]);
+            airshipFalsePositive = AIRSHIP_FALSE_POSITIVES.Contains(_mapsVisited[^2]);
         }
         return airshipFalsePositive;
     }
 
     public void LogKefkaStartTime()
     {
-        _kefkaStartTime = DateTime.Now - WCData.TIME_FROM_SWITCHES_TO_KEFKA_LAIR;
+        _kefkaStartTime = DateTime.Now - TIME_FROM_SWITCHES_TO_KEFKA_LAIR;
         _steppedOnKTSwitches = true;
     }
 
@@ -434,7 +434,7 @@ public class Run
         if (_isKefkaFight == 0x0202 && _isKefkaDead == 0x01)
         {
             _endTime = DateTime.Now;
-            _finalTime = _endTime - _startTime - WCData.TIME_FROM_KEFKA_FLASH_TO_ANIMATION;
+            _finalTime = _endTime - _startTime - TIME_FROM_KEFKA_FLASH_TO_ANIMATION;
             _route.Add(("Kefka kill", _finalTime.ToString(TIME_FORMAT)));
             _hasFinished = true;
         }
@@ -448,7 +448,7 @@ public class Run
             {
                 _mapsVisited.Add(_mapId);
                 _lastMapTimestamp = DateTime.Now;
-                _route.Add((WCData.MAPS_DICT[(uint)_mapId], (_lastMapTimestamp - _startTime).ToString(TIME_FORMAT)));
+                _route.Add((MAPS_DICT[(uint)_mapId], (_lastMapTimestamp - _startTime).ToString(TIME_FORMAT)));
             }
         }
     }
@@ -508,13 +508,13 @@ public class Run
 
     public void GetListOfCompletedChecks()
     {
-        foreach (var eventBitOffset in WCData.EVENT_BIT_OFFSETS_DICT)
+        foreach (var eventBitOffset in EVENT_BIT_OFFSETS_DICT)
         {
             byte checkByte = _eventBitData[eventBitOffset.Value / 8];
             bool isCheckCompleted = DataHandler.CheckBitByOffset(checkByte, eventBitOffset.Value);
             if (isCheckCompleted)
             {
-                _checksCompleted.Add(WCData.EVENT_BIT_CHECK_NAMES_DICT[eventBitOffset.Key]);
+                _checksCompleted.Add(EVENT_BIT_CHECK_NAMES_DICT[eventBitOffset.Key]);
             }
         }
     }
@@ -522,7 +522,7 @@ public class Run
     public void GetListOfPeekedChecks()
     {
         // Peeks by map ID.
-        foreach (var mapIdPeek in WCData.PEEKS_BY_MAP_ID)
+        foreach (var mapIdPeek in PEEKS_BY_MAP_ID)
         {
             if (!_checksCompleted.Contains(mapIdPeek.Value) && _mapsVisited.Contains(mapIdPeek.Key))
             {
@@ -565,7 +565,7 @@ public class Run
 
     public void CheckEventBitPeeks()
     {
-        foreach (var eventBit in WCData.PEEKS_BY_EVENT_BIT)
+        foreach (var eventBit in PEEKS_BY_EVENT_BIT)
         {
             if (!_eventBitsPeeked.Contains(eventBit.Value))
             {
@@ -734,39 +734,39 @@ public class Run
 
     public void GetSwdTechList()
     {
-        byte swdTechData = _characterSkillData[WCData.SWDTECH_OFFSET];
+        byte swdTechData = _characterSkillData[SWDTECH_OFFSET];
         for (byte i = 0; i < SWDTECH_DICT.Count; i++)
         {
-            bool isSwdTechKnown = DataHandler.CheckBitSet(swdTechData, WCData.BIT_FLAGS[i]);
+            bool isSwdTechKnown = DataHandler.CheckBitSet(swdTechData, BIT_FLAGS[i]);
             if (isSwdTechKnown)
             {
-                _knownSwdTechs.Add(WCData.SWDTECH_DICT[i]);
+                _knownSwdTechs.Add(SWDTECH_DICT[i]);
             }
         }
     }
 
     public void GetBlitzList()
     {
-        byte blitzData = _characterSkillData[WCData.BLITZ_OFFSET];
+        byte blitzData = _characterSkillData[BLITZ_OFFSET];
         for (byte i = 0; i < BLITZ_DICT.Count; i++)
         {
-            bool isBlitzKnown = DataHandler.CheckBitSet(blitzData, WCData.BIT_FLAGS[i]);
+            bool isBlitzKnown = DataHandler.CheckBitSet(blitzData, BIT_FLAGS[i]);
             if (isBlitzKnown)
             {
-                _knownBlitzes.Add(WCData.BLITZ_DICT[i]);
+                _knownBlitzes.Add(BLITZ_DICT[i]);
             }
         }
     }
 
     public void GetLoreList()
     {
-        int loreData = DataHandler.ConcatenateByteArray(_characterSkillData[WCData.LORE_OFFSET..(WCData.LORE_OFFSET+3)]);
+        int loreData = DataHandler.ConcatenateByteArray(_characterSkillData[LORE_OFFSET..(LORE_OFFSET+3)]);
         for (byte i = 0; i < LORE_DICT.Count; i++)
         {
-            bool isLoreKnown = DataHandler.CheckBitSet(loreData, WCData.BIT_FLAGS[i%8] << 8*(i/8));
+            bool isLoreKnown = DataHandler.CheckBitSet(loreData, BIT_FLAGS[i%8] << 8*(i/8));
             if (isLoreKnown)
             {
-                _knownLores.Add(WCData.LORE_DICT[i]);
+                _knownLores.Add(LORE_DICT[i]);
             }
         }
     }
@@ -837,24 +837,24 @@ public class Run
 
         if (firstTwoBytes == 0x0ba7 && lastByte == 0xC1)
         {
-            _gameStatus = WCData.BATTLE_KEY;
+            _gameStatus = BATTLE_KEY;
         }
         else if (firstTwoBytes == 0x0182 && lastByte == 0xC0)
         {
-            _gameStatus = WCData.FIELD_KEY;
+            _gameStatus = FIELD_KEY;
         }
         else if (firstTwoBytes == 0xa728 && lastByte == 0xEE)
         {
-            _gameStatus = WCData.WORLD_KEY;
+            _gameStatus = WORLD_KEY;
         }
         else if (firstTwoBytes == 0x1387 && lastByte == 0xC3)
         {
-            _gameStatus = WCData.MENU_KEY;
+            _gameStatus = MENU_KEY;
         }
         else if ((firstTwoBytes == 0xa509 && lastByte == 0xEE) ||
                  (firstTwoBytes == 0xa94d && lastByte == 0xEE))
         {
-            _gameStatus = WCData.MODE7_KEY;
+            _gameStatus = MODE7_KEY;
         }
     }
 

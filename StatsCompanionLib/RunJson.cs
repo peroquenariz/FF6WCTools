@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using FF6WCToolsLib;
+using static FF6WCToolsLib.WCData;
 
 namespace StatsCompanionLib;
 
@@ -188,7 +188,7 @@ public class RunJson
         }
         
         // Find a matching flagset.
-        foreach (var flagsetValue in WCData.FLAGSET_DICT)
+        foreach (var flagsetValue in FLAGSET_DICT)
         {
             if (flagsReplaced == flagsetValue.Value)
             {

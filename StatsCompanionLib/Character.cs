@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using FF6WCToolsLib;
+using static FF6WCToolsLib.WCData;
 
 namespace StatsCompanionLib;
 
@@ -45,22 +45,22 @@ public class Character
         _name = name;
         _level = characterData[0x08];
         _commands = new List<string>() {
-            WCData.COMMAND_DICT[characterData[0x16]],
-            WCData.COMMAND_DICT[characterData[0x17]],
-            WCData.COMMAND_DICT[characterData[0x18]],
-            WCData.COMMAND_DICT[characterData[0x19]]
+            COMMAND_DICT[characterData[0x16]],
+            COMMAND_DICT[characterData[0x17]],
+            COMMAND_DICT[characterData[0x18]],
+            COMMAND_DICT[characterData[0x19]]
         };
         _vigor = characterData[0x1A];
         _speed = characterData[0x1B];
         _stamina = characterData[0x1C];
         _magpower = characterData[0x1D];
-        _esper = WCData.ESPER_DICT[characterData[0x1E]];
-        _rHand = WCData.ITEM_DICT[characterData[0x1F]];
-        _lHand = WCData.ITEM_DICT[characterData[0x20]];
-        _helmet = WCData.ITEM_DICT[characterData[0x21]];
-        _armor = WCData.ITEM_DICT[characterData[0x22]];
-        _relic1 = WCData.ITEM_DICT[characterData[0x23]];
-        _relic2 = WCData.ITEM_DICT[characterData[0x24]];
+        _esper = ESPER_DICT[characterData[0x1E]];
+        _rHand = ITEM_DICT[characterData[0x1F]];
+        _lHand = ITEM_DICT[characterData[0x20]];
+        _helmet = ITEM_DICT[characterData[0x21]];
+        _armor = ITEM_DICT[characterData[0x22]];
+        _relic1 = ITEM_DICT[characterData[0x23]];
+        _relic2 = ITEM_DICT[characterData[0x24]];
         _spells = new List<string>();
         GetSpellList(characterSpellsData);
     }
@@ -71,7 +71,7 @@ public class Character
         {
             if (characterSpells[i] == 0xFF)
             {
-                Spells.Add(WCData.SPELL_DICT[i]);
+                Spells.Add(SPELL_DICT[i]);
             }
         } 
     }

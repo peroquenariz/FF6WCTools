@@ -377,4 +377,25 @@ public static class DataHandler
         }
         return concatenatedData;
     }
+
+    /// <summary>
+    /// Extracts the character name from the character data in SRAM.
+    /// These might change if a rename card was used, or in crowd control!
+    /// </summary>
+    /// <param name="characterData">The data block of a given character.</param>
+    /// <returns>A name string with the white-spaces trimmed.</returns>
+    public static string GetCharacterName(byte[] characterData)
+    {
+        char[] characterName = new char[CHARACTER_DATA_NAME_SIZE];
+        byte[] characterNameBytes = characterData[CHARACTER_DATA_NAME_OFFSET..(CHARACTER_DATA_NAME_OFFSET + 6)];
+
+        for (byte i = 0; i < characterName.Length; i++)
+        {
+            characterName[i] = CHAR_DICT[characterNameBytes[i]];
+        }
+
+        string name = new string(characterName);
+
+        return name.Trim();
+    }
 }

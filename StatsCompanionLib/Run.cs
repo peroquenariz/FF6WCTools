@@ -723,10 +723,10 @@ public class Run
                 // If character is Gogo or Umaro, create an empty array.
                 characterSpellData = Array.Empty<byte>();
             }
-            
-            // Get character name.
-            string name = CHARACTER_NAMES[characterIndex]; // TODO: read name from sram
 
+            // Get character name.
+            string name = DataHandler.GetCharacterName(characterData);
+            
             // Add character to the final battle character array.
             _finalBattleCharacters[i] = new Character(characterData, characterSpellData, name);
         }

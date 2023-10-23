@@ -1,5 +1,7 @@
 ﻿using FF6WCToolsLib;
+using System;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace CrowdControlLib;
 
@@ -16,8 +18,12 @@ public class CrowdControl
         _sniClient = sniClient;
     }
 
-    public void Execute()
+    public async Task ExecuteAsync()
     {
-
+        while (true)
+        {
+            Console.WriteLine("Crowd control");
+            await Task.Delay(5000);
+        }
     }
 }

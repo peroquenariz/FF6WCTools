@@ -2,14 +2,16 @@
 using System.Collections.Specialized;
 using System.Configuration;
 using System.Reflection;
+using System.Threading.Tasks;
 using FF6WCToolsLib;
 using CrowdControlLib;
+using TwitchChatbot;
 
 namespace CrowdControlConsoleApp;
 
 internal class Program
 {
-    static void Main(string[] args)
+    static async Task Main(string[] args)
     {
         // Initial console clear.
         Console.Clear();
@@ -28,11 +30,18 @@ internal class Program
         SniClient sniClient = new SniClient();
         CrowdControl crowdControl = new CrowdControl(sniClient);
         ConsoleViewer consoleViewer = new(consoleAppVersion, crowdControl, sniClient);
+        Chatbot chatbot = new Chatbot(config);
 
         try
         {
+            // Open Twitch Chatbot
+            Task chatbotTask = chatbot.StartAsync();
+            
             // Execute Crowd Control
-            crowdControl.Execute();
+            Task crowdControlTask = crowdControl.ExecuteAsync();
+
+            await chatbotTask;
+            await crowdControlTask;
         }
 
         catch (Exception e)

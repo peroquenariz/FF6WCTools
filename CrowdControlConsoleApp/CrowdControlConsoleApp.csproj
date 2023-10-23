@@ -17,6 +17,7 @@
   <ItemGroup>
     <ProjectReference Include="..\CrowdControlLib\CrowdControlLib.csproj" />
     <ProjectReference Include="..\FF6WCToolsLib\FF6WCToolsLib.csproj" />
+    <ProjectReference Include="..\TwitchChatbot\TwitchChatbot.csproj" />
   </ItemGroup>
 
 </Project>

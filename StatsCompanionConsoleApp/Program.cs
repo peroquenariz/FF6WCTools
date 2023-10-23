@@ -24,7 +24,7 @@ internal class Program
         bool isDebugMode = Convert.ToBoolean(config.Get("debugMode"));
         
         // Component initialization.
-        FileHandler fileHandler = new(config.Get("seedDirectory")!);
+        FileHandler fileHandler = new(true, config.Get("seedDirectory")!);
         SniClient sniClient = new SniClient();
         StatsCompanion statsCompanion = new StatsCompanion(sniClient, fileHandler);
         ConsoleViewer log = new(consoleAppVersion, statsCompanion, sniClient, fileHandler);

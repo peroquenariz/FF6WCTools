@@ -434,7 +434,7 @@ public class StatsCompanion
             RunJson runJson = new(run, _libVersion, _fileHandler.LastLoadedSeed);
 
             // Write JSON file.
-            _fileHandler.WriteJSONFile(run.EndTime, runJson);
+            runJson.WriteJSONFile(run.EndTime, runJson, _fileHandler);
 
             // Show final time in console.
             OnRunSuccessful?.Invoke(this, new RunSuccessfulEventArgs(run.FinalTime.ToString(@"hh\:mm\:ss\.fff")));

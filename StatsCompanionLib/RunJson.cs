@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Text.Json;
 using System.Text.RegularExpressions;
+using FF6WCToolsLib;
 using static FF6WCToolsLib.WCData;
 
 namespace StatsCompanionLib;
@@ -64,7 +67,10 @@ public class RunJson
     public List<string> knownBlitzes { get; set; }
     public List<string> knownLores { get; set; }
     public List<string> route { get; set; }
-    
+
+    private const string JSON_TIMESTAMP_FORMAT = "yyyy_MM_dd - HH_mm_ss";
+    private readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions() { WriteIndented = true };
+
     private const string TIME_FORMAT = @"hh\:mm\:ss";
     private const string TIME_FORMAT_PRECISE = @"hh\:mm\:ss\.fff";
     private const string DATE_FORMAT = "yyyy-MM-ddTHH:mm:ss";
@@ -230,5 +236,33 @@ public class RunJson
         }
 
         return replacedList;
+    }
+
+    /// <summary>
+    /// Writes the run JSON file.
+    /// </summary>
+    /// <param name="endTime">Timestamp of the end of the run.</param>
+    /// <param name="runJson">The run JSON data to write.</param>
+    public void WriteJSONFile(DateTime endTime, RunJson runJson, FileHandler fileHandler)
+    {
+        // Serialize the JSON.
+        string jsonRunData = SerializeJson(runJson);
+
+        // Create a timestamped filename.
+        string jsonPath = $"{fileHandler.RunsDirectory}{fileHandler.DirectorySeparator}{endTime.ToString(JSON_TIMESTAMP_FORMAT)}.json";
+
+        // Write to a .json file.
+        FileHandler.WriteStringToFile(jsonPath, jsonRunData);
+    }
+
+    /// <summary>
+    /// Takes the run data and serializes the JSON with pretty format.
+    /// </summary>
+    /// <param name="runArguments">The run data.</param>
+    /// <returns>A formatted JSON string, ready to write to a file.</returns>
+    public string SerializeJson(RunJson runArguments)
+    {
+        string serializedJson = JsonSerializer.Serialize(runArguments, _jsonOptions);
+        return serializedJson;
     }
 }

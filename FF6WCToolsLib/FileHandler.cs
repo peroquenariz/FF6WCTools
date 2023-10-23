@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Text.Json;
 
-namespace StatsCompanionLib;
+namespace FF6WCToolsLib;
 
 /// <summary>
 /// Handles all file operations.
@@ -19,10 +18,7 @@ public class FileHandler
     public event EventHandler<SeedInfoFoundEventArgs>? OnSeedInfoFound;
     public event EventHandler<SeedInfoNotFoundEventArgs>? OnSeedInfoNotFound;
 
-    private const string JSON_TIMESTAMP_FORMAT = "yyyy_MM_dd - HH_mm_ss";
-
     private readonly TimeSpan _refreshInterval = new(0,0,2);
-    private readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions() { WriteIndented = true };
     private readonly string _appDirectory;
     private readonly string _runsDirectory;
     private readonly string _crashlogDirectory;
@@ -94,17 +90,6 @@ public class FileHandler
     public static void WriteStringToFile (string path, string content)
     {
         File.WriteAllText(path, content);
-    }
-
-    /// <summary>
-    /// Takes the run data and serializes the JSON with pretty format.
-    /// </summary>
-    /// <param name="runArguments">The run data.</param>
-    /// <returns>A formatted JSON string, ready to write to a file.</returns>
-    public string SerializeJson(RunJson runArguments)
-    {
-        string serializedJson = JsonSerializer.Serialize(runArguments, _jsonOptions);
-        return serializedJson;
     }
 
     /// <summary>
@@ -260,23 +245,6 @@ public class FileHandler
     public void ResetLastLoadedSeed()
     {
         _lastLoadedSeed = "";
-    }
-
-    /// <summary>
-    /// Writes the run JSON file.
-    /// </summary>
-    /// <param name="endTime">Timestamp of the end of the run.</param>
-    /// <param name="runJson">The run JSON data to write.</param>
-    public void WriteJSONFile(DateTime endTime, RunJson runJson)
-    {
-        // Serialize the JSON.
-        string jsonRunData = SerializeJson(runJson);
-
-        // Create a timestamped filename.
-        string jsonPath = $"{RunsDirectory}{DirectorySeparator}{endTime.ToString(JSON_TIMESTAMP_FORMAT)}.json";
-
-        // Write to a .json file.
-        WriteStringToFile(jsonPath, jsonRunData);
     }
 
     /// <summary>

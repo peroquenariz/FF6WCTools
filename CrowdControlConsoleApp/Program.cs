@@ -28,9 +28,9 @@ internal class Program
         // Component initialization.
         FileHandler fileHandler = new(false);
         SniClient sniClient = new SniClient();
-        CrowdControl crowdControl = new CrowdControl(sniClient);
-        ConsoleViewer consoleViewer = new(consoleAppVersion, crowdControl, sniClient);
         Chatbot chatbot = new Chatbot(config);
+        CrowdControl crowdControl = new CrowdControl(sniClient, chatbot.CrowdControlMessageQueue);
+        ConsoleViewer consoleViewer = new(consoleAppVersion, crowdControl, sniClient);
 
         try
         {

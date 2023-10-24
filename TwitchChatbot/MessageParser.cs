@@ -4,26 +4,33 @@ namespace TwitchChatbot
 {
     static internal class MessageParser
     {
-        static public void Parse(string message, string channel)
+        const string CONNECTED_MESSAGE_FORMAT = "tmi.twitch.tv 001";
+        const string PRIVMSG_MESSAGE_FORMAT = "PRIVMSG";
+
+        const string CROWD_CONTROL_COMMAND_TRIGGER = "!cc";
+
+        static public Message? Parse(string message, string channel)
         {
-            const string CONNECTED_MESSAGE_FORMAT = "tmi.twitch.tv 001";
-        
-            if (message.Contains(CONNECTED_MESSAGE_FORMAT))
+            Message? chatMessage = null;
+
+            if (message.Contains(CONNECTED_MESSAGE_FORMAT)) // TODO: make this an event and subscribe to it with consoleviewer
             {
-                Console.Clear();
-                Console.WriteLine($"Connected! Now chatting in #{channel}");
+                //Console.WriteLine($"Connected! Now chatting in #{channel}");
                 Console.WriteLine("");
             }
-            else if (message.Contains("PRIVMSG"))
+            else if (message.Contains(PRIVMSG_MESSAGE_FORMAT))
             {
-                string privMsg = ParsePrivMsg(message);
-                Console.WriteLine(privMsg);
+                chatMessage = ParsePrivateMessage(message);
             }
+
+            return chatMessage;
         }
-        static private string ParsePrivMsg(string chatMessage)
+
+        static private Message ParsePrivateMessage(string chatMessage)
         {
             string messageSender = "";
             string messageContent = "";
+            bool isCrowdControlMessage = false;
 
             // Split the message into an array
             string[] splitChatMessage = chatMessage.Split(";");
@@ -45,11 +52,13 @@ namespace TwitchChatbot
                     string messageSection = section[section.IndexOf("#")..];
                     // Everything after the colon is guaranteed to be the message content
                     messageContent = messageSection[(messageSection.IndexOf(":") + 1)..];
+
+                    isCrowdControlMessage = messageContent.StartsWith(CROWD_CONTROL_COMMAND_TRIGGER);
                 }
             }
 
             // Concatenates the final string for returning
-            return messageSender + ": " + messageContent;
+            return new Message(messageContent, messageSender, isCrowdControlMessage);
         }
     }
 }

@@ -22,7 +22,6 @@ public class CrowdControl
     {
         while (true)
         {
-            Console.WriteLine("Crowd control");
             await Task.Delay(5000);
         }
     }

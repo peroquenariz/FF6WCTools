@@ -4,6 +4,24 @@ namespace FF6WCToolsLib.DataTemplates;
 
 public static class DataEnums
 {
+    public enum SpellDataStructure
+    {
+        Targeting,
+        ElementalProperties,
+        SpellFlags1,
+        SpellFlags2,
+        SpellFlags3,
+        MPCost,
+        SpellPower,
+        SpellFlags4,
+        HitRate,
+        SpecialEffect,
+        Status1,
+        Status2,
+        Status3,
+        Status4
+    }
+    
     [Flags]
     public enum Targeting : byte
     {

@@ -79,7 +79,7 @@ namespace TwitchChatbot
                         else
                         {
                             Message? chatMessage = MessageParser.Parse(line, _channel);
-                            Console.WriteLine("test");
+                            
                             if (chatMessage != null)
                             {
                                 if (chatMessage.IsCrowdControlMessage) _crowdControlMessageQueue.Add(chatMessage);

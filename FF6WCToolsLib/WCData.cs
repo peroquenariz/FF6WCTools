@@ -8,6 +8,42 @@ namespace FF6WCToolsLib;
 /// </summary>
 public static class WCData
 {
+    // ROM data and addresses
+    public const int MAP_NAMES_START = 0xCEF100; // 73 items, variable size
+    
+    public const uint SPELL_DATA_START = 0xC46AC0;
+    public const byte SPELL_DATA_BLOCK_SIZE = 14;
+    public const int SPELL_DATA_BLOCK_COUNT = 256;
+
+    public const uint ITEM_DATA_START = 0xD85000;
+    public const byte ITEM_DATA_BLOCK_SIZE = 30;
+    public const int ITEM_DATA_BLOCK_COUNT = 256;
+    
+    public const uint ITEM_NAMES_START = 0xD2B300;
+    public const byte ITEM_NAMES_BLOCK_SIZE = 13; // Byte 1: icon, 2-13 name
+    public const int ITEM_NAMES_BLOCK_COUNT = 256;
+
+    public const uint ESPER_DATA_START = 0xD86E00;
+    public const byte ESPER_DATA_BLOCK_SIZE = 0x0B;
+    public const int ESPER_DATA_BLOCK_COUNT = 256;
+
+    // Names are in a different section of memory
+    // Use the start address and add the offset for each section
+    public const uint SPELLS_GENERAL_NAMES_START = 0xE6F567;
+    
+    public const uint SPELLS_MAGICAL_NAMES_OFFSET = 0;
+    public const byte SPELLS_MAGICAL_NAMES_BLOCK_SIZE = 7;
+    public const int SPELLS_MAGICAL_NAMES_BLOCK_COUNT = 54;
+
+    public const uint SPELLS_ESPER_NAMES_OFFSET = 54;
+    public const byte SPELLS_ESPER_NAMES_BLOCK_SIZE = 8;
+    public const int SPELLS_ESPER_NAMES_BLOCK_COUNT = 27;
+
+    public const uint SPELLS_ATTACK_NAMES_OFFSET = 81;
+    public const uint SPELLS_ESPER_ATTACK_NAMES_OFFSET = 256;
+
+    
+
     public enum TzenThiefBought
     {
         None,
@@ -1583,6 +1619,7 @@ public static class WCData
         { 0xD0, ' ' },
         { 0xD1, ' ' },
         { 0xD2, '=' },
+        { 0xDF, ' ' }, // Space used for map names
         { 0xFF, ' ' }
     };
 

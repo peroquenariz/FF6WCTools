@@ -170,4 +170,15 @@ public static class DataEnums
         RANDOMLY_DEFENDED_BY_INTERCEPTOR = 0x40,
         FLOAT = 0x80
     }
+
+    public enum ItemType
+    {
+        Tool,
+        Weapon,
+        Armor,
+        Shield,
+        Helm, 
+        Relic, 
+        Item
+    }
 }

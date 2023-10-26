@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <ApplicationIcon>_UncleUlty.ico</ApplicationIcon>
+    <Title>Stats Companion Console App</Title>
+    <Version>1.0.0</Version>
+    <Configurations>Debug;Release;JSON_DEBUG</Configurations>
+    <Authors>peroquenariz</Authors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="_UncleUlty.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="7.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FF6WCToolsLib\FF6WCToolsLib.csproj" />
+    <ProjectReference Include="..\StatsCompanionLib\StatsCompanionLib.csproj" />
+  </ItemGroup>
+</Project>

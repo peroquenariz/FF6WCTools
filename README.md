@@ -1,10 +1,16 @@
-# Stats Companion
-A companion app for tracking [Final Fantasy VI: Worlds Collide](https://ff6worldscollide.com/) run statistics. It's designed to be as easy to use as possible, in other words, it "just works": just open the app and it will silently track your run data, so you'll finally know how long you've been sitting in menus juggling espers around!
+# FF6WCTools
+A collection of tools and libraries for creating applications for [Final Fantasy VI: Worlds Collide](https://ff6worldscollide.com/)  randomizer.
+
+Home of Stats Companion and Crowd Control (coming Soon™).
 
 ### Special thanks:
 - My friend and mentor, Ale. None of this would be possible without you <3.
 - StatsCollide creator Seto Kiaba, for being the inspiration for Stats Companion.
 - The Worlds Collide community and developers, for being the most amazing group of people. Special thanks to DoctorDT for putting up with me asking dumb questions about how things work, and my very early stage guinea pigs: Overswarm, HunnyDoo, RetrophileTV and gaahr.
+
+
+# Stats Companion
+A companion app for tracking [Final Fantasy VI: Worlds Collide](https://ff6worldscollide.com/) run statistics. It's designed to be as easy to use as possible, in other words, it "just works": just open the app and it will silently track your run data, so you'll finally know how long you've been sitting in menus juggling espers around!
 
 ## Requirements
 - **[.NET Runtime 6](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)**

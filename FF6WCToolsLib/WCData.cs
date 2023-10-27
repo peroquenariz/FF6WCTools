@@ -19,30 +19,40 @@ public static class WCData
     public const byte ITEM_DATA_BLOCK_SIZE = 30;
     public const int ITEM_DATA_BLOCK_COUNT = 256;
     
-    public const uint ITEM_NAMES_START = 0xD2B300;
-    public const byte ITEM_NAMES_BLOCK_SIZE = 13; // Byte 1: icon, 2-13 name
-    public const int ITEM_NAMES_BLOCK_COUNT = 256;
-
     public const uint ESPER_DATA_START = 0xD86E00;
     public const byte ESPER_DATA_BLOCK_SIZE = 0x0B;
     public const int ESPER_DATA_BLOCK_COUNT = 256;
 
     // Names are in a different section of memory
-    // Use the start address and add the offset for each section
-    public const uint SPELLS_GENERAL_NAMES_START = 0xE6F567;
+    public const uint ITEM_NAMES_START = 0xD2B300;
+    public const byte ITEM_NAMES_BLOCK_SIZE = 13; // Byte 1: icon, 2-13 name
+    public const int ITEM_NAMES_BLOCK_COUNT = 256;
+    
+    // For spells, use the start address and add the offset for each section
+    public const uint SPELLS_ALL_NAMES_START = 0xE6F567;
+    public const uint SPELLS_ALL_NAMES_SIZE = 2710;
     
     public const uint SPELLS_MAGICAL_NAMES_OFFSET = 0;
-    public const byte SPELLS_MAGICAL_NAMES_BLOCK_SIZE = 7;
+    public const byte SPELLS_MAGICAL_NAMES_BLOCK_SIZE = 7; // Byte 1: icon, 2-7: name
     public const int SPELLS_MAGICAL_NAMES_BLOCK_COUNT = 54;
 
-    public const uint SPELLS_ESPER_NAMES_OFFSET = 54;
+    public const uint SPELLS_ESPER_NAMES_OFFSET = 378;
     public const byte SPELLS_ESPER_NAMES_BLOCK_SIZE = 8;
     public const int SPELLS_ESPER_NAMES_BLOCK_COUNT = 27;
 
-    public const uint SPELLS_ATTACK_NAMES_OFFSET = 81;
-    public const uint SPELLS_ESPER_ATTACK_NAMES_OFFSET = 256;
+    public const uint SPELLS_ATTACK_NAMES_OFFSET = 594;
+    public const byte SPELLS_ATTACK_NAMES_BLOCK_SIZE = 10;
+    public const int SPELLS_ATTACK_NAMES_BLOCK_COUNT = 175;
 
-    
+    public const uint SPELLS_ESPER_ATTACK_NAMES_OFFSET = 2344;
+    public const byte SPELLS_ESPER_ATTACK_NAMES_BLOCK_SIZE = 10;
+    public const int SPELLS_ESPER_ATTACK_NAMES_BLOCK_COUNT = 27;
+
+    // FF6Hacking rom map claims dance names data ends at 0xE6FFFF.
+    // But at 0xE6FFFD to 0xE6FFFF there's 3 bytes of unknown data.
+    public const uint SPELLS_DANCE_NAMES_OFFSET = 2614;
+    public const byte SPELLS_DANCE_NAMES_BLOCK_SIZE = 12;
+    public const int SPELLS_DANCE_NAMES_BLOCK_COUNT = 8;
 
     public enum TzenThiefBought
     {

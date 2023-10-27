@@ -1,19 +1,18 @@
 ﻿using static FF6WCToolsLib.WCData;
 using static FF6WCToolsLib.DataTemplates.DataEnums;
-using System;
 
 namespace FF6WCToolsLib.DataTemplates;
 
 public class SpellData : BaseData
 {
-    public override uint StartAddress => SPELL_DATA_START;
-    public override byte BlockSize => SPELL_DATA_BLOCK_SIZE;
-    public override int BlockCount => SPELL_DATA_BLOCK_COUNT;
+    public static uint StartAddress => SPELL_DATA_START;
+    public static byte BlockSize => SPELL_DATA_BLOCK_SIZE;
+    public static int BlockCount => SPELL_DATA_BLOCK_COUNT;
+    public static uint DataSize => (uint)BlockCount * BlockSize;
 
-    public SpellData(byte[] defaultSpellData, int spellIndex) : base(defaultSpellData, spellIndex)
-    {
-        
-    }
+    public override uint TargetAddress => StartAddress + (uint)(BlockSize * _dataIndex);
+
+    public SpellData(byte[] defaultSpellData, int spellIndex) : base(defaultSpellData, spellIndex) { }
 
     public override string ToString()
     {

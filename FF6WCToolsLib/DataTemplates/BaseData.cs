@@ -1,15 +1,12 @@
 ﻿namespace FF6WCToolsLib.DataTemplates;
 
-public abstract class BaseData
+public abstract class BaseData : IWritableMemoryBlock
 {
     protected readonly byte[] _defaultData;
     protected byte[] _data;
     protected int _dataIndex;
-    
-    public abstract uint StartAddress { get; }
-    public abstract byte BlockSize { get; }
-    public abstract int BlockCount { get; }
-    public uint TargetAddress => StartAddress + (uint)(BlockSize * _dataIndex);
+
+    public abstract uint TargetAddress { get; }
 
     protected BaseData(byte[] data, int dataIndex)
     {

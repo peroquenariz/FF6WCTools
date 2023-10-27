@@ -7,9 +7,12 @@ public class ItemData : BaseData
 {
     private ItemType _itemType;
 
-    public override uint StartAddress => ITEM_DATA_START;
-    public override byte BlockSize => ITEM_DATA_BLOCK_SIZE;
-    public override int BlockCount => ITEM_DATA_BLOCK_COUNT;
+    public static uint StartAddress => ITEM_DATA_START;
+    public static byte BlockSize => ITEM_DATA_BLOCK_SIZE;
+    public static int BlockCount => ITEM_DATA_BLOCK_COUNT;
+    public static uint DataSize => (uint)BlockCount * BlockSize;
+
+    public override uint TargetAddress => StartAddress + (uint)(BlockSize * _dataIndex);
 
     public ItemData(byte[] itemData, int itemIndex) : base(itemData, itemIndex)
     {

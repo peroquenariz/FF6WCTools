@@ -19,7 +19,7 @@ public abstract class BaseData : IWritableMemoryBlock
 
     public byte[] ToByteArray()
     {
-        return _data;
+        return (byte[])_data.Clone();
     }
 
     public void ResetData()

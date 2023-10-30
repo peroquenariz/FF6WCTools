@@ -21,11 +21,14 @@ public static class WCData
     
     public const uint ESPER_DATA_START = 0xD86E00;
     public const byte ESPER_DATA_BLOCK_SIZE = 0x0B;
-    public const int ESPER_DATA_BLOCK_COUNT = 256;
+    public const int ESPER_DATA_BLOCK_COUNT = 27;
 
     // Names are in a different section of memory
     public const uint ITEM_NAMES_START = 0xD2B300;
-    public const byte ITEM_NAMES_BLOCK_SIZE = 13; // Byte 1: icon, 2-13 name
+    /// <summary>
+    /// Byte 1: icon, 2-13 name
+    /// </summary>
+    public const byte ITEM_NAMES_BLOCK_SIZE = 13;
     public const int ITEM_NAMES_BLOCK_COUNT = 256;
     
     // For spells, use the start address and add the offset for each section

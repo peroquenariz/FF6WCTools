@@ -398,4 +398,23 @@ public static class DataHandler
 
         return name.Trim();
     }
+
+    /// <summary>
+    /// Takes the byte that contains an item stat boost properties,
+    /// and extracts the stat boosts and plus/minus signals.
+    /// Structure: [VIG/STAM | VIG/STAM sign | SPEED/MAGPOW | SPEED/MAGPOW sign]
+    /// </summary>
+    /// <param name="itemStatBoost">The item stat boost byte.</param>
+    /// <returns>An array containing the separated info.</returns>
+    public static byte[] GetItemStatBoostInfo(byte itemStatBoost)
+    {
+        byte[] statBoostInfo = new byte[4];
+
+        statBoostInfo[0] = (byte)(itemStatBoost & 0x07);
+        statBoostInfo[1] = (byte)(itemStatBoost & 0x08);
+        statBoostInfo[2] = (byte)((itemStatBoost & 0x70) >> 4);
+        statBoostInfo[3] = (byte)((itemStatBoost & 0x80) >> 4);
+
+        return statBoostInfo;
+    }
 }

@@ -30,7 +30,7 @@ internal class Program
         SniClient sniClient = new SniClient();
         Chatbot chatbot = new Chatbot(config);
         CrowdControl crowdControl = new CrowdControl(sniClient, chatbot.CrowdControlMessageQueue);
-        ConsoleViewer consoleViewer = new(consoleAppVersion, crowdControl, sniClient);
+        ConsoleViewer consoleViewer = new(consoleAppVersion, crowdControl, sniClient, chatbot);
 
         try
         {

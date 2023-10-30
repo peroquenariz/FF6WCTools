@@ -13,6 +13,20 @@ public class ItemName : BaseData
 
     public ItemName(byte[] itemNameData, int itemNameIndex) : base(itemNameData, itemNameIndex) { }
 
+    /// <summary>
+    /// Mirrors the name of the item.
+    /// </summary>
+    public void Mirror()
+    {
+        byte[] mirroredData = new byte[13];
+        mirroredData[0] = _data[0]; // Keep the item icon in the right place
+        for (int i = 1; i < _data.Length; i++)
+        {
+            mirroredData[i] = _data[_data.Length - i];
+        }
+        _data = mirroredData;
+    }
+
     public override string ToString()
     {
         throw new System.NotImplementedException();

@@ -7,92 +7,111 @@ using System.Reflection.PortableExecutable;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace TwitchChatbot
+namespace TwitchChatbot;
+
+public class Chatbot
 {
-    public class Chatbot
+    public event EventHandler<IRCConnectionSuccesfulEventArgs>? OnIRCConnectionSuccessful;
+    
+    private const string TWITCH_IRC_ADDRESS = "irc.chat.twitch.tv";
+    private const int TWITCH_IRC_PORT = 6667;
+
+    private const string TWITCH_IRC_PING_MESSAGE = "PING :tmi.twitch.tv";
+    private const string TWITCH_IRC_PONG_MESSAGE = "PONG :tmi.twitch.tv";
+
+    private readonly string _nick;
+    private readonly string _oauth;
+    private readonly string _channel;
+    //private readonly int _retryCounter;
+
+    private List<Message> _crowdControlMessageQueue;
+
+    public List<Message> CrowdControlMessageQueue => _crowdControlMessageQueue;
+
+    public Chatbot(NameValueCollection config)
     {
-        private const string TWITCH_IRC_ADDRESS = "irc.chat.twitch.tv";
-        private const int TWITCH_IRC_PORT = 6667;
+        _nick = config.Get("nick")!;
+        _oauth = config.Get("oauth")!;
+        _channel = config.Get("channel")!;
 
-        private const string TWITCH_IRC_PING_MESSAGE = "PING :tmi.twitch.tv";
-        private const string TWITCH_IRC_PONG_MESSAGE = "PONG :tmi.twitch.tv";
+        _crowdControlMessageQueue = new List<Message>();
+    }
 
-        private readonly string _nick;
-        private readonly string _oauth;
-        private readonly string _channel;
-        //private readonly int _retryCounter;
+    public async Task StartAsync()
+    {
+        await Task.Delay(1);
 
-        private List<Message> _crowdControlMessageQueue;
+        using TcpClient chatbot = new TcpClient(TWITCH_IRC_ADDRESS, TWITCH_IRC_PORT);
+        using NetworkStream networkStream = chatbot.GetStream();
+        using StreamReader reader = new StreamReader(networkStream);
+        using StreamWriter writer = new StreamWriter(networkStream);
+        
+        // Request Twitch Capabilities
+        writer.WriteLine("CAP REQ : twitch.tv/commands twitch.tv/membership twitch.tv/tags");
+        writer.Flush();
+        
+        // Send credentials
+        writer.WriteLine($"PASS oauth:{_oauth}");
+        writer.Flush();
+        writer.WriteLine($"NICK {_nick}");
+        writer.Flush();
+        
+        // Join a channel
+        writer.WriteLine($"JOIN #{_channel},#{_channel}");
+        writer.Flush();
 
-        public List<Message> CrowdControlMessageQueue => _crowdControlMessageQueue;
+        //// Test message
+        //writer.WriteLine($"PRIVMSG #peroquenariz :test :)");
+        //writer.Flush();
 
-        public Chatbot(NameValueCollection config)
+        try
         {
-            _nick = config.Get("nick")!;
-            _oauth = config.Get("oauth")!;
-            _channel = config.Get("channel")!;
-
-            _crowdControlMessageQueue = new List<Message>();
-        }
-
-        public async Task StartAsync()
-        {
-            await Task.Delay(1);
-
-            using TcpClient chatbot = new TcpClient(TWITCH_IRC_ADDRESS, TWITCH_IRC_PORT);
-            using NetworkStream networkStream = chatbot.GetStream();
-            using StreamReader reader = new StreamReader(networkStream);
-            using StreamWriter writer = new StreamWriter(networkStream);
-            
-            // Request Twitch Capabilities
-            writer.WriteLine("CAP REQ : twitch.tv/commands twitch.tv/membership twitch.tv/tags");
-            writer.Flush();
-            
-            // Send credentials
-            writer.WriteLine($"PASS oauth:{_oauth}");
-            writer.Flush();
-            writer.WriteLine($"NICK {_nick}");
-            writer.Flush();
-            
-            // Join a channel
-            writer.WriteLine($"JOIN #{_channel},#{_channel}");
-            writer.Flush();
-
-            //// Test message
-            //writer.WriteLine($"PRIVMSG #peroquenariz :test :)");
-            //writer.Flush();
-
-            try
+            while (true)
             {
-                while (true)
-                {
-                    string? line = reader.ReadLine();
-                    //Console.WriteLine(line);
+                string? line = reader.ReadLine();
+                //Console.WriteLine(line);
 
-                    if (line != null)
+                if (line != null)
+                {
+                    if (line == TWITCH_IRC_PING_MESSAGE)
                     {
-                        if (line == TWITCH_IRC_PING_MESSAGE)
+                        writer.WriteLine(TWITCH_IRC_PONG_MESSAGE); // Keepalive message
+                        writer.Flush();
+                    }
+                    else
+                    {
+                        Message? chatMessage = MessageParser.Parse(line);
+                        
+                        if (chatMessage != null)
                         {
-                            writer.WriteLine(TWITCH_IRC_PONG_MESSAGE); // Keepalive message
-                            writer.Flush();
-                        }
-                        else
-                        {
-                            Message? chatMessage = MessageParser.Parse(line, _channel);
-                            
-                            if (chatMessage != null)
+                            if (chatMessage.IsCrowdControlMessage)
                             {
-                                if (chatMessage.IsCrowdControlMessage) _crowdControlMessageQueue.Add(chatMessage);
+                                _crowdControlMessageQueue.Add(chatMessage);
+                                await Console.Out.WriteLineAsync(chatMessage.Content);
+                            }
+
+                            if (chatMessage.IsConnectionSuccessfulMessage)
+                            {
+                                OnIRCConnectionSuccessful?.Invoke(this, new IRCConnectionSuccesfulEventArgs(_channel));
                             }
                         }
                     }
                 }
             }
-            catch
-            {
-                Console.WriteLine("Error trying to connect! Retrying in 5 seconds..."); // TODO: make an event and subscribe with consoleviewer
-                await Task.Delay(5000);
-            }
         }
+        catch
+        {
+            Console.WriteLine("Error trying to connect! Retrying in 5 seconds..."); // TODO: make an event and subscribe with consoleviewer
+            await Task.Delay(5000);
+        }
+    }
+}
+
+public class IRCConnectionSuccesfulEventArgs
+{
+    public string Channel { get; }
+    public IRCConnectionSuccesfulEventArgs(string channel)
+    {
+        Channel = channel;
     }
 }

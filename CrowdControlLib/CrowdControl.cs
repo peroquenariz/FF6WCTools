@@ -6,7 +6,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Message = TwitchChatbot.Message;
 using FF6WCToolsLib.DataTemplates;
-
 namespace CrowdControlLib;
 
 public class CrowdControl
@@ -16,10 +15,10 @@ public class CrowdControl
 
     private List<Message> _crowdControlMessageQueue;
 
-    private readonly byte[] _defaultItemData;
-    //private readonly List<EsperData> _esperDataList;
     private readonly byte[] _defaultSpellData;
-    
+    private readonly byte[] _defaultItemData;
+    private readonly byte[] _defaultEsperData;
+
     private readonly byte[] _defaultItemNamesData;
     private readonly byte[] _defaultSpellMagicalNamesData;
     private readonly byte[] _defaultSpellEsperNamesData;
@@ -29,6 +28,7 @@ public class CrowdControl
 
     private readonly List<SpellData> _spellDataList;
     private readonly List<ItemData> _itemDataList;
+    private readonly List<EsperData> _esperDataList;
     
     private readonly List<ItemName> _itemNamesList;
     private readonly List<SpellMagicalName> _spellMagicalNamesList;
@@ -45,19 +45,10 @@ public class CrowdControl
         _sniClient = sniClient;
         _crowdControlMessageQueue = crowdControlMessageQueue;
 
-        _itemDataList = new List<ItemData>();
-        _spellDataList = new List<SpellData>();
-
-        _itemNamesList = new List<ItemName>();
-        _spellMagicalNamesList = new List<SpellMagicalName>();
-        _spellEsperNamesList = new List<SpellEsperName>();
-        _spellAttackNamesList = new List<SpellAttackName>();
-        _spellEsperAttackNamesList = new List<SpellEsperAttackName>();
-        _spellDanceNamesList = new List<SpellDanceName>();
-
         // Get all ROM default data.
         _defaultItemData = _sniClient.ReadMemory(ItemData.StartAddress, ItemData.DataSize);
         _defaultSpellData = _sniClient.ReadMemory(SpellData.StartAddress, SpellData.DataSize);
+        _defaultEsperData = _sniClient.ReadMemory(EsperData.StartAddress, EsperData.DataSize);
         
         _defaultItemNamesData = _sniClient.ReadMemory(ItemName.StartAddress, ItemName.DataSize);
         _defaultSpellMagicalNamesData = sniClient.ReadMemory(SpellMagicalName.StartAddress, SpellMagicalName.DataSize);
@@ -65,10 +56,17 @@ public class CrowdControl
         _defaultSpellAttackNamesData = sniClient.ReadMemory(SpellAttackName.StartAddress, SpellAttackName.DataSize);
         _defaultSpellEsperAttackNamesData = sniClient.ReadMemory(SpellEsperAttackName.StartAddress, SpellEsperAttackName.DataSize);
         _defaultSpellDanceNamesData = sniClient.ReadMemory(SpellDanceName.StartAddress, SpellDanceName.DataSize);
-        
-        // Create data structures.
-        InitializeData();
-        InitializeNames();
+
+        _itemDataList = InitializeData<ItemData>(_defaultItemData, ItemData.BlockCount);
+        _spellDataList = InitializeData<SpellData>(_defaultSpellData, SpellData.BlockCount);
+        _esperDataList = InitializeData<EsperData>(_defaultEsperData, EsperData.BlockCount);
+
+        _itemNamesList = InitializeData<ItemName>(_defaultItemNamesData, ItemName.BlockCount);
+        _spellMagicalNamesList = InitializeData<SpellMagicalName>(_defaultSpellMagicalNamesData, SpellMagicalName.BlockCount);
+        _spellEsperNamesList = InitializeData<SpellEsperName>(_defaultSpellEsperNamesData, SpellEsperName.BlockCount);
+        _spellAttackNamesList = InitializeData<SpellAttackName>(_defaultSpellAttackNamesData, SpellAttackName.BlockCount);
+        _spellEsperAttackNamesList = InitializeData<SpellEsperAttackName>(_defaultSpellEsperAttackNamesData, SpellEsperAttackName.BlockCount);
+        _spellDanceNamesList = InitializeData<SpellDanceName>(_defaultSpellDanceNamesData, SpellDanceName.BlockCount);
     }
 
     public async Task ExecuteAsync()
@@ -89,82 +87,46 @@ public class CrowdControl
     }
 
     /// <summary>
-    /// Populates name lists with current loaded ROM data.
+    /// Generic data instantiator.
     /// </summary>
-    private void InitializeNames()
+    /// <typeparam name="T">The type of data to instantiate.</typeparam>
+    /// <param name="defaultData">Byte data section.</param>
+    /// <param name="blockCount">Amount of items to instantiate.</param>
+    /// <returns>A list with the data objects.</returns>
+    public List<T> InitializeData<T>(byte[] defaultData, int blockCount) where T : BaseData
     {
-        for (int i = 0; i < ItemName.BlockCount; i++)
-        {
-            int itemNameStart = i * ItemName.BlockSize;
-            int itemNameEnd = (i + 1) * ItemName.BlockSize;
-            _itemNamesList.Add(new ItemName(_defaultItemNamesData[itemNameStart..itemNameEnd], i));
-        }
-
-        for (int i = 0; i < SpellMagicalName.BlockCount; i++)
-        {
-            int magicalSpellNameStart = i * SpellMagicalName.BlockSize;
-            int magicalSpellNameEnd = (i + 1) * SpellMagicalName.BlockSize;
-            _spellMagicalNamesList.Add(new SpellMagicalName(_defaultSpellMagicalNamesData[magicalSpellNameStart..magicalSpellNameEnd], i));
-        }
-
-        for (int i = 0; i < SpellEsperName.BlockCount; i++)
-        {
-            int esperNameStart = i * SpellEsperName.BlockSize;
-            int esperNameEnd = (i + 1) * SpellEsperName.BlockSize;
-            _spellEsperNamesList.Add(new SpellEsperName(_defaultSpellEsperNamesData[esperNameStart..esperNameEnd], i));
-        }
-
-        for (int i = 0; i < SpellAttackName.BlockCount; i++)
-        {
-            int attackNameStart = i * SpellAttackName.BlockSize;
-            int attackNameEnd = (i + 1) * SpellAttackName.BlockSize;
-            _spellAttackNamesList.Add(new SpellAttackName(_defaultSpellAttackNamesData[attackNameStart..attackNameEnd], i));
-        }
+        List<T> dataList = new List<T>();
         
-        for (int i = 0; i < SpellEsperAttackName.BlockCount; i++)
+        int blockSize = defaultData.Length / blockCount;
+
+        for (int i = 0; i < blockCount; i++)
         {
-            int esperAttackNameStart = i * SpellEsperAttackName.BlockSize;
-            int esperAttackNameEnd = (i + 1) * SpellEsperAttackName.BlockSize;
-            _spellEsperAttackNamesList.Add(new SpellEsperAttackName(_defaultSpellEsperAttackNamesData[esperAttackNameStart..esperAttackNameEnd], i));
+            int start = i * blockSize;
+            int end = (i + 1) * blockSize;
+
+            // Create an instance of T by calling the constructor with two parameters.
+            T data = (T)Activator.CreateInstance(typeof(T), new object[] { defaultData[start..end], i })!;
+
+            dataList.Add(data);
         }
 
-        for (int i = 0; i < SpellDanceName.BlockCount; i++)
-        {
-            int danceNameStart = i * SpellDanceName.BlockSize;
-            int danceNameEnd = (i + 1) * SpellDanceName.BlockSize;
-            _spellDanceNamesList.Add(new SpellDanceName(_defaultSpellDanceNamesData[danceNameStart..danceNameEnd], i));
-        }
+        return dataList;
     }
 
-    private void ResetNames()
+    private void MirrorAllItemNames()
     {
-        _itemNamesList.Clear();
-        _spellMagicalNamesList.Clear();
-        _spellEsperNamesList.Clear();
-        _spellAttackNamesList.Clear();
-        _spellEsperAttackNamesList.Clear();
-        _spellDanceNamesList.Clear();
+        List<byte> mirroredDataList = new();
 
-        InitializeNames();
-    }
-
-    /// <summary>
-    /// Populates data lists with current loaded ROM data.
-    /// </summary>
-    private void InitializeData()
-    {
-        for (int i = 0; i < SpellData.BlockCount; i++)
+        foreach (var item in _itemNamesList)
         {
-            int spellStart = i * SpellData.BlockSize;
-            int spellEnd = (i + 1) * SpellData.BlockSize;
-            _spellDataList.Add(new SpellData(_defaultSpellData[spellStart..spellEnd], i));
+            item.Mirror();
+            byte[] mirroredData = item.ToByteArray();
+            for (int i = 0; i < mirroredData.Length; i++)
+            {
+                mirroredDataList.Add(mirroredData[i]);
+            }
         }
 
-        for (int i = 0; i < ItemData.BlockCount; i++)
-        {
-            int itemStart = i * ItemData.BlockSize;
-            int itemEnd = (i + 1) * ItemData.BlockSize;
-            _itemDataList.Add(new ItemData(_defaultItemData[itemStart..itemEnd], i));
-        }
+        _sniClient.WriteMemory(ItemName.StartAddress, mirroredDataList.ToArray());
     }
 }

@@ -1,64 +1,64 @@
-﻿using System;
+﻿namespace TwitchChatbot;
 
-namespace TwitchChatbot
+static internal class MessageParser
 {
-    static internal class MessageParser
+    const string CONNECTED_MESSAGE_FORMAT = "tmi.twitch.tv 001";
+    const string PRIVMSG_MESSAGE_FORMAT = "PRIVMSG";
+
+    const string CROWD_CONTROL_COMMAND_TRIGGER = "!cc";
+
+    static public Message? Parse(string message)
     {
-        const string CONNECTED_MESSAGE_FORMAT = "tmi.twitch.tv 001";
-        const string PRIVMSG_MESSAGE_FORMAT = "PRIVMSG";
+        Message? chatMessage = null;
 
-        const string CROWD_CONTROL_COMMAND_TRIGGER = "!cc";
-
-        static public Message? Parse(string message, string channel)
+        if (message.Contains(CONNECTED_MESSAGE_FORMAT)) // TODO: make this an event and subscribe to it with consoleviewer
         {
-            Message? chatMessage = null;
-
-            if (message.Contains(CONNECTED_MESSAGE_FORMAT)) // TODO: make this an event and subscribe to it with consoleviewer
-            {
-                //Console.WriteLine($"Connected! Now chatting in #{channel}");
-                Console.WriteLine("");
-            }
-            else if (message.Contains(PRIVMSG_MESSAGE_FORMAT))
-            {
-                chatMessage = ParsePrivateMessage(message);
-            }
-
-            return chatMessage;
+            chatMessage = new Message(true);
+        }
+        else if (message.Contains(PRIVMSG_MESSAGE_FORMAT))
+        {
+            chatMessage = ParsePrivateMessage(message);
         }
 
-        static private Message ParsePrivateMessage(string chatMessage)
+        return chatMessage;
+    }
+
+    static private Message ParsePrivateMessage(string chatMessage)
+    {
+        string messageSender = "";
+        string messageContent = "";
+        bool isCrowdControlMessage = false;
+
+        // Split the message into an array
+        string[] splitChatMessage = chatMessage.Split(";");
+
+        for (int i = 0; i < splitChatMessage.Length; i++)
         {
-            string messageSender = "";
-            string messageContent = "";
-            bool isCrowdControlMessage = false;
+            string section = splitChatMessage[i];
 
-            // Split the message into an array
-            string[] splitChatMessage = chatMessage.Split(";");
-
-            for (int i = 0; i < splitChatMessage.Length; i++)
+            // Grabs displayed name for the user
+            if (section.Contains("display-name="))
             {
-                string section = splitChatMessage[i];
-
-                // Grabs displayed name for the user
-                if (section.Contains("display-name="))
-                {
-                    messageSender = section[(section.IndexOf("=") + 1)..];
-                }
-
-                // Grabs the content of the message
-                else if (section.Contains("PRIVMSG #"))
-                {
-                    // Make a new string after the "#"
-                    string messageSection = section[section.IndexOf("#")..];
-                    // Everything after the colon is guaranteed to be the message content
-                    messageContent = messageSection[(messageSection.IndexOf(":") + 1)..];
-
-                    isCrowdControlMessage = messageContent.StartsWith(CROWD_CONTROL_COMMAND_TRIGGER);
-                }
+                messageSender = section[(section.IndexOf("=") + 1)..];
             }
 
-            // Concatenates the final string for returning
-            return new Message(messageContent, messageSender, isCrowdControlMessage);
+            // Grabs the content of the message
+            else if (section.Contains("PRIVMSG #"))
+            {
+                // Make a new string after the "#"
+                string messageSection = section[section.IndexOf("#")..];
+                // Everything after the colon is guaranteed to be the message content
+                messageContent = messageSection[(messageSection.IndexOf(":") + 1)..];
+
+                // Check if it's a crowd control message
+                isCrowdControlMessage = messageContent.StartsWith(CROWD_CONTROL_COMMAND_TRIGGER);
+
+                // If it is, trim the command part from the message.
+                if (isCrowdControlMessage) messageContent = messageContent[(CROWD_CONTROL_COMMAND_TRIGGER.Length +1)..];
+            }
         }
+
+        // Concatenates the final string for returning
+        return new Message(messageContent, messageSender, isCrowdControlMessage);
     }
 }

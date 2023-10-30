@@ -1,6 +1,7 @@
 ﻿using System;
 using FF6WCToolsLib;
 using CrowdControlLib;
+using TwitchChatbot;
 
 namespace CrowdControlConsoleApp;
 
@@ -17,7 +18,7 @@ internal class ConsoleViewer
 
     private static int _cursorTopPosition;
 
-    public ConsoleViewer(string? appVersion, CrowdControl crowdControl, SniClient sniClient)
+    public ConsoleViewer(string? appVersion, CrowdControl crowdControl, SniClient sniClient, Chatbot chatbot)
     {
         Console.CursorVisible = false;
         Console.Title = WINDOW_TITLE;
@@ -25,6 +26,18 @@ internal class ConsoleViewer
         _libVersion = crowdControl.LibVersion;
 
         Version();
+
+        chatbot.OnIRCConnectionSuccessful += Chatbot_OnIRCConnectionSuccessful;
+    }
+
+    private void Chatbot_OnIRCConnectionSuccessful(object? sender, IRCConnectionSuccesfulEventArgs e)
+    {
+        UpdateConsoleWindowTitle(e.Channel);
+    }
+
+    private void UpdateConsoleWindowTitle(string channel)
+    {
+        Console.Title = WINDOW_TITLE + $" - connected to #{channel}";
     }
 
     public void Version(bool isDebugMode = false)

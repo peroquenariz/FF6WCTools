@@ -14,12 +14,16 @@ public abstract class BaseData : IWritableMemoryBlock
         _defaultData = data;
         _data = (byte[])_defaultData.Clone();
     }
-    
+
+    /// <summary>
+    /// Code spaghetti for debugging game data.
+    /// </summary>
+    /// <returns></returns>
     public new abstract string ToString();
 
     public byte[] ToByteArray()
     {
-        return (byte[])_data.Clone();
+        return _data;
     }
 
     public void ResetData()

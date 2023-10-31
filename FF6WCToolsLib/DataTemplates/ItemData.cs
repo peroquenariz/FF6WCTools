@@ -20,6 +20,27 @@ public class ItemData : BaseData
         _itemType = (ItemType)(itemData[0] & 0x07);
     }
 
+    public void ChangeArmorElementAbsorb(ElementalProperties elementalProperties)
+    {
+        if (_itemType == ItemType.Armor)
+        {
+            _data[(int)ItemDataStructure.Status2__AbsorbElement] |= (byte)elementalProperties;
+        }
+    }
+
+    public void ToggleRelicEffect(ItemFlags4 itemFlags4)
+    {
+        bool isFlagSet = DataHandler.CheckBitSet(_data[(int)ItemDataStructure.ItemFlags4], (byte)itemFlags4);
+        if (!isFlagSet)
+        {
+            _data[(int)ItemDataStructure.ItemFlags4] |= (byte)itemFlags4;
+        }
+        else
+        {
+            _data[(int)ItemDataStructure.ItemFlags4] &= (byte)~itemFlags4;
+        }
+    }
+
     public override string ToString()
     {
         string itemDescription =

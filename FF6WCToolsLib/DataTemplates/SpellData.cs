@@ -14,6 +14,41 @@ public class SpellData : BaseData
 
     public SpellData(byte[] defaultSpellData, int spellIndex) : base(defaultSpellData, spellIndex) { }
 
+    public void SetSpecialEffect(byte specialEffect)
+    {
+        _data[(int)SpellDataStructure.SpecialEffect] = specialEffect;
+    }
+    
+    public void ChangeTargeting(Targeting targetingFlags)
+    {
+        byte targetingData = (byte)targetingFlags;
+        _data[(int)SpellDataStructure.Targeting] = targetingData;
+    }
+
+    public void SetSpellPower(byte spellPower)
+    {
+        _data[(int)SpellDataStructure.SpellPower] = spellPower;
+    }
+
+    public void ToggleMPDamage()
+    {
+        bool isMPDamageEnabled = DataHandler.CheckBitSet(_data[(int)SpellDataStructure.SpellFlags2], (byte)SpellFlags2.USE_MP_DAMAGE);
+        if (!isMPDamageEnabled)
+        {
+            _data[(int)SpellDataStructure.SpellFlags2] |= (byte)SpellFlags2.USE_MP_DAMAGE;
+        }
+        else
+        {
+            _data[(int)SpellDataStructure.SpellFlags2] &= (byte)~SpellFlags2.USE_MP_DAMAGE;
+        }
+        isMPDamageEnabled = DataHandler.CheckBitSet(_data[(int)SpellDataStructure.SpellFlags2], (byte)SpellFlags2.USE_MP_DAMAGE);
+    }
+
+    public void SetElemementalProperties(ElementalProperties elementalProperties)
+    {
+        _data[(int)SpellDataStructure.ElementalProperties] = (byte)elementalProperties;
+    }
+
     public override string ToString()
     {
         string spellDescription =

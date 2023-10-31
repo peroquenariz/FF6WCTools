@@ -2,7 +2,7 @@
 
 namespace FF6WCToolsLib.DataTemplates;
 
-public class ItemName : BaseData
+public class ItemName : BaseName
 {
     public static uint StartAddress => ITEM_NAMES_START;
     public static byte BlockSize => ITEM_NAMES_BLOCK_SIZE;
@@ -29,6 +29,6 @@ public class ItemName : BaseData
 
     public override string ToString()
     {
-        throw new System.NotImplementedException();
+        return DataHandler.ExtractName(_data[1..]); // Don't print the item icon
     }
 }

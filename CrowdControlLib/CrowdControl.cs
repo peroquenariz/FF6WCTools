@@ -1,11 +1,13 @@
 ﻿using FF6WCToolsLib;
 using static FF6WCToolsLib.WCData;
+using static FF6WCToolsLib.DataTemplates.DataEnums;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 using Message = TwitchChatbot.Message;
 using FF6WCToolsLib.DataTemplates;
+
 namespace CrowdControlLib;
 
 public class CrowdControl
@@ -29,7 +31,8 @@ public class CrowdControl
     private readonly List<SpellData> _spellDataList;
     private readonly List<ItemData> _itemDataList;
     private readonly List<EsperData> _esperDataList;
-    
+    private readonly List<CharacterData> _characterDataList;
+
     private readonly List<ItemName> _itemNamesList;
     private readonly List<SpellMagicalName> _spellMagicalNamesList;
     private readonly List<SpellEsperName> _spellEsperNamesList;
@@ -51,15 +54,17 @@ public class CrowdControl
         _defaultEsperData = _sniClient.ReadMemory(EsperData.StartAddress, EsperData.DataSize);
         
         _defaultItemNamesData = _sniClient.ReadMemory(ItemName.StartAddress, ItemName.DataSize);
-        _defaultSpellMagicalNamesData = sniClient.ReadMemory(SpellMagicalName.StartAddress, SpellMagicalName.DataSize);
-        _defaultSpellEsperNamesData = sniClient.ReadMemory(SpellEsperName.StartAddress, SpellEsperName.DataSize);
-        _defaultSpellAttackNamesData = sniClient.ReadMemory(SpellAttackName.StartAddress, SpellAttackName.DataSize);
-        _defaultSpellEsperAttackNamesData = sniClient.ReadMemory(SpellEsperAttackName.StartAddress, SpellEsperAttackName.DataSize);
-        _defaultSpellDanceNamesData = sniClient.ReadMemory(SpellDanceName.StartAddress, SpellDanceName.DataSize);
+        _defaultSpellMagicalNamesData = _sniClient.ReadMemory(SpellMagicalName.StartAddress, SpellMagicalName.DataSize);
+        _defaultSpellEsperNamesData = _sniClient.ReadMemory(SpellEsperName.StartAddress, SpellEsperName.DataSize);
+        _defaultSpellAttackNamesData = _sniClient.ReadMemory(SpellAttackName.StartAddress, SpellAttackName.DataSize);
+        _defaultSpellEsperAttackNamesData = _sniClient.ReadMemory(SpellEsperAttackName.StartAddress, SpellEsperAttackName.DataSize);
+        _defaultSpellDanceNamesData = _sniClient.ReadMemory(SpellDanceName.StartAddress, SpellDanceName.DataSize);
 
+        // Initialize data. Stuff in game RAM initializes empty and gets updated when needed.
         _itemDataList = InitializeData<ItemData>(_defaultItemData, ItemData.BlockCount);
         _spellDataList = InitializeData<SpellData>(_defaultSpellData, SpellData.BlockCount);
         _esperDataList = InitializeData<EsperData>(_defaultEsperData, EsperData.BlockCount);
+        _characterDataList = InitializeRamData<CharacterData>(CharacterData.BlockCount);
 
         _itemNamesList = InitializeData<ItemName>(_defaultItemNamesData, ItemName.BlockCount);
         _spellMagicalNamesList = InitializeData<SpellMagicalName>(_defaultSpellMagicalNamesData, SpellMagicalName.BlockCount);
@@ -84,6 +89,26 @@ public class CrowdControl
         {
             await Task.Delay(5000);
         }
+    }
+
+    /// <summary>
+    /// Generic data instantiator.
+    /// </summary>
+    /// <typeparam name="T">The type of data to instantiate.</typeparam>
+    /// <param name="blockCount">Amount of items to instantiate.</param>
+    /// <returns>A list with the data objects.</returns>
+    public List<T> InitializeRamData<T>(int blockCount) where T : BaseRamData
+    {
+        List<T> dataList = new List<T>();
+
+        for (int i = 0; i < blockCount; i++)
+        {
+            T data = (T)Activator.CreateInstance(typeof(T), new object[] { i })!;
+
+            dataList.Add(data);
+        }
+
+        return dataList;
     }
 
     /// <summary>
@@ -126,7 +151,17 @@ public class CrowdControl
                 mirroredDataList.Add(mirroredData[i]);
             }
         }
-
+        
         _sniClient.WriteMemory(ItemName.StartAddress, mirroredDataList.ToArray());
+    }
+
+    private void UpdateCharacterData()
+    {
+        byte[] characterData = _sniClient.ReadMemory(CharacterData.StartAddress, CharacterData.DataSize);
+
+        for (int i = 0; i < CharacterData.BlockCount; i++)
+        {
+            _characterDataList[i].UpdateData(characterData[(i * CharacterData.BlockSize)..((i + 1) * CharacterData.BlockSize)]);
+        }
     }
 }

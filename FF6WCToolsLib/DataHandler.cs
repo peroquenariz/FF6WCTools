@@ -417,4 +417,21 @@ public static class DataHandler
 
         return statBoostInfo;
     }
+
+    /// <summary>
+    /// Takes a byte array and extracts the name or text stored.
+    /// </summary>
+    /// <param name="nameBytes">The text data in bytes.</param>
+    /// <returns>A trimmed string with the name.</returns>
+    public static string ExtractName(byte[] nameBytes)
+    {
+        char[] nameChars = new char[nameBytes.Length];
+
+        for (byte i = 0; i < nameBytes.Length; i++)
+        {
+            nameChars[i] = CHAR_DICT[nameBytes[i]];
+        }
+
+        return new string(nameChars).Trim();
+    }
 }

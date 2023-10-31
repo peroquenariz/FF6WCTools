@@ -2,7 +2,7 @@
 
 namespace FF6WCToolsLib.DataTemplates;
 
-public class SpellEsperName : BaseData
+public class SpellEsperName : BaseName
 {
     public static uint StartAddress => SPELLS_ALL_NAMES_START + SPELLS_ESPER_NAMES_OFFSET;
     public static byte BlockSize => SPELLS_ESPER_NAMES_BLOCK_SIZE;
@@ -12,9 +12,4 @@ public class SpellEsperName : BaseData
     public override uint TargetAddress => StartAddress + (uint)(BlockSize * _dataIndex);
 
     public SpellEsperName (byte[] nameData, int nameIndex) : base(nameData, nameIndex) { }
-
-    public override string ToString()
-    {
-        throw new System.NotImplementedException();
-    }
 }

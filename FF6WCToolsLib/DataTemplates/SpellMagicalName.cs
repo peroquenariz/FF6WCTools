@@ -2,7 +2,7 @@
 
 namespace FF6WCToolsLib.DataTemplates;
 
-public class SpellMagicalName : BaseData
+public class SpellMagicalName : BaseName
 {
     // No need to add an offset to this one, it's just for naming consistency and OCD :)
     public static uint StartAddress => SPELLS_ALL_NAMES_START + SPELLS_MAGICAL_NAMES_OFFSET;
@@ -16,6 +16,6 @@ public class SpellMagicalName : BaseData
 
     public override string ToString()
     {
-        throw new System.NotImplementedException();
+        return DataHandler.ExtractName(_data[1..]); // Don't print the spell icon
     }
 }

@@ -354,6 +354,7 @@ public static class WCData
     public const int CHARACTER_DATA_SIZE = 518;
 
     public const byte CHARACTER_DATA_BLOCK_SIZE = 37;
+    public const int CHARACTER_DATA_BLOCK_COUNT = 14;
 
     public const byte CHARACTER_DATA_NAME_OFFSET = 0x02;
     public const byte CHARACTER_DATA_NAME_SIZE = 6;
@@ -1834,7 +1835,9 @@ public static class WCData
         { 0xD0, ' ' },
         { 0xD1, ' ' },
         { 0xD2, '=' },
+        // ITEM ICONS ARE HERE
         { 0xDF, ' ' }, // Space used for map names
+        { 0xFE, ' ' },
         { 0xFF, ' ' }
     };
 

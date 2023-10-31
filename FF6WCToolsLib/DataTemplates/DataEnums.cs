@@ -464,4 +464,36 @@ public static class DataEnums
         MAGPWR_PLUS_2,
         NO_BONUS = 0xFF
     }
+
+    public enum CharacterDataStructure
+    {
+        ActorIndex,
+        GraphicIndex,
+        Name,
+        Level = 0x08,
+        CurrentHP,
+        Max_HP_and_boost = 0x0B,
+        CurrentMP = 0x0D,
+        Max_MP_and_boost = 0x0F,
+        ExperiencePoints = 0x11,
+        Status1 = 0x14,
+        Status4,
+        BattleCommand1,
+        BattleCommand2,
+        BattleCommand3,
+        BattleCommand4,
+        Vigor,
+        Speed,
+        Stamina,
+        MagPower,
+        Esper,
+        Weapon,
+        Shield,
+        Helmet,
+        Armor,
+        Relic1,
+        Relic2
+    }
+
+    
 }

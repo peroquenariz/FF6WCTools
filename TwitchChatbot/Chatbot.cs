@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Net.Sockets;
-using System.Reflection.PortableExecutable;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace TwitchChatbot;
@@ -41,36 +39,43 @@ public class Chatbot
     {
         await Task.Delay(1);
 
+        // Check if config file is properly set up.
+        // TODO: make event to notify the user through console.
+        if (string.IsNullOrWhiteSpace(_nick) ||
+            string.IsNullOrWhiteSpace(_oauth) ||
+            string.IsNullOrWhiteSpace(_channel))
+        {
+            return;
+        }
+
         using TcpClient chatbot = new TcpClient(TWITCH_IRC_ADDRESS, TWITCH_IRC_PORT);
         using NetworkStream networkStream = chatbot.GetStream();
         using StreamReader reader = new StreamReader(networkStream);
         using StreamWriter writer = new StreamWriter(networkStream);
+        writer.AutoFlush = true;
         
         // Request Twitch Capabilities
         writer.WriteLine("CAP REQ : twitch.tv/commands twitch.tv/membership twitch.tv/tags");
-        writer.Flush();
-        
+
         // Send credentials
+        // TODO: check if login failed, notify the user and exit app.
         writer.WriteLine($"PASS oauth:{_oauth}");
-        writer.Flush();
         writer.WriteLine($"NICK {_nick}");
-        writer.Flush();
         
         // Join a channel
         writer.WriteLine($"JOIN #{_channel},#{_channel}");
-        writer.Flush();
 
-        //// Test message
-        //writer.WriteLine($"PRIVMSG #peroquenariz :test :)");
-        //writer.Flush();
+        // Test message
+        writer.WriteLine($"PRIVMSG #{_channel} :test :)");
 
         try
         {
             while (true)
             {
                 string? line = reader.ReadLine();
-                //Console.WriteLine(line);
-
+#if DEBUG
+                Console.WriteLine(line);
+#endif
                 if (line != null)
                 {
                     if (line == TWITCH_IRC_PING_MESSAGE)

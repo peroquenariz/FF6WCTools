@@ -13,6 +13,7 @@ internal class ConsoleViewer
     private const int RIGHT_PADDING = 90;
     private const string WINDOW_TITLE = "FF6WC Crowd Control";
 
+    private string _consoleTitle;
     private readonly string? _appVersion;
     private readonly string? _libVersion;
 
@@ -21,11 +22,12 @@ internal class ConsoleViewer
     public ConsoleViewer(string? appVersion, CrowdControl crowdControl, SniClient sniClient, Chatbot chatbot)
     {
         Console.CursorVisible = false;
-        Console.Title = WINDOW_TITLE;
         _appVersion = appVersion;
         _libVersion = crowdControl.LibVersion;
+        _consoleTitle = WINDOW_TITLE + $" v{_libVersion}";
+        Console.Title = _consoleTitle;
 
-        Version();
+        //Version();
 
         chatbot.OnIRCConnectionSuccessful += Chatbot_OnIRCConnectionSuccessful;
     }
@@ -37,7 +39,7 @@ internal class ConsoleViewer
 
     private void UpdateConsoleWindowTitle(string channel)
     {
-        Console.Title = WINDOW_TITLE + $" - connected to #{channel}";
+        Console.Title = _consoleTitle + $" - connected to #{channel}";
     }
 
     public void Version(bool isDebugMode = false)

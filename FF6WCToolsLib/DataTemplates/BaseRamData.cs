@@ -30,9 +30,6 @@ public abstract class BaseRamData : IWritableMemoryBlock
     {
         if (newData.Length != _data.Length) return; // Shouldn't happen, but just in case...
 
-        for (int i = 0; i < _data.Length; i++)
-        {
-            _data[i] = newData[i];
-        }
+        _data = newData;
     }
 }

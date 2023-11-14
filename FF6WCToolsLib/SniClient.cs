@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Net;
 using System.Threading;
+using FF6WCToolsLib.DataTemplates;
 using Google.Protobuf;
 using Grpc.Net.Client;
 
@@ -163,6 +165,27 @@ public class SniClient
             _isValidConnection = false;
             ResetConnection();
             WriteMemory(address, data);
+        }
+    }
+
+    /// <summary>
+    /// Takes a byte array and writes it to memory.
+    /// </summary>
+    /// <param name="memoryBlock">A writable memory block.</param>
+    public void WriteMemory(IWritableMemoryBlock memoryBlock)
+    {
+        try
+        {
+            _writeMemoryRequest.RequestAddress = memoryBlock.TargetAddress;
+            _writeMemoryRequest.Data = ByteString.CopyFrom(memoryBlock.ToByteArray());
+            _memoryClient.SingleWrite(_singleWriteMemoryRequest);
+            return;
+        }
+        catch
+        {
+            _isValidConnection = false;
+            ResetConnection();
+            WriteMemory(memoryBlock);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using static FF6WCToolsLib.WCData;
 
 namespace FF6WCToolsLib;
@@ -376,6 +377,12 @@ public static class DataHandler
             concatenatedData += byteArray[i] << i * 8;
         }
         return concatenatedData;
+    }
+
+    public static byte[] DecatenateInteger(int number, int numberSizeInBytes)
+    {
+        byte[] array = BitConverter.GetBytes(number);
+        return array[..numberSizeInBytes];
     }
 
     /// <summary>

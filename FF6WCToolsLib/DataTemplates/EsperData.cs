@@ -3,7 +3,7 @@ using static FF6WCToolsLib.DataTemplates.DataEnums;
 
 namespace FF6WCToolsLib.DataTemplates;
 
-public class EsperData : BaseData
+public class EsperData : BaseRomData
 {
     public static uint StartAddress => ESPER_DATA_START;
     public static byte BlockSize => ESPER_DATA_BLOCK_SIZE;

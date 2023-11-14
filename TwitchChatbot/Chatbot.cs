@@ -14,15 +14,22 @@ public class Chatbot
     private const string TWITCH_IRC_ADDRESS = "irc.chat.twitch.tv";
     private const int TWITCH_IRC_PORT = 6667;
 
+    TcpClient _chatbot;
+    NetworkStream _networkStream;
+    private StreamReader _reader;
+    private StreamWriter _writer;
+
     private const string TWITCH_IRC_PING_MESSAGE = "PING :tmi.twitch.tv";
     private const string TWITCH_IRC_PONG_MESSAGE = "PONG :tmi.twitch.tv";
 
     private readonly string _nick;
     private readonly string _oauth;
     private readonly string _channel;
-    //private readonly int _retryCounter;
 
-    private List<Message> _crowdControlMessageQueue;
+    private bool _isConnectedToChannel;
+    private bool _isLoginValid;
+
+    private readonly List<Message> _crowdControlMessageQueue;
 
     public List<Message> CrowdControlMessageQueue => _crowdControlMessageQueue;
 
@@ -31,6 +38,12 @@ public class Chatbot
         _nick = config.Get("nick")!;
         _oauth = config.Get("oauth")!;
         _channel = config.Get("channel")!;
+
+        _chatbot = new TcpClient(TWITCH_IRC_ADDRESS, TWITCH_IRC_PORT);
+        _networkStream = _chatbot.GetStream();
+        _reader = new StreamReader(_networkStream);
+        _writer = new StreamWriter(_networkStream);
+        _writer.AutoFlush = true;
 
         _crowdControlMessageQueue = new List<Message>();
     }
@@ -47,41 +60,30 @@ public class Chatbot
         {
             return;
         }
-
-        using TcpClient chatbot = new TcpClient(TWITCH_IRC_ADDRESS, TWITCH_IRC_PORT);
-        using NetworkStream networkStream = chatbot.GetStream();
-        using StreamReader reader = new StreamReader(networkStream);
-        using StreamWriter writer = new StreamWriter(networkStream);
-        writer.AutoFlush = true;
         
         // Request Twitch Capabilities
-        writer.WriteLine("CAP REQ : twitch.tv/commands twitch.tv/membership twitch.tv/tags");
+        _writer.WriteLine("CAP REQ : twitch.tv/commands twitch.tv/membership twitch.tv/tags");
 
         // Send credentials
-        // TODO: check if login failed, notify the user and exit app.
-        writer.WriteLine($"PASS oauth:{_oauth}");
-        writer.WriteLine($"NICK {_nick}");
-        
-        // Join a channel
-        writer.WriteLine($"JOIN #{_channel},#{_channel}");
+        _writer.WriteLine($"PASS oauth:{_oauth}");
+        _writer.WriteLine($"NICK {_nick}");
 
-        // Test message
-        writer.WriteLine($"PRIVMSG #{_channel} :test :)");
+        // Join a channel
+        _writer.WriteLine($"JOIN #{_channel},#{_channel}");
 
         try
         {
             while (true)
             {
-                string? line = reader.ReadLine();
+                string? line = _reader.ReadLine();
 #if DEBUG
-                Console.WriteLine(line);
+                await Console.Out.WriteLineAsync(line);
 #endif
                 if (line != null)
                 {
                     if (line == TWITCH_IRC_PING_MESSAGE)
                     {
-                        writer.WriteLine(TWITCH_IRC_PONG_MESSAGE); // Keepalive message
-                        writer.Flush();
+                        _writer.WriteLine(TWITCH_IRC_PONG_MESSAGE); // Keepalive message
                     }
                     else
                     {
@@ -89,26 +91,56 @@ public class Chatbot
                         
                         if (chatMessage != null)
                         {
-                            if (chatMessage.IsCrowdControlMessage)
+                            if (chatMessage.Type == Message.MessageType.CROWD_CONTROL_MESSAGE)
                             {
                                 _crowdControlMessageQueue.Add(chatMessage);
-                                await Console.Out.WriteLineAsync(chatMessage.Content);
                             }
-
-                            if (chatMessage.IsConnectionSuccessfulMessage)
+                            else if (!_isConnectedToChannel && chatMessage.Type == Message.MessageType.CONNECTED_TO_CHANNEL)
                             {
                                 OnIRCConnectionSuccessful?.Invoke(this, new IRCConnectionSuccesfulEventArgs(_channel));
+                                _isConnectedToChannel = true;
+                            }
+                            else if (!_isLoginValid)
+                            {
+                                if (chatMessage.Type == Message.MessageType.LOGIN_SUCCESSFUL)
+                                {
+                                    _isLoginValid = true;
+                                }
+                                else if (chatMessage.Type == Message.MessageType.LOGIN_FAILED)
+                                {
+                                    await Console.Out.WriteLineAsync("Chatbot login failed! Please check your credentials and try again.");
+                                }
                             }
                         }
                     }
                 }
             }
         }
-        catch
+        catch (Exception e)
         {
-            Console.WriteLine("Error trying to connect! Retrying in 5 seconds..."); // TODO: make an event and subscribe with consoleviewer
-            await Task.Delay(5000);
+            await Console.Out.WriteLineAsync(e.ToString());
+            await Console.Out.WriteLineAsync("Error trying to connect! Retrying in 5 seconds..."); // TODO: make an event and subscribe with consoleviewer
+            await Task.Delay(5000); // TODO: handle reconnections
         }
+    }
+
+    /// <summary>
+    /// Writes a message in chat.
+    /// </summary>
+    /// <param name="message">The message to write.</param>
+    public void WriteMessage(string message)
+    {
+        _writer.WriteLine($"PRIVMSG #{_channel} :{message}");
+    }
+
+    public void CrowdControl_OnSuccessfulEffectLoaded(object? sender, MessageEventArgs e)
+    {
+        WriteMessage($"@{e.User} {e.Message}");
+    }
+
+    public void CrowdControl_OnFailedEffect(object? sender, MessageEventArgs e)
+    {
+        WriteMessage($"@{e.User} {e.Message}");
     }
 }
 
@@ -118,5 +150,17 @@ public class IRCConnectionSuccesfulEventArgs
     public IRCConnectionSuccesfulEventArgs(string channel)
     {
         Channel = channel;
+    }
+}
+
+public class MessageEventArgs
+{
+    public string User { get; set; }
+    public string Message { get; set; }
+
+    public MessageEventArgs(string user, string message)
+    {
+        User = user;
+        Message = message;
     }
 }

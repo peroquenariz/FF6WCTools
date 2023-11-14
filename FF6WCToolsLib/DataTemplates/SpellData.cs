@@ -3,7 +3,7 @@ using static FF6WCToolsLib.DataTemplates.DataEnums;
 
 namespace FF6WCToolsLib.DataTemplates;
 
-public class SpellData : BaseData
+public class SpellData : BaseRomData
 {
     public static uint StartAddress => SPELL_DATA_START;
     public static byte BlockSize => SPELL_DATA_BLOCK_SIZE;

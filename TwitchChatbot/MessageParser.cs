@@ -2,18 +2,28 @@
 
 static internal class MessageParser
 {
-    const string CONNECTED_MESSAGE_FORMAT = "tmi.twitch.tv 001";
-    const string PRIVMSG_MESSAGE_FORMAT = "PRIVMSG";
+    private const string LOGIN_SUCCESFUL_MESSAGE_FORMAT = "tmi.twitch.tv 001";
+    private const string LOGIN_FAILED_MESSAGE_FORMAT = ":tmi.twitch.tv NOTICE * :Login authentication failed";
+    private const string JOINED_CHANNEL_MESSAGE_FORMAT = "tmi.twitch.tv JOIN #";
+    private const string PRIVMSG_MESSAGE_FORMAT = "PRIVMSG";
 
-    const string CROWD_CONTROL_COMMAND_TRIGGER = "!cc";
+    private const string CROWD_CONTROL_COMMAND_TRIGGER = "!cc";
 
-    static public Message? Parse(string message)
+    public static Message? Parse(string message)
     {
         Message? chatMessage = null;
 
-        if (message.Contains(CONNECTED_MESSAGE_FORMAT)) // TODO: make this an event and subscribe to it with consoleviewer
+        if (message.Contains(LOGIN_SUCCESFUL_MESSAGE_FORMAT)) // TODO: make this an event and subscribe to it with consoleviewer
         {
-            chatMessage = new Message(true);
+            chatMessage = new Message(Message.MessageType.LOGIN_SUCCESSFUL);
+        }
+        else if (message.Contains(JOINED_CHANNEL_MESSAGE_FORMAT))
+        {
+            chatMessage = new Message(Message.MessageType.CONNECTED_TO_CHANNEL);
+        }
+        else if (message.Contains(LOGIN_FAILED_MESSAGE_FORMAT))
+        {
+            chatMessage = new Message(Message.MessageType.LOGIN_FAILED);
         }
         else if (message.Contains(PRIVMSG_MESSAGE_FORMAT))
         {
@@ -23,7 +33,7 @@ static internal class MessageParser
         return chatMessage;
     }
 
-    static private Message ParsePrivateMessage(string chatMessage)
+    private static Message? ParsePrivateMessage(string chatMessage)
     {
         string messageSender = "";
         string messageContent = "";
@@ -51,14 +61,27 @@ static internal class MessageParser
                 messageContent = messageSection[(messageSection.IndexOf(":") + 1)..];
 
                 // Check if it's a crowd control message
-                isCrowdControlMessage = messageContent.StartsWith(CROWD_CONTROL_COMMAND_TRIGGER);
-
-                // If it is, trim the command part from the message.
-                if (isCrowdControlMessage) messageContent = messageContent[(CROWD_CONTROL_COMMAND_TRIGGER.Length +1)..];
+                isCrowdControlMessage = messageContent.ToLower().StartsWith(CROWD_CONTROL_COMMAND_TRIGGER);
+                
+                if (!isCrowdControlMessage)
+                {
+                    // Ignore if message doesn't start with the command trigger.
+                    return null;
+                }
+                else if (messageContent.Length < 5)
+                {
+                    // Ignore if the trigger is correct but no command has been provided.
+                    return null;
+                }
+                else
+                {
+                    // Save the crowd control message.
+                    messageContent = messageContent[(CROWD_CONTROL_COMMAND_TRIGGER.Length + 1)..].Trim();
+                }
             }
         }
 
-        // Concatenates the final string for returning
-        return new Message(messageContent, messageSender, isCrowdControlMessage);
+        // Creates the message
+        return new Message(Message.MessageType.CROWD_CONTROL_MESSAGE, messageContent, messageSender);
     }
 }

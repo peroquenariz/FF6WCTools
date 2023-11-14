@@ -5,8 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
-using Message = TwitchChatbot.Message;
 using FF6WCToolsLib.DataTemplates;
+using TwitchChatbot;
 
 namespace CrowdControlLib;
 
@@ -14,8 +14,6 @@ public class CrowdControl
 {
     private readonly SniClient _sniClient;
     private readonly string? _libVersion;
-
-    private List<Message> _crowdControlMessageQueue;
 
     private readonly byte[] _defaultSpellData;
     private readonly byte[] _defaultItemData;
@@ -40,13 +38,38 @@ public class CrowdControl
     private readonly List<SpellEsperAttackName> _spellEsperAttackNamesList;
     private readonly List<SpellDanceName> _spellDanceNamesList;
 
-    public string? LibVersion { get => _libVersion; }
+    private readonly List<string> _communityNames = new()
+    {
+        "PLEX",
+        "SQUACK",
+        "POOTS",
+        "GAAHR",
+        "PERO",
+        "DRINKS",
+        "DR. DT",
+        "BOOGAR",
+        "FIKTAH",
+        "DBLDWN",
+        "MOGRAE",
+        "RAV",
+        "KATT",
+        "THORN",
+        "OBI",
+    };
 
-    public CrowdControl(SniClient sniClient, List<Message> crowdControlMessageQueue)
+    public static readonly Dictionary<char, byte> INVERSE_CHAR_DICT = new();
+
+    private readonly Dictionary<Effect, Action<CrowdControlArgs>> _commands;
+    private readonly CommandHandler _commandHandler;
+    private static Random _rng = new Random();
+
+    public string? LibVersion { get => _libVersion; }
+    public static Random Rng => _rng;
+
+    public CrowdControl(SniClient sniClient, Chatbot chatbot)
     {
         _libVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
         _sniClient = sniClient;
-        _crowdControlMessageQueue = crowdControlMessageQueue;
 
         // Get all ROM default data.
         _defaultItemData = _sniClient.ReadMemory(ItemData.StartAddress, ItemData.DataSize);
@@ -72,22 +95,52 @@ public class CrowdControl
         _spellAttackNamesList = InitializeData<SpellAttackName>(_defaultSpellAttackNamesData, SpellAttackName.BlockCount);
         _spellEsperAttackNamesList = InitializeData<SpellEsperAttackName>(_defaultSpellEsperAttackNamesData, SpellEsperAttackName.BlockCount);
         _spellDanceNamesList = InitializeData<SpellDanceName>(_defaultSpellDanceNamesData, SpellDanceName.BlockCount);
+
+        _commands = new Dictionary<Effect, Action<CrowdControlArgs>>()
+        {
+            { Effect.window, ModifyFontAndWindow },
+            { Effect.item, ModifyItem },
+            { Effect.spell, ModifySpell },
+            { Effect.character, ModifyCharacter },
+            { Effect.itemname, ModifyItemName },
+            { Effect.spellname, ModifySpellName },
+            { Effect.charactername, ModifyCharacterName },
+            { Effect.gp, ModifyGP },
+            { Effect.inventory, ModifyInventory },
+            { Effect.mirror, MirrorAllItemNames }
+        };
+
+        InitializeDicts();
+
+        _commandHandler = new CommandHandler(_commands, chatbot.CrowdControlMessageQueue);
+
+        _commandHandler.OnSuccessfulEffectLoaded += chatbot.CrowdControl_OnSuccessfulEffectLoaded;
+        _commandHandler.OnFailedEffect += chatbot.CrowdControl_OnFailedEffect;
+    }
+
+    private void InitializeDicts()
+    {
+        // Build inverse character dictionary
+        for (byte i = 0x80; i < 0xC6; i++)
+        {
+            INVERSE_CHAR_DICT.Add(CHAR_DICT[i], i);
+        }
+        INVERSE_CHAR_DICT.Add(' ', 0xFF);
     }
 
     public async Task ExecuteAsync()
     {
         try
         {
-            
+            while (true)
+            {
+                bool wasEffectLoaded = _commandHandler.TryLoadEffect();
+                await Task.Delay(1000);
+            }
         }
         catch (Exception e)
         {
             await Console.Out.WriteLineAsync(e.ToString());
-        }
-
-        while (true)
-        {
-            await Task.Delay(5000);
         }
     }
 
@@ -97,7 +150,7 @@ public class CrowdControl
     /// <typeparam name="T">The type of data to instantiate.</typeparam>
     /// <param name="blockCount">Amount of items to instantiate.</param>
     /// <returns>A list with the data objects.</returns>
-    public List<T> InitializeRamData<T>(int blockCount) where T : BaseRamData
+    private List<T> InitializeRamData<T>(int blockCount) where T : BaseRamData
     {
         List<T> dataList = new List<T>();
 
@@ -118,7 +171,7 @@ public class CrowdControl
     /// <param name="defaultData">Byte data section.</param>
     /// <param name="blockCount">Amount of items to instantiate.</param>
     /// <returns>A list with the data objects.</returns>
-    public List<T> InitializeData<T>(byte[] defaultData, int blockCount) where T : BaseData
+    private List<T> InitializeData<T>(byte[] defaultData, int blockCount) where T : BaseRomData
     {
         List<T> dataList = new List<T>();
         
@@ -138,13 +191,95 @@ public class CrowdControl
         return dataList;
     }
 
-    private void MirrorAllItemNames()
+    private void UpdateCharacterData() // TODO: refactor to use BaseRamData.UpdateData()
+    {
+        byte[] characterData = _sniClient.ReadMemory(CharacterData.StartAddress, CharacterData.DataSize);
+
+        for (int i = 0; i < CharacterData.BlockCount; i++)
+        {
+            _characterDataList[i].UpdateData(characterData[(i * CharacterData.BlockSize)..((i + 1) * CharacterData.BlockSize)]);
+        }
+    }
+
+    private void ModifyInventory(CrowdControlArgs args)
+    {
+        throw new NotImplementedException();
+    }
+
+    private void ModifyGP(CrowdControlArgs args)
+    {
+        const int MIN_GP = 0;
+        const int MAX_GP = 999999;
+        
+        if (args.GPEffect == GPEffect.modify)
+        {
+            int currentGP = DataHandler.ConcatenateByteArray(_sniClient.ReadMemory(CURRENT_GP_START, CURRENT_GP_SIZE));
+
+            currentGP += args.GPAmount;
+            if (currentGP < MIN_GP)
+            {
+                currentGP = MIN_GP;
+            }
+            else if (currentGP > MAX_GP)
+            {
+                currentGP = MAX_GP;
+            }
+            _sniClient.WriteMemory(CURRENT_GP_START, DataHandler.DecatenateInteger(currentGP, 3));
+        }
+        else if (args.GPEffect == GPEffect.empty)
+        {
+            _sniClient.WriteMemory(CURRENT_GP_START, DataHandler.DecatenateInteger(MIN_GP, 3));
+        }
+    }
+
+    private void ModifySpellName(CrowdControlArgs args)
+    {
+        throw new NotImplementedException();
+    }
+
+    private void ModifyItemName(CrowdControlArgs args)
+    {
+        ItemName targetItemName = _itemNamesList[(int)args.Item];
+        string newItemName = args.NewItemName;
+        int nameBytesSize = ITEM_NAMES_BLOCK_SIZE - 1; // Subtract 1 for the item icon
+        byte[] nameBytes = InitializeArrayWithData(nameBytesSize, INVERSE_CHAR_DICT[' ']);
+
+        if (newItemName.Length > nameBytesSize)
+        {
+            newItemName = newItemName[..nameBytesSize];
+        }
+
+        for (int i = 0; i < newItemName.Length; i++) // TODO: extract to a method
+        {
+            nameBytes[i] = INVERSE_CHAR_DICT[newItemName[i]];
+        }
+
+        targetItemName.Rename(nameBytes, true);
+        _sniClient.WriteMemory(targetItemName);
+    }
+
+    private void ModifyCharacter(CrowdControlArgs args)
+    {
+        throw new NotImplementedException();
+    }
+
+    private void ModifySpell(CrowdControlArgs args)
+    {
+        throw new NotImplementedException();
+    }
+
+    private void ModifyItem(CrowdControlArgs args)
+    {
+        throw new NotImplementedException();
+    }
+
+    private void MirrorAllItemNames(CrowdControlArgs args) // TODO: refactor to mirror any name data type?
     {
         List<byte> mirroredDataList = new();
 
         foreach (var item in _itemNamesList)
         {
-            item.Mirror();
+            item.Mirror(true);
             byte[] mirroredData = item.ToByteArray();
             for (int i = 0; i < mirroredData.Length; i++)
             {
@@ -155,13 +290,100 @@ public class CrowdControl
         _sniClient.WriteMemory(ItemName.StartAddress, mirroredDataList.ToArray());
     }
 
-    private void UpdateCharacterData()
+    private void ModifyCharacterName(CrowdControlArgs args) // TODO: move character name to its own class????
     {
-        byte[] characterData = _sniClient.ReadMemory(CharacterData.StartAddress, CharacterData.DataSize);
+        string newCharacterName = args.NewCharactername;
+        
+        // Initialize byte array with whitespaces.
+        byte[] nameData = InitializeArrayWithData(CHARACTER_DATA_NAME_SIZE, INVERSE_CHAR_DICT[' ']);
 
-        for (int i = 0; i < CharacterData.BlockCount; i++)
+        // Build byte array with the given name.
+        if (newCharacterName.ToLower() == "community")
         {
-            _characterDataList[i].UpdateData(characterData[(i * CharacterData.BlockSize)..((i + 1) * CharacterData.BlockSize)]);
+            // Take a random name from the community list.
+            // This list is sanitized to only have correct length names, no need to check here.
+            string communityName = _communityNames[_rng.Next(0, _communityNames.Count)];
+
+            for (int i = 0; i < communityName.Length; i++)
+            {
+                nameData[i] = INVERSE_CHAR_DICT[communityName[i]];
+            }
+        }
+        else // Not a community name
+        {
+            // If string is longer than 6 characters, truncate it.
+            if (newCharacterName.Length > CHARACTER_DATA_NAME_SIZE)
+            {
+                newCharacterName = newCharacterName[..CHARACTER_DATA_NAME_SIZE];
+            }
+
+            for (int i = 0; i < newCharacterName.Length; i++)
+            {
+                nameData[i] = INVERSE_CHAR_DICT[newCharacterName[i]];
+            }
+        }
+
+        // Write byte array to memory.
+        uint characterNameIndex = CharacterData.StartAddress + (uint)CharacterDataStructure.Name + (CharacterData.BlockSize * (uint)args.Character);
+        _sniClient.WriteMemory(characterNameIndex, nameData);
+    }
+
+    /// <summary>
+    /// Creates an array filled with a given type of data.
+    /// </summary>
+    /// <param name="arraySize">The size of the array to initialize.</param>
+    /// <param name="defaultData">The byte to fill the array with.</param>
+    /// <returns>An array initialized with a given byte.</returns>
+    private static byte[] InitializeArrayWithData(int arraySize, byte defaultData)
+    {
+        byte[] byteArray = new byte[arraySize];
+
+        for (int i = 0; i < arraySize; i++)
+        {
+            byteArray[i] = defaultData;
+        }
+
+        return byteArray;
+    }
+
+    private void ModifyFontAndWindow(CrowdControlArgs args)
+    {
+        byte[] wallpaper = _sniClient.ReadMemory(0x7E1D4E, 1);
+        wallpaper[0] &= 0xF0;
+        
+        if (args.WindowEffect == WindowEffect.random)
+        {
+            wallpaper[0] |= (byte)_rng.Next(0, 8); // Randomly select a wallpaper
+
+            byte[] colors = new byte[114]; // Font + all window colors
+            _rng.NextBytes(colors);
+
+            _sniClient.WriteMemory(WALLPAPER, wallpaper);
+            _sniClient.WriteMemory(FONT_COLOR, colors);
+        }
+        else if (args.WindowEffect == WindowEffect.demonchocobo)
+        {
+            // Select chocobo window
+            byte chocoboWindowIndex = 7;
+            wallpaper[0] |= chocoboWindowIndex;
+            _sniClient.WriteMemory(WALLPAPER, wallpaper);
+            
+            // Write demon chocobo colors to chocobo window
+            byte[] demonChocoboPalette = new byte[] { 0x1f, 0x7c, 0x00, 0x00, 0x1f, 0x7c, 0xe0, 0x03, 0xe0, 0x03, 0x74, 0x01, 0x84, 0x10 };
+            uint chocoboWindowAddress = WINDOW_COLOR_START + (WINDOW_COLOR_BLOCK_SIZE * (uint)chocoboWindowIndex);
+            _sniClient.WriteMemory(chocoboWindowAddress, demonChocoboPalette);
+        }
+        else if (args.WindowEffect == WindowEffect.vanilla)
+        {
+            // Select default window
+            byte chocoboWindowIndex = 0;
+            wallpaper[0] |= chocoboWindowIndex;
+            _sniClient.WriteMemory(WALLPAPER, wallpaper);
+
+            // Write default colors to the default window.
+            byte[] defaultPalette = new byte[] { 0xff, 0x7f, 0x99, 0x73, 0xd4, 0x5a, 0x10, 0x42, 0x4a, 0x29, 0xc5, 0x18, 0xc6, 0x44, 0xa5, 0x40 };
+            uint defaultWindowAddress = FONT_COLOR;
+            _sniClient.WriteMemory(defaultWindowAddress, defaultPalette);
         }
     }
 }

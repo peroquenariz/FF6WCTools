@@ -1,12 +1,11 @@
-﻿using System;
-
-namespace FF6WCToolsLib.DataTemplates;
+﻿namespace FF6WCToolsLib.DataTemplates;
 
 public abstract class BaseRamData : IWritableMemoryBlock
 {
     protected byte[] _data;
     protected int _dataIndex;
 
+    public int Index => _dataIndex;
     public abstract uint TargetAddress { get; }
 
     protected BaseRamData(int blockSize, int dataIndex)

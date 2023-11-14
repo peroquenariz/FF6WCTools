@@ -29,7 +29,7 @@ internal class Program
         FileHandler fileHandler = new(false);
         SniClient sniClient = new SniClient();
         Chatbot chatbot = new Chatbot(config);
-        CrowdControl crowdControl = new CrowdControl(sniClient, chatbot.CrowdControlMessageQueue);
+        CrowdControl crowdControl = new CrowdControl(sniClient, chatbot);
         ConsoleViewer consoleViewer = new(consoleAppVersion, crowdControl, sniClient, chatbot);
 
         try

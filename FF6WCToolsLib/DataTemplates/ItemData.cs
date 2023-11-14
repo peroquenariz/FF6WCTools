@@ -4,7 +4,7 @@ using System;
 
 namespace FF6WCToolsLib.DataTemplates;
 
-public class ItemData : BaseData
+public class ItemData : BaseRomData
 {
     private ItemType _itemType;
 
@@ -46,6 +46,7 @@ public class ItemData : BaseData
         string itemDescription =
             $"Item original name: {ITEM_DICT[(byte)_dataIndex]}\n" + // TODO: check actual name too!
             $"Item type flags: {(ItemTypeFlags)_data[(int)ItemDataStructure.ItemType]}\n" +
+            $"Item type: {_itemType}\n" +
             $"Equipable Actors (low): {(EquipableActorsLow)_data[(int)ItemDataStructure.EquipableActorsLow]}\n" +
             $"Equipable Actors (high): {(EquipableActorsHigh)_data[(int)ItemDataStructure.EquipableActorsHigh]}\n" +
             $"Spell learn rate: {_data[(int)ItemDataStructure.SpellLearnRate]}\n" +

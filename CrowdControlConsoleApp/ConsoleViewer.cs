@@ -46,7 +46,6 @@ internal class ConsoleViewer
     {
         if (isDebugMode) Console.Clear();
         Console.ForegroundColor = ConsoleColor.White;
-        //string version = $"Stats Companion v{_libVersion} (lib) | v{_appVersion} (app)";
         string version = $"FF6WC Crowd Control v{_libVersion}";
         Console.Write(version);
         if (isDebugMode) Console.Write(" - DEBUG MODE");

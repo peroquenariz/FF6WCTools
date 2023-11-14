@@ -14,6 +14,16 @@ public class CharacterData : BaseRamData
 
     public CharacterData(int characterIndex) : base(BlockSize, characterIndex) { }
 
+    public byte[] RenameCharacter(byte[] characterName)
+    {
+        for (int i = 0; i < 6; i++)
+        {
+            _data[(int)CharacterDataStructure.Name + i] = characterName[i];
+        }
+
+        return _data[(int)CharacterDataStructure.Name..((int)CharacterDataStructure.Name + 6)];
+    }
+
     public override string ToString()
     {
         string characterDescription =

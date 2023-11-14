@@ -174,19 +174,7 @@ public class SniClient
     /// <param name="memoryBlock">A writable memory block.</param>
     public void WriteMemory(IWritableMemoryBlock memoryBlock)
     {
-        try
-        {
-            _writeMemoryRequest.RequestAddress = memoryBlock.TargetAddress;
-            _writeMemoryRequest.Data = ByteString.CopyFrom(memoryBlock.ToByteArray());
-            _memoryClient.SingleWrite(_singleWriteMemoryRequest);
-            return;
-        }
-        catch
-        {
-            _isValidConnection = false;
-            ResetConnection();
-            WriteMemory(memoryBlock);
-        }
+        WriteMemory(memoryBlock.TargetAddress, memoryBlock.ToByteArray());
     }
 }
 

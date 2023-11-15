@@ -150,7 +150,7 @@ public static class DataEnums
         /// <summary>
         /// Documented as "Dance, but Float for Equip.
         /// </summary>
-        DANCE = 0x01,
+        DANCE_FLOAT = 0x01,
         REGEN = 0x02,
         SLOW = 0x04,
         HASTE = 0x08,
@@ -266,8 +266,8 @@ public static class DataEnums
         Gau = 0x08,
         Gogo = 0x10,
         Umaro = 0x20,
-        UNKNOWN_0x40 = 0x40, // Possibly Leo and Banon???
-        UNKNOWN_0x80 = 0x80
+        SPEC_ACTIVE_WHEN_IMP = 0x40,
+        HEAVY_GEAR = 0x80
     }
 
     [Flags]
@@ -323,7 +323,7 @@ public static class DataEnums
         GENJI_GLOVE_EFFECT = 0x10,
         MERIT_AWARD_EFFECT = 0x20,
         TRUE_KNIGHT_EFFECT = 0x40,
-        UNKNONW_0x80 = 0x80,
+        UNKNOWN_0x80 = 0x80,
     }
 
     [Flags]

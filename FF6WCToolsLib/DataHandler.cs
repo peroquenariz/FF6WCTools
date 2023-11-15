@@ -386,6 +386,28 @@ public static class DataHandler
     }
 
     /// <summary>
+    /// Checks if a given item index is part of an item range.
+    /// </summary>
+    /// <param name="itemIndex">The item index to check.</param>
+    /// <param name="range">The item range to compare against.</param>
+    /// <returns></returns>
+    public static bool CheckItemInRange(byte itemIndex, Range range)
+    {
+        return itemIndex >= range.Start.Value && itemIndex <= range.End.Value;
+    }
+
+    /// <summary>
+    /// Checks if a given item is part of an item range.
+    /// </summary>
+    /// <param name="item">The item to check.</param>
+    /// <param name="range">The item range to compare against.</param>
+    /// <returns></returns>
+    public static bool CheckItemInRange(Item item, Range range)
+    {
+        return CheckItemInRange((byte)item, range);
+    }
+
+    /// <summary>
     /// Extracts the character name from the character data in SRAM.
     /// These might change if a rename card was used, or in crowd control!
     /// </summary>

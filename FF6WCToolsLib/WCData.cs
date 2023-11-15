@@ -2510,6 +2510,19 @@ public static class WCData
         Empty
     }
 
+    public static readonly Range RANGE_WEAPONS = new(0, 89);
+    public static readonly Range RANGE_SHIELDS = new(90, 104);
+    public static readonly Range RANGE_HELMETS = new(105, 131);
+    public static readonly Range RANGE_ARMORS = new(132, 162);
+    public static readonly Range RANGE_TOOLS = new(163, 170);
+    public static readonly Range RANGE_SKEANS = new(171, 175);
+    public static readonly Range RANGE_RELICS = new(176, 230);
+    public static readonly Range RANGE_CONSUMABLES = new(231, 254);
+    /// <summary>
+    /// All non-relic equippables.
+    /// </summary>
+    public static readonly Range RANGE_GEAR = new(0, 162);
+
     public enum Esper : byte
     {
         Ramuh,

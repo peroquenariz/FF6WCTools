@@ -54,7 +54,7 @@ public class ItemData : BaseRomData
             $"Field effect: {_data[(int)ItemDataStructure.SpellLearnRate]}\n" + // TODO: What even is this byte????
             $"Status protection 1: {(StatusCondition1)_data[(int)ItemDataStructure.StatusProtection1]}\n" +
             $"Status protection 2: {(StatusCondition2)_data[(int)ItemDataStructure.StatusProtection2]}\n" +
-            $"Equipment status: {_data[(int)ItemDataStructure.EquipmentStatus]}\n" +
+            $"Equipment status: {(StatusCondition3)_data[(int)ItemDataStructure.EquipmentStatus]}\n" +
             $"Item flags 1: {(ItemFlags1)_data[(int)ItemDataStructure.ItemFlags1]}\n" +
             $"Item flags 2: {(ItemFlags2)_data[(int)ItemDataStructure.ItemFlags2]}\n" +
             $"Item flags 3: {(ItemFlags3)_data[(int)ItemDataStructure.ItemFlags3]}\n" +
@@ -118,7 +118,7 @@ public class ItemData : BaseRomData
             $"Actor status 2 {(StatusCondition4)_data[(int)ItemDataStructure.Status4__WeakElement]}\n" :
             $"Weak element: {(ElementalProperties)_data[(int)ItemDataStructure.Status4__WeakElement]}\n";
         itemDescription += 
-            $"?Equipment status: {_data[(int)ItemDataStructure._EquipmentStatus]}\n" +
+            $"?Equipment status: {(StatusCondition2)_data[(int)ItemDataStructure._EquipmentStatus]}\n" +
             $"Physical evasion: {_data[(int)ItemDataStructure.PhysicalAndMagicEvasion] & 0x0F}\n" +
             $"Magic evasion: {(_data[(int)ItemDataStructure.PhysicalAndMagicEvasion] & 0xF0) >> 4}\n" +
             $"Evade animation: {(SpecialItemEffectLowByte)(_data[(int)ItemDataStructure.SpecialEffect] & 0x0F)}\n" +
@@ -126,5 +126,69 @@ public class ItemData : BaseRomData
             $"Price: {DataHandler.ConcatenateByteArray(_data[(int)ItemDataStructure.PriceLowByte..((int)ItemDataStructure.PriceHighByte + 1)])}\n";
 
         return itemDescription;
+    }
+
+    public void SpellProc(SpellData spell)
+    {
+        // Enable spell proccing. TODO: research if proc targeting can be modified per spell.
+        _data[(int)ItemDataStructure.WeaponSpellCasting] |= (byte)WeaponSpellCasting.ALLOW_RANDOM_CASTING;
+
+        // Clear any spell data, but keep other parameters intact.
+        byte weaponProcParams = 0b11000000;
+        _data[(int)ItemDataStructure.WeaponSpellCasting] &= weaponProcParams;
+        
+        // Add the spell.
+        _data[(int)ItemDataStructure.WeaponSpellCasting] |= (byte)spell.Index;
+    }
+
+    public void Breakable(SpellData spell)
+    {
+        // Enable breakability.
+        _data[(int)ItemDataStructure.WeaponSpellCasting] |= (byte)WeaponSpellCasting.REMOVE_FROM_INVENTORY;
+
+        // Mark is as usable in the inventory.
+        _data[(int)ItemDataStructure.ItemType] |= (byte)ItemTypeFlags.USABLE_IN_BATTLE;
+
+        // Clear any spell data, but keep other parameters intact.
+        byte weaponProcParams = 0b11000000;
+        _data[(int)ItemDataStructure.WeaponSpellCasting] &= weaponProcParams;
+
+        // Add the spell.
+        _data[(int)ItemDataStructure.WeaponSpellCasting] |= (byte)spell.Index;
+
+        // Copy spell targeting.
+        _data[(int)ItemDataStructure.Targeting] |= spell.ToByteArray()[(int)SpellDataStructure.Targeting];
+
+        // Disable item throwability.
+        _data[(int)ItemDataStructure.ItemType] &= (byte)~ItemTypeFlags.CAN_BE_THROWN;
+    }
+
+    public void TeachSpell(SpellData spell, byte learnRate)
+    {
+        // Set the spell to be taught.
+        _data[(int)ItemDataStructure.SpellToLearn] = (byte)spell.Index;
+
+        // Set the learning rate.
+        _data[(int)ItemDataStructure.SpellLearnRate] = learnRate;
+    }
+
+    public void AddRelicEffect(Item relicEffectItem)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void SetElementAbsorb(ElementalProperties elementalProperties)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void SetElementNullify(ElementalProperties element)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void SetElementWeakness(ElementalProperties element)
+    {
+        throw new NotImplementedException();
     }
 }

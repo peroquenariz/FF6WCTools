@@ -123,9 +123,9 @@ public class CrowdControl
         // Build inverse character dictionary
         for (byte i = 0x80; i < 0xC6; i++)
         {
-            INVERSE_CHAR_DICT.Add(CHAR_DICT[i], i);
+            CHAR_TO_BYTE_DICT.Add(CHAR_DICT[i], i);
         }
-        INVERSE_CHAR_DICT.Add(' ', 0xFF);
+        CHAR_TO_BYTE_DICT.Add(' ', 0xFF);
     }
 
     public async Task ExecuteAsync()
@@ -234,7 +234,31 @@ public class CrowdControl
 
     private void ModifySpellName(CrowdControlArgs args)
     {
-        throw new NotImplementedException();
+        // TODO: filter the spell to rename
+        // Right now, only magical spells are allowed.
+        if ((int)args.Spell > 53)
+        {
+            return;
+        }
+        
+        SpellMagicalName targetSpellName = _spellMagicalNamesList[(int)args.Spell];
+
+        string newSpellName = args.NewSpellName;
+        int nameBytesSize = SPELLS_MAGICAL_NAMES_BLOCK_SIZE - 1; // Subtract 1 for the spell icon
+        byte[] nameBytes = InitializeArrayWithData(nameBytesSize, CHAR_TO_BYTE_DICT[' ']);
+
+        if (newSpellName.Length > nameBytesSize)
+        {
+            newSpellName = newSpellName[..nameBytesSize];
+        }
+
+        for (int i = 0; i < newSpellName.Length; i++) // TODO: extract to a method
+        {
+            nameBytes[i] = CHAR_TO_BYTE_DICT[newSpellName[i]];
+        }
+
+        targetSpellName.Rename(nameBytes, true);
+        _sniClient.WriteMemory(targetSpellName);
     }
 
     private void ModifyItemName(CrowdControlArgs args)
@@ -242,7 +266,7 @@ public class CrowdControl
         ItemName targetItemName = _itemNamesList[(int)args.Item];
         string newItemName = args.NewItemName;
         int nameBytesSize = ITEM_NAMES_BLOCK_SIZE - 1; // Subtract 1 for the item icon
-        byte[] nameBytes = InitializeArrayWithData(nameBytesSize, INVERSE_CHAR_DICT[' ']);
+        byte[] nameBytes = InitializeArrayWithData(nameBytesSize, CHAR_TO_BYTE_DICT[' ']);
 
         if (newItemName.Length > nameBytesSize)
         {
@@ -251,7 +275,7 @@ public class CrowdControl
 
         for (int i = 0; i < newItemName.Length; i++) // TODO: extract to a method
         {
-            nameBytes[i] = INVERSE_CHAR_DICT[newItemName[i]];
+            nameBytes[i] = CHAR_TO_BYTE_DICT[newItemName[i]];
         }
 
         targetItemName.Rename(nameBytes, true);
@@ -270,7 +294,38 @@ public class CrowdControl
 
     private void ModifyItem(CrowdControlArgs args)
     {
-        throw new NotImplementedException();
+        ItemData targetItem = _itemDataList[(int)args.Item];
+
+        switch (args.ItemEffect)
+        {
+            case ItemEffect.spellproc:
+                targetItem.SpellProc(_spellDataList[(int)args.Spell]);
+                break;
+            case ItemEffect.breakable:
+                targetItem.Breakable(_spellDataList[(int)args.Spell]);
+                break;
+            case ItemEffect.teach:
+                targetItem.TeachSpell(_spellDataList[(int)args.Spell], args.LearnRate);
+                break;
+            case ItemEffect.reliceffect:
+                targetItem.AddRelicEffect(args.RelicEffectItem);
+                break;
+            case ItemEffect.statboost:
+                break;
+            case ItemEffect.absorb:
+                targetItem.SetElementAbsorb(args.Element);
+                break;
+            case ItemEffect.nullify:
+                targetItem.SetElementNullify(args.Element);
+                break;
+            case ItemEffect.weak:
+                targetItem.SetElementWeakness(args.Element);
+                break;
+            default:
+                break;
+        }
+
+        _sniClient.WriteMemory(targetItem);
     }
 
     private void MirrorAllItemNames(CrowdControlArgs args) // TODO: refactor to mirror any name data type?
@@ -295,7 +350,7 @@ public class CrowdControl
         string newCharacterName = args.NewCharactername;
         
         // Initialize byte array with whitespaces.
-        byte[] nameData = InitializeArrayWithData(CHARACTER_DATA_NAME_SIZE, INVERSE_CHAR_DICT[' ']);
+        byte[] nameData = InitializeArrayWithData(CHARACTER_DATA_NAME_SIZE, CHAR_TO_BYTE_DICT[' ']);
 
         // Build byte array with the given name.
         if (newCharacterName.ToLower() == "community")
@@ -306,7 +361,7 @@ public class CrowdControl
 
             for (int i = 0; i < communityName.Length; i++)
             {
-                nameData[i] = INVERSE_CHAR_DICT[communityName[i]];
+                nameData[i] = CHAR_TO_BYTE_DICT[communityName[i]];
             }
         }
         else // Not a community name
@@ -319,7 +374,7 @@ public class CrowdControl
 
             for (int i = 0; i < newCharacterName.Length; i++)
             {
-                nameData[i] = INVERSE_CHAR_DICT[newCharacterName[i]];
+                nameData[i] = CHAR_TO_BYTE_DICT[newCharacterName[i]];
             }
         }
 

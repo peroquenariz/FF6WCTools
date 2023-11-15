@@ -55,9 +55,14 @@ public class CrowdControl
         "KATT",
         "THORN",
         "OBI",
+        "FCNHIT",
+        "HUNNY",
+        "ORGAN",
+        "RAPHA",
+        "SHDWCD",
     };
 
-    public static readonly Dictionary<char, byte> INVERSE_CHAR_DICT = new();
+    public static readonly Dictionary<char, byte> CHAR_TO_BYTE_DICT = new();
 
     private readonly Dictionary<Effect, Action<CrowdControlArgs>> _commands;
     private readonly CommandHandler _commandHandler;

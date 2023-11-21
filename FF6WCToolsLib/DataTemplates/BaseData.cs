@@ -8,7 +8,7 @@ public abstract class BaseData : IWritableMemoryBlock
     public int Index => _dataIndex;
     public abstract uint TargetAddress { get; }
 
-    public BaseData(byte[] data, int dataIndex)
+    protected BaseData(byte[] data, int dataIndex)
     {
         _data = data;
         _dataIndex = dataIndex;

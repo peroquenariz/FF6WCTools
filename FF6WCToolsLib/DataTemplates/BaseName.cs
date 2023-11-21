@@ -11,19 +11,27 @@ public abstract class BaseName : BaseRomData
     public void Mirror(bool hasIcon = false)
     {
         byte[] mirroredData = new byte[_data.Length];
+        int startIndex = 0;
+        
         if (hasIcon)
         {
+            startIndex++; // Offset 1 to the right.
             mirroredData[0] = _data[0]; // Don't mirror the icon!
         }
 
-        for (int i = 0; i < _data.Length; i++)
+        for (int i = startIndex; i < _data.Length; i++)
         {
-            if (i == 0 && hasIcon) continue;
             mirroredData[i] = _data[_data.Length - i];
         }
+        
         _data = mirroredData;
     }
 
+    /// <summary>
+    /// Changes the name.
+    /// </summary>
+    /// <param name="newNameData"></param>
+    /// <param name="hasIcon">Specifies if the name has an icon (item, spell). Defaults to false.</param>
     public void Rename(byte[] newNameData, bool hasIcon = false)
     {
         int newNameLength = newNameData.Length;

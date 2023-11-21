@@ -1,5 +1,7 @@
 ﻿using static FF6WCToolsLib.WCData;
 using static FF6WCToolsLib.DataTemplates.DataEnums;
+using System;
+using System.Xml.Linq;
 
 namespace FF6WCToolsLib.DataTemplates;
 
@@ -13,41 +15,6 @@ public class SpellData : BaseRomData
     public override uint TargetAddress => StartAddress + (uint)(BlockSize * _dataIndex);
 
     public SpellData(byte[] defaultSpellData, int spellIndex) : base(defaultSpellData, spellIndex) { }
-
-    public void SetSpecialEffect(byte specialEffect)
-    {
-        _data[(int)SpellDataStructure.SpecialEffect] = specialEffect;
-    }
-    
-    public void ChangeTargeting(Targeting targetingFlags)
-    {
-        byte targetingData = (byte)targetingFlags;
-        _data[(int)SpellDataStructure.Targeting] = targetingData;
-    }
-
-    public void SetSpellPower(byte spellPower)
-    {
-        _data[(int)SpellDataStructure.SpellPower] = spellPower;
-    }
-
-    public void ToggleMPDamage()
-    {
-        bool isMPDamageEnabled = DataHandler.CheckBitSet(_data[(int)SpellDataStructure.SpellFlags2], (byte)SpellFlags2.USE_MP_DAMAGE);
-        if (!isMPDamageEnabled)
-        {
-            _data[(int)SpellDataStructure.SpellFlags2] |= (byte)SpellFlags2.USE_MP_DAMAGE;
-        }
-        else
-        {
-            _data[(int)SpellDataStructure.SpellFlags2] &= (byte)~SpellFlags2.USE_MP_DAMAGE;
-        }
-        isMPDamageEnabled = DataHandler.CheckBitSet(_data[(int)SpellDataStructure.SpellFlags2], (byte)SpellFlags2.USE_MP_DAMAGE);
-    }
-
-    public void SetElemementalProperties(ElementalProperties elementalProperties)
-    {
-        _data[(int)SpellDataStructure.ElementalProperties] = (byte)elementalProperties;
-    }
 
     public override string ToString()
     {
@@ -68,5 +35,51 @@ public class SpellData : BaseRomData
             $"Status 3: {(StatusCondition3)_data[(int)SpellDataStructure.Status3]}\n" +
             $"Status 4: {(StatusCondition4)_data[(int)SpellDataStructure.Status4]}\n";
         return spellDescription;
+    }
+
+    public void ModifyTargeting(TargetingPreset targetingPreset)
+    {
+        Targeting currentTargeting = (Targeting)_data[(int)SpellDataStructure.Targeting];
+        
+        // Toggle auto-accept target.
+        // Ignore toggle if roulette is on.
+        // TODO: show message if auto toggle fails.
+        if (targetingPreset == TargetingPreset.auto && !DataHandler.CheckBitSet((byte)currentTargeting, (byte)Targeting.RANDOM_SELECTION))
+        {
+            byte newTargeting = DataHandler.ToggleBit((byte)currentTargeting, (byte)targetingPreset);
+            newTargeting = DataHandler.ToggleBit(newTargeting, (byte)Targeting.DISABLE_SWITCH_OF_TARGETS_BETWEEN_GROUPS);
+            _data[(int)SpellDataStructure.Targeting] = newTargeting;
+        }
+        // Any other preset replaces the old targeting.
+        else if (targetingPreset != TargetingPreset.auto)
+        {
+            _data[(int)SpellDataStructure.Targeting] = (byte)targetingPreset;
+        }
+    }
+
+    public void SetSpellPower(byte spellPower)
+    {
+        _data[(int)SpellDataStructure.SpellPower] = spellPower;
+    }
+
+    public void ToggleElement(ElementalProperties element)
+    {
+        byte elementData = _data[(int)SpellDataStructure.ElementalProperties];
+        elementData = DataHandler.ToggleBit(elementData, (byte)element);
+        _data[(int)SpellDataStructure.ElementalProperties] = elementData;
+    }
+
+    public void ToggleMPDamage()
+    {
+        byte mpDamageData = _data[(int)SpellDataStructure.SpellFlags2];
+        mpDamageData = DataHandler.ToggleBit(mpDamageData, (byte)SpellFlags2.USE_MP_DAMAGE);
+        _data[(int)SpellDataStructure.SpellFlags2] = mpDamageData;
+    }
+
+    public void ToggleIgnoreDefense()
+    {
+        byte ignoreDefenseData = _data[(int)SpellDataStructure.SpellFlags1];
+        ignoreDefenseData = DataHandler.ToggleBit(ignoreDefenseData, (byte)SpellFlags1.IGNORE_DEFENSE);
+        _data[(int)SpellDataStructure.SpellFlags1] = ignoreDefenseData;
     }
 }

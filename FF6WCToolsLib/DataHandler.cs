@@ -329,6 +329,28 @@ public static class DataHandler
     }
 
     /// <summary>
+    /// Toggles a bit in a given byte.
+    /// </summary>
+    /// <param name="data">The byte to modify.</param>
+    /// <param name="flag">The bit to flip.</param>
+    /// <returns></returns>
+    public static byte ToggleBit(byte data, byte flag)
+    {
+        // Check if the bit is set.
+        bool isBitSet = CheckBitSet(data, flag);
+
+        // Toggle on/off depending its status.
+        if (isBitSet)
+        {
+            return data &= (byte)~flag;
+        }
+        else
+        {
+            return data |= flag;
+        }
+    }
+
+    /// <summary>
     /// Takes a byte and a bit offset and checks if the bit is set.
     /// </summary>
     /// <param name="data">The byte to check.</param>
@@ -379,6 +401,12 @@ public static class DataHandler
         return concatenatedData;
     }
 
+    /// <summary>
+    /// Decatenates an integer into a byte array of a specified size.
+    /// </summary>
+    /// <param name="number">The number to decatenate.</param>
+    /// <param name="numberSizeInBytes">Size of the data.</param>
+    /// <returns></returns>
     public static byte[] DecatenateInteger(int number, int numberSizeInBytes)
     {
         byte[] array = BitConverter.GetBytes(number);
@@ -445,6 +473,42 @@ public static class DataHandler
         statBoostInfo[3] = (byte)((itemStatBoost & 0x80) >> 4);
 
         return statBoostInfo;
+    }
+
+    /// <summary>
+    /// Constructs a byte with the given stat boost information.
+    /// Use it with bitwise operators, otherwise you'll overwrite other stat boosts.
+    /// </summary>
+    /// <param name="statType">Which one of the 4 stats to modify.</param>
+    /// <param name="value">The value of the stat boost.</param>
+    /// <param name="statBoostData">A byte with the 4 corresponding bits of data.</param>
+    /// <returns>true if the stat resides in the high 4 bits, otherwise false.</returns>
+    public static bool SetStatBoost(Stat statType, int value, out byte statBoostData)
+    {
+        // Clamp the value from -7 to 7. Should be sanitized in Crowd Control anyways.
+        int clampedValue = Math.Clamp(value, -7, 7);
+        
+        statBoostData = 0;
+        byte offset = 0;
+
+        // Set the sign of the boost.
+        bool isNegative = clampedValue < 0;
+        
+        // Save absolute value of the boost.
+        byte absValue = (byte)MathF.Abs(clampedValue);
+
+        // Offset the data if it's one of the stats in the high 4 bytes.
+        bool isHighBits = statType is Stat.speed or Stat.magic;
+        if (isHighBits) offset = 4;
+
+        // Create the byte data.
+        statBoostData |= (byte)(absValue << offset);
+        if (isNegative)
+        {
+            statBoostData |= (byte)(0x08 << offset);
+        }
+
+        return isHighBits;
     }
 
     /// <summary>

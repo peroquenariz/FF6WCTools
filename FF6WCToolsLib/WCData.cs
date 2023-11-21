@@ -2619,7 +2619,7 @@ public static class WCData
         Maduin,
         Bismark,
         Stray,
-        Palador,
+        Palidor,
         Tritoch,
         Odin,
         Raiden,
@@ -2812,6 +2812,14 @@ public static class WCData
         WildFang,
         Lagomorph,
         Nothing
+    }
+
+    public enum Stat : byte
+    {
+        vigor,
+        speed,
+        stamina,
+        magic
     }
 
     /// <summary>

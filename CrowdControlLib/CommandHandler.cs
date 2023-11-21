@@ -44,7 +44,7 @@ public class CommandHandler
         }
 
         _commands.TryGetValue(args.EffectType, out Action<CrowdControlArgs>? command);
-        command?.Invoke(args);
+        command?.Invoke(args); // TODO: show more detailed effect messages.
         
         OnSuccessfulEffectLoaded?.Invoke(this, new MessageEventArgs(username, "Successful!")); // TODO: send more detailed effect info!
         return true;

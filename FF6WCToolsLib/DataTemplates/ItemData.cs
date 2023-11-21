@@ -6,7 +6,7 @@ namespace FF6WCToolsLib.DataTemplates;
 
 public class ItemData : BaseRomData
 {
-    private ItemType _itemType;
+    private readonly ItemType _itemType;
 
     public static uint StartAddress => ITEM_DATA_START;
     public static byte BlockSize => ITEM_DATA_BLOCK_SIZE;
@@ -17,28 +17,8 @@ public class ItemData : BaseRomData
 
     public ItemData(byte[] itemData, int itemIndex) : base(itemData, itemIndex)
     {
+        // Extract the item type.
         _itemType = (ItemType)(itemData[0] & 0x07);
-    }
-
-    public void ChangeArmorElementAbsorb(ElementalProperties elementalProperties)
-    {
-        if (_itemType == ItemType.Armor)
-        {
-            _data[(int)ItemDataStructure.Status2__AbsorbElement] |= (byte)elementalProperties;
-        }
-    }
-
-    public void ToggleRelicEffect(ItemFlags4 itemFlags4)
-    {
-        bool isFlagSet = DataHandler.CheckBitSet(_data[(int)ItemDataStructure.ItemFlags4], (byte)itemFlags4);
-        if (!isFlagSet)
-        {
-            _data[(int)ItemDataStructure.ItemFlags4] |= (byte)itemFlags4;
-        }
-        else
-        {
-            _data[(int)ItemDataStructure.ItemFlags4] &= (byte)~itemFlags4;
-        }
     }
 
     public override string ToString()
@@ -172,23 +152,74 @@ public class ItemData : BaseRomData
         _data[(int)ItemDataStructure.SpellLearnRate] = learnRate;
     }
 
-    public void AddRelicEffect(Item relicEffectItem)
+    public void AddRelicEffect(ItemData relicEffectItem)
     {
-        throw new NotImplementedException();
+        // Get the original relic data. Use default data in case the current data is modified!
+        byte[] dataToCopy = relicEffectItem.DefaultData;
+
+        // Copy all relevant relic data into the new array.
+        byte[] indexesToCopy = new byte[]
+        {
+            (int)ItemDataStructure.StatusProtection1,
+            (int)ItemDataStructure.StatusProtection2,
+            (int)ItemDataStructure.ItemFlags1,
+            (int)ItemDataStructure.ItemFlags2,
+            (int)ItemDataStructure.ItemFlags3,
+            (int)ItemDataStructure.ItemFlags4,
+            (int)ItemDataStructure.ItemFlags5,
+            (int)ItemDataStructure.WeaponElement__HalveElement,
+            (int)ItemDataStructure.Status2__AbsorbElement,
+            (int)ItemDataStructure.Status3__NullifyElement,
+            (int)ItemDataStructure.Status4__WeakElement,
+            (int)ItemDataStructure.EquipmentStatus,
+            (int)ItemDataStructure._EquipmentStatus,
+        };
+
+        for (int i = 0; i < indexesToCopy.Length; i++)
+        {
+            int index = indexesToCopy[i];
+            
+            // Bitwise OR this array against the existing item data
+            _data[index] |= dataToCopy[index];
+        }
     }
 
-    public void SetElementAbsorb(ElementalProperties elementalProperties)
+    public void ToggleElementalProperty(ElementalProperties element, int dataIndex)
     {
-        throw new NotImplementedException();
+        byte data = _data[dataIndex];
+        data = DataHandler.ToggleBit(data, (byte)element);
+        _data[dataIndex] = data;
     }
 
-    public void SetElementNullify(ElementalProperties element)
+    public void SetStatBoost(Stat statBoostType, int statBoostValue)
     {
-        throw new NotImplementedException();
+        // Take the stat boost type and value and generate the corresponding byte data.
+        bool isHighBits = DataHandler.SetStatBoost(statBoostType, statBoostValue, out byte statBoostData);
+
+        // Select the correct byte index to modify.
+        ItemDataStructure statIndex =
+            statBoostType is Stat.vigor or Stat.speed ? ItemDataStructure.VigorAndSpeed : ItemDataStructure.StaminaAndMagic;
+
+        // Clear the current stat boost.
+        if (isHighBits)
+        {
+            // Speed and MagPow are in the high 4 bits.
+            _data[(int)statIndex] &= 0x0F;
+        }
+        else
+        {
+            // Vigor and stamina are in the low 4 bits.
+            _data[(int)statIndex] &= 0xF0;
+        }
+
+        // Add the stat boost to the item.
+        _data[(int)statIndex] |= statBoostData;
     }
 
-    public void SetElementWeakness(ElementalProperties element)
+    public void SetPrice(int gpAmount)
     {
-        throw new NotImplementedException();
+        byte[] priceArray = DataHandler.DecatenateInteger(gpAmount, 2); // Item price is 2 bytes.
+        _data[(int)ItemDataStructure.PriceLowByte] = priceArray[0];
+        _data[(int)ItemDataStructure.PriceHighByte] = priceArray[1];
     }
 }

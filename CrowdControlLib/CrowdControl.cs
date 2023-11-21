@@ -60,6 +60,7 @@ public class CrowdControl
         "ORGAN",
         "RAPHA",
         "SHDWCD",
+        "TACOMG",
     };
 
     public static readonly Dictionary<char, byte> CHAR_TO_BYTE_DICT = new();
@@ -80,7 +81,7 @@ public class CrowdControl
         _defaultItemData = _sniClient.ReadMemory(ItemData.StartAddress, ItemData.DataSize);
         _defaultSpellData = _sniClient.ReadMemory(SpellData.StartAddress, SpellData.DataSize);
         _defaultEsperData = _sniClient.ReadMemory(EsperData.StartAddress, EsperData.DataSize);
-        
+
         _defaultItemNamesData = _sniClient.ReadMemory(ItemName.StartAddress, ItemName.DataSize);
         _defaultSpellMagicalNamesData = _sniClient.ReadMemory(SpellMagicalName.StartAddress, SpellMagicalName.DataSize);
         _defaultSpellEsperNamesData = _sniClient.ReadMemory(SpellEsperName.StartAddress, SpellEsperName.DataSize);
@@ -135,6 +136,8 @@ public class CrowdControl
 
     public async Task ExecuteAsync()
     {
+        await Console.Out.WriteLineAsync("Running...");
+
         try
         {
             while (true)
@@ -179,7 +182,7 @@ public class CrowdControl
     private List<T> InitializeData<T>(byte[] defaultData, int blockCount) where T : BaseRomData
     {
         List<T> dataList = new List<T>();
-        
+
         int blockSize = defaultData.Length / blockCount;
 
         for (int i = 0; i < blockCount; i++)
@@ -215,7 +218,7 @@ public class CrowdControl
     {
         const int MIN_GP = 0;
         const int MAX_GP = 999999;
-        
+
         if (args.GPEffect == GPEffect.modify)
         {
             int currentGP = DataHandler.ConcatenateByteArray(_sniClient.ReadMemory(CURRENT_GP_START, CURRENT_GP_SIZE));
@@ -245,7 +248,7 @@ public class CrowdControl
         {
             return;
         }
-        
+
         SpellMagicalName targetSpellName = _spellMagicalNamesList[(int)args.Spell];
 
         string newSpellName = args.NewSpellName;
@@ -270,7 +273,7 @@ public class CrowdControl
     {
         ItemName targetItemName = _itemNamesList[(int)args.Item];
         string newItemName = args.NewItemName;
-        int nameBytesSize = ITEM_NAMES_BLOCK_SIZE - 1; // Subtract 1 for the item icon
+        int nameBytesSize = ItemName.BlockSize - 1; // Subtract 1 for the item icon
         byte[] nameBytes = InitializeArrayWithData(nameBytesSize, CHAR_TO_BYTE_DICT[' ']);
 
         if (newItemName.Length > nameBytesSize)
@@ -294,7 +297,34 @@ public class CrowdControl
 
     private void ModifySpell(CrowdControlArgs args)
     {
-        throw new NotImplementedException();
+        SpellData targetSpell = _spellDataList[(int)args.Spell];
+        
+        switch (args.SpellEffect)
+        {
+            case SpellEffect.targeting:
+                targetSpell.ModifyTargeting(args.TargetingPreset);
+                break;
+            case SpellEffect.spellpower:
+                targetSpell.SetSpellPower(args.SpellPower);
+                break;
+            case SpellEffect.element:
+                targetSpell.ToggleElement(args.Element);
+                break;
+            case SpellEffect.mpdamage:
+                targetSpell.ToggleMPDamage();
+                break;
+            case SpellEffect.ignoredefense:
+                targetSpell.ToggleIgnoreDefense();
+                break;
+            case SpellEffect.status:
+                throw new NotImplementedException();
+            case SpellEffect.liftstatus:
+                throw new NotImplementedException();
+            default:
+                throw new NotImplementedException();
+        }
+
+        _sniClient.WriteMemory(targetSpell);
     }
 
     private void ModifyItem(CrowdControlArgs args)
@@ -313,21 +343,28 @@ public class CrowdControl
                 targetItem.TeachSpell(_spellDataList[(int)args.Spell], args.LearnRate);
                 break;
             case ItemEffect.reliceffect:
-                targetItem.AddRelicEffect(args.RelicEffectItem);
+                targetItem.AddRelicEffect(_itemDataList[(int)args.RelicEffectItem]);
                 break;
             case ItemEffect.statboost:
+                targetItem.SetStatBoost(args.StatBoostType, args.StatBoostValue);
                 break;
             case ItemEffect.absorb:
-                targetItem.SetElementAbsorb(args.Element);
+                targetItem.ToggleElementalProperty(args.Element, (int)ItemDataStructure.Status2__AbsorbElement);
                 break;
             case ItemEffect.nullify:
-                targetItem.SetElementNullify(args.Element);
+                targetItem.ToggleElementalProperty(args.Element, (int)ItemDataStructure.Status3__NullifyElement);
                 break;
             case ItemEffect.weak:
-                targetItem.SetElementWeakness(args.Element);
+                targetItem.ToggleElementalProperty(args.Element, (int)ItemDataStructure.Status4__WeakElement);
+                break;
+            case ItemEffect.weaponelement:
+                targetItem.ToggleElementalProperty(args.Element, (int)ItemDataStructure.WeaponElement__HalveElement);
+                break;
+            case ItemEffect.price:
+                targetItem.SetPrice(args.GPAmount);
                 break;
             default:
-                break;
+                throw new NotImplementedException(); // Something is really wrong if we're hitting this.
         }
 
         _sniClient.WriteMemory(targetItem);
@@ -408,7 +445,7 @@ public class CrowdControl
 
     private void ModifyFontAndWindow(CrowdControlArgs args)
     {
-        byte[] wallpaper = _sniClient.ReadMemory(0x7E1D4E, 1);
+        byte[] wallpaper = _sniClient.ReadMemory(WALLPAPER, 1);
         wallpaper[0] &= 0xF0;
         
         if (args.WindowEffect == WindowEffect.random)

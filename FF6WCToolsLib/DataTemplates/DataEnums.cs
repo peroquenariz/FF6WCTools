@@ -36,6 +36,47 @@ public static class DataEnums
         RANDOM_SELECTION = 0x80
     }
 
+    public enum TargetingPreset : byte
+    {
+        /// <summary>
+        /// Auto-accept target (toggle).
+        /// </summary>
+        auto = Targeting.AUTO_ACCEPT_DEFAULT_SELECTION,
+        /// <summary>
+        /// Like elemental spells.
+        /// </summary>
+        standard = 
+            Targeting.ALLOWS_MOVABLE_CURSOR_FOR_SINGLE_TARGET |
+            Targeting.MULTIPLE_SELECTION_POSSIBLE |
+            Targeting.ENEMY_SELECTED_BY_DEFAULT,
+        /// <summary>
+        /// Allies only.
+        /// </summary>
+        ally =
+            Targeting.ALLOWS_MOVABLE_CURSOR_FOR_SINGLE_TARGET |
+            Targeting.MULTIPLE_SELECTION_POSSIBLE |
+            Targeting.DISABLE_SWITCH_OF_TARGETS_BETWEEN_GROUPS,
+        /// <summary>
+        /// Enemies only.
+        /// </summary>
+        enemy = 
+            Targeting.ALLOWS_MOVABLE_CURSOR_FOR_SINGLE_TARGET |
+            Targeting.MULTIPLE_SELECTION_POSSIBLE |
+            Targeting.ENEMY_SELECTED_BY_DEFAULT |
+            Targeting.DISABLE_SWITCH_OF_TARGETS_BETWEEN_GROUPS,
+        /// <summary>
+        /// Like Merton, W Wind.
+        /// </summary>
+        all = 
+            Targeting.SELECT_ALL_TARGETS_BOTH_GROUPS,
+        /// <summary>
+        /// Standard, defaults to random.
+        /// </summary>
+        roulette =
+            Targeting.ENEMY_SELECTED_BY_DEFAULT |
+            Targeting.RANDOM_SELECTION,
+    }
+
     [Flags]
     public enum ElementalProperties : byte
     {

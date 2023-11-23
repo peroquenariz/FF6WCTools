@@ -2,6 +2,7 @@
 using System;
 using static FF6WCToolsLib.DataTemplates.DataEnums;
 using static FF6WCToolsLib.WCData;
+using static CrowdControlLib.CrowdControlEffects;
 
 namespace CrowdControlLib;
 
@@ -22,6 +23,8 @@ public class CrowdControlArgs
     private const byte MAX_SPELL_LEARN_RATE = 20;
     private const int STAT_BOOST_MIN_VALUE = -7;
     private const int STAT_BOOST_MAX_VALUE = 7;
+    private const int SPELL_COST_MAX_VALUE = 254;
+    
     private readonly Effect _effectType;
     private WindowEffect _windowEffect;
     private GPEffect _gpEffect;
@@ -37,6 +40,7 @@ public class CrowdControlArgs
     private Stat _statBoostType;
     private SpellEffect _spellEffect;
     private TargetingPreset _targetingPreset;
+    private StatusEffect _statusEffect;
 
     public bool IsValid => _isValid;
     public string ErrorMessage => _errorMessage;
@@ -59,6 +63,10 @@ public class CrowdControlArgs
     public SpellEffect SpellEffect => _spellEffect;
     public TargetingPreset TargetingPreset => _targetingPreset;
     public byte SpellPower { get; private set; }
+    public byte SpellMPCost { get; private set; }
+    public StatusEffect StatusEffect => _statusEffect;
+    public byte StatusEffectFlag { get; private set; }
+    public byte StatusEffectByteOffset { get; private set; }
 
     public CrowdControlArgs(string message)
     {
@@ -66,7 +74,7 @@ public class CrowdControlArgs
         _newCharacterName = string.Empty;
         _newItemName = string.Empty;
         _newSpellName = string.Empty;
-
+        
         string[] splitMessage = message.Split(" ");
 
         Enum.TryParse(splitMessage[0], true, out _effectType);
@@ -134,6 +142,9 @@ public class CrowdControlArgs
 
         switch (_spellEffect)
         {
+            case SpellEffect.reset:
+                _isValid = true;
+                break;
             case SpellEffect.targeting:
                 _isValid = CheckTargetingPreset(splitMessage);
                 break;
@@ -153,15 +164,52 @@ public class CrowdControlArgs
                 _isValid = CheckSpellMPCost(splitMessage);
                 break;
             case SpellEffect.status:
+                _isValid = CheckStatusEffect(splitMessage);
                 break;
             case SpellEffect.liftstatus:
+                _isValid = true;
                 break;
         }
     }
 
+    private bool CheckStatusEffect(string[] splitMessage)
+    {
+        if (!Enum.TryParse(splitMessage[3], true, out _statusEffect))
+        {
+            _errorMessage = $"Invalid or not supported status '{splitMessage[3]}'!";
+            return false;
+        }
+
+        // Get bit flag and byte offset for the corresponding status.
+        var statusData = StatusEffectByteData[_statusEffect];
+        
+        StatusEffectFlag = statusData.BitFlag;
+        StatusEffectByteOffset = statusData.Offset;
+        
+        return true;
+    }
+
     private bool CheckSpellMPCost(string[] splitMessage)
     {
-        throw new NotImplementedException();
+        if (splitMessage.Length != 4)
+        {
+            _errorMessage = "Spell cost value not specified!";
+            return false;
+        }
+
+        if (!int.TryParse(splitMessage[3], out int spellMPCost))
+        {
+            _errorMessage = $"Spell cost value '{splitMessage[3]}' invalid!";
+            return false;
+        }
+        else if (spellMPCost < byte.MinValue || spellMPCost > SPELL_COST_MAX_VALUE)
+        {
+            _errorMessage = $"Spell cost value '{spellMPCost}' invalid! Valid range: {byte.MinValue}-{SPELL_COST_MAX_VALUE}";
+            return false;
+        }
+
+        SpellMPCost = (byte)spellMPCost;
+        return true;
     }
 
     private bool CheckSpellElement(string[] splitMessage)
@@ -223,7 +271,7 @@ public class CrowdControlArgs
     private void SetItemArgs(string[] splitMessage)
     {
         // Check if the message length is valid.
-        if (splitMessage.Length < 4 || splitMessage.Length > 5)
+        if (splitMessage.Length < 3 || splitMessage.Length > 5)
         {
             _errorMessage = "Invalid item command!";
             return;
@@ -240,6 +288,18 @@ public class CrowdControlArgs
         if (!Enum.TryParse(splitMessage[2], true, out _itemEffect))
         {
             _errorMessage = $"Item effect '{splitMessage[2]}' invalid!";
+            return;
+        }
+
+        // Check if it's a reset message.
+        if (_itemEffect == ItemEffect.reset)
+        {
+            _isValid = true;
+            return;
+        }
+        // If it's not a reset and the length is invalid, return.
+        else if (splitMessage.Length < 4)
+        {
             return;
         }
 
@@ -414,7 +474,7 @@ public class CrowdControlArgs
     private bool TryParseSpellLearnRate(string[] splitMessage)
     {
         // Parse the spell learn rate.
-        bool isValidNumber = Byte.TryParse(splitMessage[4], out byte learnRate);
+        bool isValidNumber = byte.TryParse(splitMessage[4], out byte learnRate);
 
         if (!isValidNumber)
         {
@@ -677,59 +737,4 @@ public class CrowdControlArgs
         }
         return true;
     }
-}
-
-public enum Effect
-{
-    _INVALID,
-    item,
-    spell,
-    character,
-    inventory,
-    itemname,
-    spellname,
-    charactername,
-    gp,
-    window,
-    mirror
-}
-
-public enum WindowEffect
-{
-    _INVALID,
-    vanilla,
-    demonchocobo,
-    random,
-}
-
-public enum GPEffect
-{
-    modify,
-    empty
-}
-
-public enum ItemEffect
-{
-    spellproc,
-    breakable,
-    teach,
-    reliceffect,
-    statboost,
-    absorb,
-    nullify,
-    weak,
-    weaponelement,
-    price,
-}
-
-public enum SpellEffect
-{
-    targeting,
-    spellpower,
-    element,
-    mpdamage,
-    ignoredefense,
-    status,
-    liftstatus,
-    mpcost,
 }

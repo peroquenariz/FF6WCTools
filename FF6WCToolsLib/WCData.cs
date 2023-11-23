@@ -1859,6 +1859,8 @@ public static class WCData
         { 0xFF, ' ' }
     };
 
+    public static readonly Dictionary<char, byte> CHAR_TO_BYTE_DICT = new Dictionary<char, byte>();
+
     /// <summary>
     /// Monster index dictionary.
     /// </summary>
@@ -2534,7 +2536,7 @@ public static class WCData
         Maduin,
         Bismark,
         Stray,
-        Palador,
+        Palidor,
         Tritoch,
         Odin,
         Raiden,

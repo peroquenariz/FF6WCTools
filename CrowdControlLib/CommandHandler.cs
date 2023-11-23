@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using TwitchChatbot;
+using static CrowdControlLib.CrowdControlEffects;
 
 namespace CrowdControlLib;
 

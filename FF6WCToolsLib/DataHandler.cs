@@ -9,6 +9,16 @@ namespace FF6WCToolsLib;
 /// </summary>
 public static class DataHandler
 {
+    public static void InitializeInverseCharDict()
+    {
+        // Build inverse character dictionary
+        for (byte i = 0x80; i < 0xC6; i++)
+        {
+            CHAR_TO_BYTE_DICT.Add(CHAR_DICT[i], i);
+        }
+        CHAR_TO_BYTE_DICT.Add(' ', 0xFF);
+    }
+
     /// <summary>
     /// Takes 2 arrays of the same size and type and checks if they have the same data.
     /// </summary>
@@ -526,5 +536,53 @@ public static class DataHandler
         }
 
         return new string(nameChars).Trim();
+    }
+
+    /// <summary>
+    /// Takes a string and encodes the name in a byte array.
+    /// </summary>
+    /// <param name="name">The name to encode.</param>
+    /// <returns>A byte array with the encoded name.</returns>
+    public static byte[] EncodeName(string name, byte blockSize, byte fillData = 0xFF)
+    {
+        int maxCharacterCount = name.Length;
+
+        if (name.Length > blockSize)
+        {
+            maxCharacterCount = blockSize;
+        }
+
+        byte[] encodedName = InitializeArrayWithData(blockSize, fillData);
+        
+        for (int i = 0; i < maxCharacterCount; i++)
+        {
+            char character = name[i];
+            if (character == ' ' && fillData != 0xFF)
+            {
+                encodedName[i] = fillData;
+                continue;
+            }
+            encodedName[i] = CHAR_TO_BYTE_DICT[character];
+        }
+
+        return encodedName;
+    }
+
+    /// <summary>
+    /// Creates an array filled with a given type of data.
+    /// </summary>
+    /// <param name="arraySize">The size of the array to initialize.</param>
+    /// <param name="defaultData">The byte to fill the array with.</param>
+    /// <returns>An array initialized with a given byte.</returns>
+    public static byte[] InitializeArrayWithData(int arraySize, byte defaultData)
+    {
+        byte[] byteArray = new byte[arraySize];
+
+        for (int i = 0; i < arraySize; i++)
+        {
+            byteArray[i] = defaultData;
+        }
+
+        return byteArray;
     }
 }

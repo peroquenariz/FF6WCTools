@@ -47,6 +47,20 @@ public abstract class BaseName : BaseRomData
                 _data[i + 1] = newNameData[i];
             }
         }
+        else
+        {
+            int maxCharacterCount = newNameLength;
+            
+            if (newNameLength > _data.Length)
+            {
+                maxCharacterCount = _data.Length;
+            }
+
+            for (int i = 0; i < maxCharacterCount; i++)
+            {
+                _data[i] = newNameData[i];
+            }
+        }
     }
 
     public override string ToString()

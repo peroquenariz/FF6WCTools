@@ -1,7 +1,6 @@
 ﻿using static FF6WCToolsLib.WCData;
 using static FF6WCToolsLib.DataTemplates.DataEnums;
 using System;
-using System.Xml.Linq;
 
 namespace FF6WCToolsLib.DataTemplates;
 
@@ -81,5 +80,25 @@ public class SpellData : BaseRomData
         byte ignoreDefenseData = _data[(int)SpellDataStructure.SpellFlags1];
         ignoreDefenseData = DataHandler.ToggleBit(ignoreDefenseData, (byte)SpellFlags1.IGNORE_DEFENSE);
         _data[(int)SpellDataStructure.SpellFlags1] = ignoreDefenseData;
+    }
+
+    public void SetMPCost(byte spellMPCost)
+    {
+        _data[(int)SpellDataStructure.MPCost] = spellMPCost;
+    }
+
+    public void ToggleStatus(byte statusFlag, byte statusByteOffset)
+    {
+        int statusByteIndex = (int)SpellDataStructure.Status1 + statusByteOffset;
+        byte statusData = _data[statusByteIndex];
+        statusData = DataHandler.ToggleBit(statusData, statusFlag);
+        _data[statusByteIndex] = statusData;
+    }
+
+    public void ToggleLiftStatus()
+    {
+        byte liftStatus = _data[(int)SpellDataStructure.SpellFlags3];
+        liftStatus = DataHandler.ToggleBit(liftStatus, (byte)SpellFlags3.LIFT_STATUS);
+        _data[(int)SpellDataStructure.SpellFlags3] = liftStatus;
     }
 }

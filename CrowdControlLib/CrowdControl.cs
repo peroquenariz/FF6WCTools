@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using FF6WCToolsLib.DataTemplates;
 using TwitchChatbot;
+using static CrowdControlLib.CrowdControlEffects;
 
 namespace CrowdControlLib;
 
@@ -61,13 +62,12 @@ public class CrowdControl
         "RAPHA",
         "SHDWCD",
         "TACOMG",
+        "SABRE",
     };
-
-    public static readonly Dictionary<char, byte> CHAR_TO_BYTE_DICT = new();
 
     private readonly Dictionary<Effect, Action<CrowdControlArgs>> _commands;
     private readonly CommandHandler _commandHandler;
-    private static Random _rng = new Random();
+    private static readonly Random _rng = new Random();
 
     public string? LibVersion { get => _libVersion; }
     public static Random Rng => _rng;
@@ -116,22 +116,33 @@ public class CrowdControl
             { Effect.mirror, MirrorAllItemNames }
         };
 
-        InitializeDicts();
+        DataHandler.InitializeInverseCharDict();
 
         _commandHandler = new CommandHandler(_commands, chatbot.CrowdControlMessageQueue);
 
         _commandHandler.OnSuccessfulEffectLoaded += chatbot.CrowdControl_OnSuccessfulEffectLoaded;
         _commandHandler.OnFailedEffect += chatbot.CrowdControl_OnFailedEffect;
+
+        InitializeCommunityNames();
     }
 
-    private void InitializeDicts()
+    private void InitializeCommunityNames()
     {
-        // Build inverse character dictionary
-        for (byte i = 0x80; i < 0xC6; i++)
-        {
-            CHAR_TO_BYTE_DICT.Add(CHAR_DICT[i], i);
-        }
-        CHAR_TO_BYTE_DICT.Add(' ', 0xFF);
+        // Rename Fenrir to SabrWolf - arooooo!
+        SpellEsperName fenrir = _spellEsperNamesList[(int)Esper.Fenrir];
+        fenrir.Rename(DataHandler.EncodeName("SabrWolf", SpellEsperName.BlockSize));
+        _sniClient.WriteMemory(fenrir);
+
+        // Rename Fenrir's spell to "Pack Call" - arooooo again!
+        // Spaces for esper attack names are 0xFE, go figure.
+        SpellEsperAttackName fenrirSpell = _spellEsperAttackNamesList[(int)Esper.Fenrir];
+        fenrirSpell.Rename(DataHandler.EncodeName("Pack Call", SpellEsperAttackName.BlockSize, 0xFE));
+        _sniClient.WriteMemory(fenrirSpell);
+
+        // Rename Palidor's spell to "Falcon Hit".
+        SpellEsperAttackName palidorSpell = _spellEsperAttackNamesList[(int)Esper.Palidor];
+        palidorSpell.Rename(DataHandler.EncodeName("Falcon Hit", SpellEsperAttackName.BlockSize, 0xFE));
+        _sniClient.WriteMemory(palidorSpell);
     }
 
     public async Task ExecuteAsync()
@@ -140,6 +151,8 @@ public class CrowdControl
 
         try
         {
+            // TODO: add timer shenanigans.
+            
             while (true)
             {
                 bool wasEffectLoaded = _commandHandler.TryLoadEffect();
@@ -253,7 +266,7 @@ public class CrowdControl
 
         string newSpellName = args.NewSpellName;
         int nameBytesSize = SPELLS_MAGICAL_NAMES_BLOCK_SIZE - 1; // Subtract 1 for the spell icon
-        byte[] nameBytes = InitializeArrayWithData(nameBytesSize, CHAR_TO_BYTE_DICT[' ']);
+        byte[] nameBytes = DataHandler.InitializeArrayWithData(nameBytesSize, CHAR_TO_BYTE_DICT[' ']);
 
         if (newSpellName.Length > nameBytesSize)
         {
@@ -274,7 +287,7 @@ public class CrowdControl
         ItemName targetItemName = _itemNamesList[(int)args.Item];
         string newItemName = args.NewItemName;
         int nameBytesSize = ItemName.BlockSize - 1; // Subtract 1 for the item icon
-        byte[] nameBytes = InitializeArrayWithData(nameBytesSize, CHAR_TO_BYTE_DICT[' ']);
+        byte[] nameBytes = DataHandler.InitializeArrayWithData(nameBytesSize, CHAR_TO_BYTE_DICT[' ']);
 
         if (newItemName.Length > nameBytesSize)
         {
@@ -301,6 +314,9 @@ public class CrowdControl
         
         switch (args.SpellEffect)
         {
+            case SpellEffect.reset:
+                targetSpell.ResetData();
+                break;
             case SpellEffect.targeting:
                 targetSpell.ModifyTargeting(args.TargetingPreset);
                 break;
@@ -316,10 +332,15 @@ public class CrowdControl
             case SpellEffect.ignoredefense:
                 targetSpell.ToggleIgnoreDefense();
                 break;
+            case SpellEffect.mpcost:
+                targetSpell.SetMPCost(args.SpellMPCost);
+                break;
             case SpellEffect.status:
-                throw new NotImplementedException();
+                targetSpell.ToggleStatus(args.StatusEffectFlag, args.StatusEffectByteOffset);
+                break;
             case SpellEffect.liftstatus:
-                throw new NotImplementedException();
+                targetSpell.ToggleLiftStatus();
+                break;
             default:
                 throw new NotImplementedException();
         }
@@ -333,6 +354,9 @@ public class CrowdControl
 
         switch (args.ItemEffect)
         {
+            case ItemEffect.reset:
+                targetItem.ResetData();
+                break;
             case ItemEffect.spellproc:
                 targetItem.SpellProc(_spellDataList[(int)args.Spell]);
                 break;
@@ -392,7 +416,7 @@ public class CrowdControl
         string newCharacterName = args.NewCharactername;
         
         // Initialize byte array with whitespaces.
-        byte[] nameData = InitializeArrayWithData(CHARACTER_DATA_NAME_SIZE, CHAR_TO_BYTE_DICT[' ']);
+        byte[] nameData = DataHandler.InitializeArrayWithData(CHARACTER_DATA_NAME_SIZE, CHAR_TO_BYTE_DICT[' ']);
 
         // Build byte array with the given name.
         if (newCharacterName.ToLower() == "community")
@@ -423,24 +447,6 @@ public class CrowdControl
         // Write byte array to memory.
         uint characterNameIndex = CharacterData.StartAddress + (uint)CharacterDataStructure.Name + (CharacterData.BlockSize * (uint)args.Character);
         _sniClient.WriteMemory(characterNameIndex, nameData);
-    }
-
-    /// <summary>
-    /// Creates an array filled with a given type of data.
-    /// </summary>
-    /// <param name="arraySize">The size of the array to initialize.</param>
-    /// <param name="defaultData">The byte to fill the array with.</param>
-    /// <returns>An array initialized with a given byte.</returns>
-    private static byte[] InitializeArrayWithData(int arraySize, byte defaultData)
-    {
-        byte[] byteArray = new byte[arraySize];
-
-        for (int i = 0; i < arraySize; i++)
-        {
-            byteArray[i] = defaultData;
-        }
-
-        return byteArray;
     }
 
     private void ModifyFontAndWindow(CrowdControlArgs args)

@@ -156,6 +156,9 @@ public static class DataEnums
         UNKNOWN_0x80 = 0x80
     }
 
+    /// <summary>
+    /// Harmful status that persist after battle.
+    /// </summary>
     [Flags]
     public enum StatusCondition1 : byte
     {
@@ -170,20 +173,26 @@ public static class DataEnums
         DEATH = 0x80
     }
 
+    /// <summary>
+    /// Harmful status that do not persist after battle.
+    /// </summary>
     [Flags]
     public enum StatusCondition2 : byte
     {
         NONE = 0x00,
         CONDEMNED = 0x01,
         KNEELING = 0x02,
-        BLINK = 0x04,
-        SILENCE = 0x08,
+        IMAGE = 0x04,
+        MUTE = 0x08,
         BERSERK = 0x10,
-        CONFUSION = 0x20,
-        HP_DRAIN = 0x40, // Seizure
+        MUDDLE = 0x20,
+        SEIZURE = 0x40,
         SLEEP = 0x80
     }
 
+    /// <summary>
+    /// Helpful status that do not persist after battle.
+    /// </summary>
     [Flags]
     public enum StatusCondition3 : byte
     {
@@ -211,11 +220,23 @@ public static class DataEnums
         NONE = 0x00,
         RAGE = 0x01,
         FROZEN = 0x02,
+        /// <summary>
+        /// Life3
+        /// </summary>
         PROTECTION_FROM_DEATH = 0x04,
+        /// <summary>
+        /// Morph
+        /// </summary>
         MORPH_INTO_ESPER = 0x08,
+        /// <summary>
+        /// Trance
+        /// </summary>
         CASTING_SPELL = 0x10,
+        /// <summary>
+        /// Hide
+        /// </summary>
         REMOVED_FROM_BATTLE = 0x20,
-        RANDOMLY_DEFENDED_BY_INTERCEPTOR = 0x40,
+        INTERCEPTOR = 0x40,
         FLOAT = 0x80
     }
 
@@ -486,24 +507,22 @@ public static class DataEnums
 
     public enum EsperLevelUpBonus : byte
     {
-        HP_PLUS_10,
-        HP_PLUS_30,
-        HP_PLUS_50,
-        MP_PLUS_10,
-        MP_PLUS_30,
-        MP_PLUS_50,
-        HP_PLUS_100,
-        LV_PLUS_30,
-        LV_PLUS_50,
-        STRENGTH_PLUS_1,
-        STRENGTH_PLUS_2,
-        SPEED_PLUS_1,
-        SPEED_PLUS_2,
-        STAMINA_PLUS_1,
-        STAMINA_PLUS_2,
-        MAGPWR_PLUS_1,
-        MAGPWR_PLUS_2,
-        NO_BONUS = 0xFF
+        HP10,
+        HP30,
+        HP50,
+        MP10,
+        MP30,
+        MP50,
+        HP100,
+        STRENGTH1 = 9, // Skip the two unused bonuses
+        STRENGTH2,
+        SPEED1,
+        SPEED2,
+        STAMINA1,
+        STAMINA2,
+        MAGIC1,
+        MAGIC2,
+        NONE = 0xFF
     }
 
     public enum CharacterDataStructure

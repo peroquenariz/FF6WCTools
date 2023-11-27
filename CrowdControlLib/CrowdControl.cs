@@ -31,6 +31,7 @@ public class CrowdControl
     private readonly List<ItemData> _itemDataList;
     private readonly List<EsperData> _esperDataList;
     private readonly List<CharacterData> _characterDataList;
+    private readonly List<CharacterSpellData> _characterSpellDataList;
 
     private readonly List<ItemName> _itemNamesList;
     private readonly List<SpellMagicalName> _spellMagicalNamesList;
@@ -94,6 +95,7 @@ public class CrowdControl
         _spellDataList = InitializeData<SpellData>(_defaultSpellData, SpellData.BlockCount);
         _esperDataList = InitializeData<EsperData>(_defaultEsperData, EsperData.BlockCount);
         _characterDataList = InitializeRamData<CharacterData>(CharacterData.BlockCount);
+        _characterSpellDataList = InitializeRamData<CharacterSpellData>(CharacterSpellData.BlockCount);
 
         _itemNamesList = InitializeData<ItemName>(_defaultItemNamesData, ItemName.BlockCount);
         _spellMagicalNamesList = InitializeData<SpellMagicalName>(_defaultSpellMagicalNamesData, SpellMagicalName.BlockCount);
@@ -104,7 +106,7 @@ public class CrowdControl
 
         _commands = new Dictionary<Effect, Action<CrowdControlArgs>>()
         {
-            { Effect.window, ModifyFontAndWindow },
+            { Effect.window, ModifyWindow },
             { Effect.item, ModifyItem },
             { Effect.spell, ModifySpell },
             { Effect.character, ModifyCharacter },
@@ -152,7 +154,7 @@ public class CrowdControl
         try
         {
             // TODO: add timer shenanigans.
-            
+
             while (true)
             {
                 bool wasEffectLoaded = _commandHandler.TryLoadEffect();
@@ -212,16 +214,6 @@ public class CrowdControl
         return dataList;
     }
 
-    private void UpdateCharacterData() // TODO: refactor to use BaseRamData.UpdateData()
-    {
-        byte[] characterData = _sniClient.ReadMemory(CharacterData.StartAddress, CharacterData.DataSize);
-
-        for (int i = 0; i < CharacterData.BlockCount; i++)
-        {
-            _characterDataList[i].UpdateData(characterData[(i * CharacterData.BlockSize)..((i + 1) * CharacterData.BlockSize)]);
-        }
-    }
-
     private void ModifyInventory(CrowdControlArgs args)
     {
         throw new NotImplementedException();
@@ -255,28 +247,11 @@ public class CrowdControl
 
     private void ModifySpellName(CrowdControlArgs args)
     {
-        // TODO: filter the spell to rename
-        // Right now, only magical spells are allowed.
-        if ((int)args.Spell > 53)
-        {
-            return;
-        }
-
         SpellMagicalName targetSpellName = _spellMagicalNamesList[(int)args.Spell];
-
         string newSpellName = args.NewSpellName;
-        int nameBytesSize = SPELLS_MAGICAL_NAMES_BLOCK_SIZE - 1; // Subtract 1 for the spell icon
-        byte[] nameBytes = DataHandler.InitializeArrayWithData(nameBytesSize, CHAR_TO_BYTE_DICT[' ']);
-
-        if (newSpellName.Length > nameBytesSize)
-        {
-            newSpellName = newSpellName[..nameBytesSize];
-        }
-
-        for (int i = 0; i < newSpellName.Length; i++) // TODO: extract to a method
-        {
-            nameBytes[i] = CHAR_TO_BYTE_DICT[newSpellName[i]];
-        }
+        int nameBytesSize = SpellMagicalName.BlockSize - 1; // Subtract 1 for the spell icon
+        
+        byte[] nameBytes = DataHandler.EncodeName(newSpellName, nameBytesSize);
 
         targetSpellName.Rename(nameBytes, true);
         _sniClient.WriteMemory(targetSpellName);
@@ -287,17 +262,8 @@ public class CrowdControl
         ItemName targetItemName = _itemNamesList[(int)args.Item];
         string newItemName = args.NewItemName;
         int nameBytesSize = ItemName.BlockSize - 1; // Subtract 1 for the item icon
-        byte[] nameBytes = DataHandler.InitializeArrayWithData(nameBytesSize, CHAR_TO_BYTE_DICT[' ']);
-
-        if (newItemName.Length > nameBytesSize)
-        {
-            newItemName = newItemName[..nameBytesSize];
-        }
-
-        for (int i = 0; i < newItemName.Length; i++) // TODO: extract to a method
-        {
-            nameBytes[i] = CHAR_TO_BYTE_DICT[newItemName[i]];
-        }
+        
+        byte[] nameBytes = DataHandler.EncodeName(newItemName, nameBytesSize);
 
         targetItemName.Rename(nameBytes, true);
         _sniClient.WriteMemory(targetItemName);
@@ -305,7 +271,50 @@ public class CrowdControl
 
     private void ModifyCharacter(CrowdControlArgs args)
     {
-        throw new NotImplementedException();
+        // Spell teach/forget effect.
+        if (args.CharacterEffect is CharacterEffect.forget or CharacterEffect.teach)
+        {
+            bool isSpellTeachEffect = args.CharacterEffect == CharacterEffect.teach;
+            byte spellLearnedValue = (byte)(isSpellTeachEffect ? 0xFF : 0x00);
+
+            uint targetSpellAddress = CharacterSpellData.GetSpellAddress(args.Spell, args.Character);
+
+            _sniClient.WriteMemory(targetSpellAddress, new byte[] { spellLearnedValue });
+
+            return;
+        }
+        
+        CharacterData targetCharacter = _characterDataList[(int)args.Character];
+        
+        // Equipment effect.
+        if (Enum.IsDefined(typeof(EquipmentSlot), args.CharacterEffect.ToString())) // TODO: get rid of string checking?
+        {
+            // TODO: this method is static because right now it's just overwriting the existing item in the slot.
+            // We don't need to read the character or access any instance data.
+            // In the future, it might be nice to implement a method that puts the currently held item in the inventory,
+            // and equips the given one.
+            uint equipmentAddress = CharacterData.GetEquipmentAddress(args.Character, args.EquipmentSlot);
+            byte itemValue = (byte)args.Item;
+
+            _sniClient.WriteMemory(equipmentAddress, new byte[] { itemValue });
+        }
+        // Stat boost effect.
+        else if (Enum.IsDefined(typeof(Stat), args.CharacterEffect.ToString()))
+        {
+            // Read current character data.
+            targetCharacter.UpdateData(_sniClient.ReadMemory(targetCharacter));
+
+            // Update stat.
+            targetCharacter.SetStatBoost(args.StatBoostType, args.StatBoostValue);
+
+            // Write new character data to memory.
+            _sniClient.WriteMemory(targetCharacter);
+        }
+        else
+        {
+            throw new NotImplementedException();
+            // TODO: event that logs error in console.
+        }
     }
 
     private void ModifySpell(CrowdControlArgs args)
@@ -342,7 +351,7 @@ public class CrowdControl
                 targetSpell.ToggleLiftStatus();
                 break;
             default:
-                throw new NotImplementedException();
+                throw new NotImplementedException(); // TODO: event that logs error in console.
         }
 
         _sniClient.WriteMemory(targetSpell);
@@ -415,33 +424,18 @@ public class CrowdControl
     {
         string newCharacterName = args.NewCharactername;
         
-        // Initialize byte array with whitespaces.
-        byte[] nameData = DataHandler.InitializeArrayWithData(CHARACTER_DATA_NAME_SIZE, CHAR_TO_BYTE_DICT[' ']);
+        byte[] nameData;
 
-        // Build byte array with the given name.
         if (newCharacterName.ToLower() == "community")
         {
             // Take a random name from the community list.
-            // This list is sanitized to only have correct length names, no need to check here.
             string communityName = _communityNames[_rng.Next(0, _communityNames.Count)];
 
-            for (int i = 0; i < communityName.Length; i++)
-            {
-                nameData[i] = CHAR_TO_BYTE_DICT[communityName[i]];
-            }
+            nameData = DataHandler.EncodeName(communityName, CHARACTER_DATA_NAME_SIZE);
         }
         else // Not a community name
         {
-            // If string is longer than 6 characters, truncate it.
-            if (newCharacterName.Length > CHARACTER_DATA_NAME_SIZE)
-            {
-                newCharacterName = newCharacterName[..CHARACTER_DATA_NAME_SIZE];
-            }
-
-            for (int i = 0; i < newCharacterName.Length; i++)
-            {
-                nameData[i] = CHAR_TO_BYTE_DICT[newCharacterName[i]];
-            }
+            nameData = DataHandler.EncodeName(newCharacterName, CHARACTER_DATA_NAME_SIZE);
         }
 
         // Write byte array to memory.
@@ -449,7 +443,7 @@ public class CrowdControl
         _sniClient.WriteMemory(characterNameIndex, nameData);
     }
 
-    private void ModifyFontAndWindow(CrowdControlArgs args)
+    private void ModifyWindow(CrowdControlArgs args)
     {
         byte[] wallpaper = _sniClient.ReadMemory(WALLPAPER, 1);
         wallpaper[0] &= 0xF0;

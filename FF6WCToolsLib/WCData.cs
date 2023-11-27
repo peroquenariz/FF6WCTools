@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace FF6WCToolsLib;
 
 /// <summary>
-/// A class holding information about Final Fantasy 6: Worlds Collide.
+/// Holds data about Final Fantasy 6: Worlds Collide.
 /// </summary>
 public static class WCData
 {
@@ -155,7 +155,7 @@ public static class WCData
     /// Size of the character skill data.
     /// </summary>
     public const int CHARACTER_SKILL_DATA_SIZE = 734;
-
+    public const int CHARACTER_SKILL_DATA_BLOCK_COUNT = 12;
     public const byte CHARACTER_SKILL_DATA_SPELL_BLOCK_SIZE = 54;
 
     public const int SWDTECH_OFFSET = 649;
@@ -2512,6 +2512,7 @@ public static class WCData
         Empty
     }
 
+    // Item ranges
     public static readonly Range RANGE_WEAPONS = new(0, 89);
     public static readonly Range RANGE_SHIELDS = new(90, 104);
     public static readonly Range RANGE_HELMETS = new(105, 131);
@@ -2520,6 +2521,7 @@ public static class WCData
     public static readonly Range RANGE_SKEANS = new(171, 175);
     public static readonly Range RANGE_RELICS = new(176, 230);
     public static readonly Range RANGE_CONSUMABLES = new(231, 254);
+    public static readonly Range RANGE_NINJASTARS = new(65, 67);
     /// <summary>
     /// All non-relic equippables.
     /// </summary>
@@ -2822,6 +2824,16 @@ public static class WCData
         speed,
         stamina,
         magic
+    }
+
+    public enum EquipmentSlot : byte
+    {
+        rhand,
+        lhand,
+        helmet,
+        armor,
+        relic1,
+        relic2
     }
 
     /// <summary>

@@ -514,6 +514,8 @@ public static class DataEnums
         MP30,
         MP50,
         HP100,
+        // LV30 and LVL50 go here.
+        // They're not going to be eligible for crowd control.
         STRENGTH1 = 9, // Skip the two unused bonuses
         STRENGTH2,
         SPEED1,
@@ -547,13 +549,11 @@ public static class DataEnums
         Stamina,
         MagPower,
         Esper,
-        Weapon,
-        Shield,
+        RHand,
+        LHand,
         Helmet,
         Armor,
         Relic1,
         Relic2
     }
-
-    
 }

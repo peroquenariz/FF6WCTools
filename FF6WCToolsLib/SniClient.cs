@@ -55,7 +55,6 @@ public class SniClient
         _writeMemoryRequest = new WriteMemoryRequest
         {
             RequestMemoryMapping = MemoryMapping.HiRom,
-
         };
 
         _singleWriteMemoryRequest = new SingleWriteMemoryRequest
@@ -147,6 +146,16 @@ public class SniClient
     }
 
     /// <summary>
+    /// Takes a readable memory block and reads that memory section.
+    /// </summary>
+    /// <param name="readableMemoryBlock">A readable memory block.</param>
+    /// <returns>A byte array containing the game memory data requested.</returns>
+    public byte[] ReadMemory(IReadableMemoryBlock readableMemoryBlock)
+    {
+        return ReadMemory(readableMemoryBlock.TargetAddress, readableMemoryBlock.GetBlockSize());
+    }
+
+    /// <summary>
     /// Takes a byte array and writes it to memory.
     /// </summary>
     /// <param name="address">The memory address to write to.</param>
@@ -169,7 +178,7 @@ public class SniClient
     }
 
     /// <summary>
-    /// Takes a byte array and writes it to memory.
+    /// Takes a writable memory block and writes it to memory.
     /// </summary>
     /// <param name="memoryBlock">A writable memory block.</param>
     public void WriteMemory(IWritableMemoryBlock memoryBlock)

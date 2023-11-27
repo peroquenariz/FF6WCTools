@@ -3,6 +3,7 @@ using System;
 using static FF6WCToolsLib.DataTemplates.DataEnums;
 using static FF6WCToolsLib.WCData;
 using static CrowdControlLib.CrowdControlEffects;
+using FF6WCToolsLib.DataTemplates;
 
 namespace CrowdControlLib;
 
@@ -21,8 +22,10 @@ public class CrowdControlArgs
     private const int GP_AMOUNT_MAX = 10000;
     private const byte MIN_SPELL_LEARN_RATE = 1;
     private const byte MAX_SPELL_LEARN_RATE = 20;
-    private const int STAT_BOOST_MIN_VALUE = -7;
-    private const int STAT_BOOST_MAX_VALUE = 7;
+    private const int CHARACTER_STAT_BOOST_MIN = -10;
+    private const int CHARACTER_STAT_BOOST_MAX = 10;
+    private const int ITEM_STAT_BOOST_MIN_VALUE = -7;
+    private const int ITEM_STAT_BOOST_MAX_VALUE = 7;
     private const int SPELL_COST_MAX_VALUE = 254;
     
     private readonly Effect _effectType;
@@ -41,6 +44,8 @@ public class CrowdControlArgs
     private SpellEffect _spellEffect;
     private TargetingPreset _targetingPreset;
     private StatusEffect _statusEffect;
+    private CharacterEffect _characterEffect;
+    private EquipmentSlot _equipmentSlot;
 
     public bool IsValid => _isValid;
     public string ErrorMessage => _errorMessage;
@@ -67,6 +72,8 @@ public class CrowdControlArgs
     public StatusEffect StatusEffect => _statusEffect;
     public byte StatusEffectFlag { get; private set; }
     public byte StatusEffectByteOffset { get; private set; }
+    public CharacterEffect CharacterEffect => _characterEffect;
+    public EquipmentSlot EquipmentSlot => _equipmentSlot;
 
     public CrowdControlArgs(string message)
     {
@@ -91,7 +98,7 @@ public class CrowdControlArgs
                 SetSpellArgs(splitMessage);
                 break;
             case Effect.character:
-                _errorMessage = $"'{_effectType}' not implemented yet!";
+                SetCharacterArgs(splitMessage);
                 break;
             case Effect.inventory:
                 _errorMessage = $"'{_effectType}' not implemented yet!";
@@ -117,6 +124,140 @@ public class CrowdControlArgs
         }
     }
 
+    private void SetCharacterArgs(string[] splitMessage)
+    {
+        // Check if the message length is valid.
+        if (splitMessage.Length != 4)
+        {
+            _errorMessage = "Invalid character command!";
+            return;
+        }
+
+        // Check if the character is valid.
+        if (!Enum.TryParse(splitMessage[1], true, out _character))
+        {
+            _errorMessage = $"Character '{splitMessage[1]}' invalid!";
+            return;
+        }
+
+        string characterEffect = splitMessage[2].ToLower();
+
+        // Check if the character effect is valid.
+        if (!Enum.TryParse(characterEffect, true, out _characterEffect))
+        {
+            _errorMessage = $"Character effect '{splitMessage[2]}' invalid!";
+            return;
+        }
+
+        string parameter = splitMessage[3];
+
+        // If it's a spell teaching effect, save the spell.
+        if (_characterEffect is CharacterEffect.teach or CharacterEffect.forget)
+        {
+            // Ignore Gogo and Umaro.
+            if (_character is Character.Gogo or Character.Umaro)
+            {
+                _errorMessage = $"{_character} can't learn or forget spells!";
+                return;
+            }
+            
+            // Get spell.
+            if (!Enum.TryParse(parameter, true, out _spell))
+            {
+                _errorMessage = $"Spell '{parameter}' invalid!";
+                return;
+            }
+            // Only allow magical spells. TODO: teach lores/swdtechs/blitzes/etc.
+            else if ((int)_spell >= SpellMagicalName.BlockCount)
+            {
+                _errorMessage = $"Spell '{parameter}' can't be taught! (teaching lores/swdtechs/blitzes/etc not implemented yet)";
+                return;
+            }
+
+            _isValid = true;
+            return;
+        }
+        // If it's a stat boost effect, save the value.
+        else if (Enum.IsDefined(typeof(Stat), characterEffect))
+        {
+            // Get the stat type.
+            Enum.TryParse(characterEffect, true, out _statBoostType);
+
+            _isValid = CheckIfStatBoostValueIsValid(parameter, CHARACTER_STAT_BOOST_MIN, CHARACTER_STAT_BOOST_MAX);
+            return;
+        }
+        // If it's an equipment effect, save the item to equip.
+        else if (Enum.IsDefined(typeof(EquipmentSlot), characterEffect))
+        {
+            // Check if it's a correct item.
+            if (!Enum.TryParse(parameter, true, out _item))
+            {
+                _errorMessage = $"Character equipment item '{parameter}' invalid!";
+                return;
+            }
+            
+            // Get the equipment slot.
+            Enum.TryParse(characterEffect, true, out _equipmentSlot);
+            
+            // Check if the item is valid for the given slot
+            // TODO: expose this in a config file to allow people to equip glitched items.
+            _isValid = CheckIfEquipmentIsValid(_item, _equipmentSlot);
+            return;
+        }
+    }
+
+    /// <summary>
+    /// Checks if the given item is valid for that slot.
+    /// </summary>
+    /// <param name="item">Message parameter.</param>
+    /// <param name="slot">The character equipment slot.</param>
+    /// <returns>True if it's a valid item for the slot, otherwise false.</returns>
+    private bool CheckIfEquipmentIsValid(Item item, EquipmentSlot slot)
+    {
+        // Empty item is compatible with any slot.
+        if (item == Item.Empty) return true;
+
+        // Ignore consumables.
+        if (DataHandler.CheckIfItemIsConsumable(item))
+        {
+            _errorMessage = $"Character equipment item '{item}' invalid - can't equip consumables!";
+            return false;
+        }
+
+        bool isValidEquipment = false;
+
+        if (slot is EquipmentSlot.relic1 or EquipmentSlot.relic2)
+        {
+            isValidEquipment = DataHandler.CheckItemInRange((byte)item, RANGE_RELICS);
+        }
+        else
+        {
+            switch (slot)
+            {
+                case EquipmentSlot.rhand:
+                    isValidEquipment = DataHandler.CheckItemInRange((byte)item, RANGE_WEAPONS);
+                    break;
+                case EquipmentSlot.lhand:
+                    isValidEquipment = DataHandler.CheckItemInRange((byte)item, RANGE_WEAPONS) ||
+                                       DataHandler.CheckItemInRange((byte)item, RANGE_SHIELDS);
+                    break;
+                case EquipmentSlot.helmet:
+                    isValidEquipment = DataHandler.CheckItemInRange((byte)item, RANGE_HELMETS);
+                    break;
+                case EquipmentSlot.armor:
+                    isValidEquipment = DataHandler.CheckItemInRange((byte)item, RANGE_ARMORS);
+                    break;
+            }
+        }
+
+        if (!isValidEquipment)
+        {
+            _errorMessage = $"Character equipment item '{item}' invalid for {slot} slot!";
+        }
+
+        return isValidEquipment;
+    }
+
     private void SetSpellArgs(string[] splitMessage)
     {
         // Check if the message length is valid.
@@ -126,14 +267,14 @@ public class CrowdControlArgs
             return;
         }
 
-        // Check if the item is valid.
+        // Check if the spell is valid.
         if (!Enum.TryParse(splitMessage[1], true, out _spell))
         {
             _errorMessage = $"Spell '{splitMessage[1]}' invalid!";
             return;
         }
 
-        // Check if the item effect is valid.
+        // Check if the spell effect is valid.
         if (!Enum.TryParse(splitMessage[2], true, out _spellEffect))
         {
             _errorMessage = $"Spell effect '{splitMessage[2]}' invalid!";
@@ -393,7 +534,7 @@ public class CrowdControlArgs
                 return;
             }
             
-            _isValid = CheckIfStatBoostValueIsValid(splitMessage);
+            _isValid = CheckIfStatBoostValueIsValid(splitMessage[4], ITEM_STAT_BOOST_MIN_VALUE, ITEM_STAT_BOOST_MAX_VALUE);
             return;
         }
 
@@ -427,22 +568,20 @@ public class CrowdControlArgs
         return true;
     }
 
-    private bool CheckIfStatBoostValueIsValid(string[] splitMessage)
+    private bool CheckIfStatBoostValueIsValid(string statBoostValueString, int minValue, int maxValue)
     {
-        string statBoostValueString = splitMessage[4];
-
         // Check if the value provided is valid and within range.
         if (!int.TryParse(statBoostValueString, out int statBoostValue))
         {
             // It's not a number.
-            _errorMessage = $"'{splitMessage[4]}' is not a number!";
+            _errorMessage = $"'{statBoostValueString}' is not a number!";
             return false;
         }
-        else if (statBoostValue < STAT_BOOST_MIN_VALUE ||
-                 statBoostValue > STAT_BOOST_MAX_VALUE)
+        else if (statBoostValue < minValue ||
+                 statBoostValue > maxValue)
         {
             // Value is out of valid range
-            _errorMessage = $"Stat boost value '{statBoostValue}' out of range! Valid range: {STAT_BOOST_MIN_VALUE}-{STAT_BOOST_MAX_VALUE} ";
+            _errorMessage = $"Stat boost value '{statBoostValue}' out of range! Valid range: {minValue}-{maxValue} ";
             return false;
         }
 
@@ -545,7 +684,7 @@ public class CrowdControlArgs
         }
         bool isValidSpell = Enum.TryParse(splitMessage[1], true, out _spell);
 
-        if (!isValidSpell)
+        if (!isValidSpell || (int)_spell > 53) // Only allow magical spells.
         {
             _errorMessage = $"Spell '{splitMessage[1]}' invalid!";
             return;
@@ -561,7 +700,7 @@ public class CrowdControlArgs
         _newSpellName = _newSpellName.TrimEnd();
 
         // Check for invalid characters
-        bool isValidName = IsNameValid(_newSpellName, SPELLS_MAGICAL_NAMES_BLOCK_SIZE - 1);
+        bool isValidName = IsNameValid(_newSpellName, SPELLS_MAGICAL_NAMES_BLOCK_SIZE - 1); // Don't count the spell icon.
         if (!isValidName)
         {
             _errorMessage = $"Spell name {_newSpellName} invalid!";

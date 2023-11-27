@@ -9,6 +9,13 @@ namespace FF6WCToolsLib;
 /// </summary>
 public static class DataHandler
 {
+    public static bool CheckIfItemIsConsumable(Item item)
+    {
+        return CheckItemInRange(item, RANGE_CONSUMABLES) ||
+               CheckItemInRange(item, RANGE_SKEANS) ||
+               CheckItemInRange(item, RANGE_NINJASTARS);
+    }
+
     public static void InitializeInverseCharDict()
     {
         // Build inverse character dictionary
@@ -428,7 +435,7 @@ public static class DataHandler
     /// </summary>
     /// <param name="itemIndex">The item index to check.</param>
     /// <param name="range">The item range to compare against.</param>
-    /// <returns></returns>
+    /// <returns>True if the item is in range, otherwise false.</returns>
     public static bool CheckItemInRange(byte itemIndex, Range range)
     {
         return itemIndex >= range.Start.Value && itemIndex <= range.End.Value;
@@ -439,7 +446,7 @@ public static class DataHandler
     /// </summary>
     /// <param name="item">The item to check.</param>
     /// <param name="range">The item range to compare against.</param>
-    /// <returns></returns>
+    /// <returns>True if the item is in range, otherwise false.</returns>
     public static bool CheckItemInRange(Item item, Range range)
     {
         return CheckItemInRange((byte)item, range);
@@ -543,7 +550,7 @@ public static class DataHandler
     /// </summary>
     /// <param name="name">The name to encode.</param>
     /// <returns>A byte array with the encoded name.</returns>
-    public static byte[] EncodeName(string name, byte blockSize, byte fillData = 0xFF)
+    public static byte[] EncodeName(string name, int blockSize, byte fillData = 0xFF)
     {
         int maxCharacterCount = name.Length;
 

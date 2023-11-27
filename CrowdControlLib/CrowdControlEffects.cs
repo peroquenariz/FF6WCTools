@@ -116,4 +116,20 @@ public static class CrowdControlEffects
         Float,
         interceptor,
     }
+
+    public enum CharacterEffect
+    {
+        rhand,
+        lhand,
+        helmet,
+        armor,
+        relic1,
+        relic2,
+        vigor,
+        speed,
+        stamina,
+        magic,
+        teach,
+        forget,
+    }
 }

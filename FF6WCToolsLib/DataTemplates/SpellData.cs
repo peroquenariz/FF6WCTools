@@ -36,6 +36,13 @@ public class SpellData : BaseRomData
         return spellDescription;
     }
 
+    public void ToggleUsableOnMenu()
+    {
+        byte usableInMenu = _data[(int)SpellDataStructure.SpellFlags2];
+        usableInMenu = DataHandler.ToggleBit(usableInMenu, (byte)SpellFlags2.CAN_USE_SPELL_ON_MENU);
+        _data[(int)SpellDataStructure.SpellFlags2] = usableInMenu;
+    }
+
     public void ModifyTargeting(TargetingPreset targetingPreset)
     {
         Targeting currentTargeting = (Targeting)_data[(int)SpellDataStructure.Targeting];

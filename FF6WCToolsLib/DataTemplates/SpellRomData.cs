@@ -4,7 +4,7 @@ using System;
 
 namespace FF6WCToolsLib.DataTemplates;
 
-public class SpellData : BaseRomData
+public class SpellRomData : BaseRomData
 {
     public static uint StartAddress => SPELL_DATA_START;
     public static byte BlockSize => SPELL_DATA_BLOCK_SIZE;
@@ -13,7 +13,7 @@ public class SpellData : BaseRomData
 
     public override uint TargetAddress => StartAddress + (uint)(BlockSize * _dataIndex);
 
-    public SpellData(byte[] defaultSpellData, int spellIndex) : base(defaultSpellData, spellIndex) { }
+    public SpellRomData(byte[] defaultSpellData, int spellIndex) : base(defaultSpellData, spellIndex) { }
 
     public override string ToString()
     {

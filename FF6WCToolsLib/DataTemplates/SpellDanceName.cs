@@ -2,7 +2,7 @@
 
 namespace FF6WCToolsLib.DataTemplates;
 
-public class SpellDanceName : BaseName
+public class SpellDanceName : BaseNameRomData
 {
     public static uint StartAddress => SPELLS_ALL_NAMES_START + SPELLS_DANCE_NAMES_OFFSET;
     public static byte BlockSize => SPELLS_DANCE_NAMES_BLOCK_SIZE;

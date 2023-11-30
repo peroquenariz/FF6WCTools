@@ -2,7 +2,7 @@
 
 namespace FF6WCToolsLib.DataTemplates;
 
-public class CharacterSpellData : BaseRamData
+public class CharacterSpellRamData : BaseRamData
 {
     public static uint StartAddress => CHARACTER_SKILL_DATA_START;
     public static byte BlockSize => CHARACTER_SKILL_DATA_SPELL_BLOCK_SIZE;
@@ -21,7 +21,7 @@ public class CharacterSpellData : BaseRamData
         return (uint)(StartAddress + (BlockSize * _dataIndex) + spellIndex);
     }
 
-    public CharacterSpellData(int index) : base(BlockSize, index) { }
+    public CharacterSpellRamData(int index) : base(BlockSize, index) { }
 
     public override string ToString()
     {

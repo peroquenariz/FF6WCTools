@@ -4,7 +4,7 @@ using System;
 
 namespace FF6WCToolsLib.DataTemplates;
 
-public class CharacterData : BaseRamData
+public class CharacterRamData : BaseRamData
 {
     private const int MIN_STAT_VALUE = 10; // TODO: expose these in a config file.
     private const int MAX_STAT_VALUE = 90; // Keep in mind these stat values are PRE-ITEM BUFFS!
@@ -16,7 +16,7 @@ public class CharacterData : BaseRamData
     
     public override uint TargetAddress => StartAddress + (uint)(BlockSize * _dataIndex);
 
-    public CharacterData(int characterIndex) : base(BlockSize, characterIndex) { }
+    public CharacterRamData(int characterIndex) : base(BlockSize, characterIndex) { }
     
     public byte[] RenameCharacter(byte[] characterName)
     {

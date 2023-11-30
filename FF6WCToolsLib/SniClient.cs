@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Net;
 using System.Threading;
-using FF6WCToolsLib.DataTemplates;
 using Google.Protobuf;
 using Grpc.Net.Client;
 

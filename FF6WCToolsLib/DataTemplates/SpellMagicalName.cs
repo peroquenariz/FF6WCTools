@@ -2,7 +2,7 @@
 
 namespace FF6WCToolsLib.DataTemplates;
 
-public class SpellMagicalName : BaseName
+public class SpellMagicalName : BaseNameRomData
 {
     // No need to add an offset to this one, it's just for naming consistency and OCD :)
     public static uint StartAddress => SPELLS_ALL_NAMES_START + SPELLS_MAGICAL_NAMES_OFFSET;

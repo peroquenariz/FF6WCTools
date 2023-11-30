@@ -2,7 +2,7 @@
 
 namespace FF6WCToolsLib.DataTemplates;
 
-public class SpellAttackName : BaseName
+public class SpellAttackName : BaseNameRomData
 {
     public static uint StartAddress => SPELLS_ALL_NAMES_START + SPELLS_ATTACK_NAMES_OFFSET;
     public static byte BlockSize => SPELLS_ATTACK_NAMES_BLOCK_SIZE;

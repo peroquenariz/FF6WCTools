@@ -27,11 +27,11 @@ public class CrowdControl
     private readonly byte[] _defaultSpellEsperAttackNamesData;
     private readonly byte[] _defaultSpellDanceNamesData;
 
-    private readonly List<SpellData> _spellDataList;
-    private readonly List<ItemData> _itemDataList;
-    private readonly List<EsperData> _esperDataList;
-    private readonly List<CharacterData> _characterDataList;
-    private readonly List<CharacterSpellData> _characterSpellDataList;
+    private readonly List<SpellRomData> _spellDataList;
+    private readonly List<ItemRomData> _itemDataList;
+    private readonly List<EsperRomData> _esperDataList;
+    private readonly List<CharacterRamData> _characterDataList;
+    private readonly List<CharacterSpellRamData> _characterSpellDataList;
 
     private readonly List<ItemName> _itemNamesList;
     private readonly List<SpellMagicalName> _spellMagicalNamesList;
@@ -79,9 +79,9 @@ public class CrowdControl
         _sniClient = sniClient;
 
         // Get all ROM default data.
-        _defaultItemData = _sniClient.ReadMemory(ItemData.StartAddress, ItemData.DataSize);
-        _defaultSpellData = _sniClient.ReadMemory(SpellData.StartAddress, SpellData.DataSize);
-        _defaultEsperData = _sniClient.ReadMemory(EsperData.StartAddress, EsperData.DataSize);
+        _defaultItemData = _sniClient.ReadMemory(ItemRomData.StartAddress, ItemRomData.DataSize);
+        _defaultSpellData = _sniClient.ReadMemory(SpellRomData.StartAddress, SpellRomData.DataSize);
+        _defaultEsperData = _sniClient.ReadMemory(EsperRomData.StartAddress, EsperRomData.DataSize);
 
         _defaultItemNamesData = _sniClient.ReadMemory(ItemName.StartAddress, ItemName.DataSize);
         _defaultSpellMagicalNamesData = _sniClient.ReadMemory(SpellMagicalName.StartAddress, SpellMagicalName.DataSize);
@@ -91,11 +91,11 @@ public class CrowdControl
         _defaultSpellDanceNamesData = _sniClient.ReadMemory(SpellDanceName.StartAddress, SpellDanceName.DataSize);
 
         // Initialize data. Stuff in game RAM initializes empty and gets updated when needed.
-        _itemDataList = InitializeData<ItemData>(_defaultItemData, ItemData.BlockCount);
-        _spellDataList = InitializeData<SpellData>(_defaultSpellData, SpellData.BlockCount);
-        _esperDataList = InitializeData<EsperData>(_defaultEsperData, EsperData.BlockCount);
-        _characterDataList = InitializeRamData<CharacterData>(CharacterData.BlockCount);
-        _characterSpellDataList = InitializeRamData<CharacterSpellData>(CharacterSpellData.BlockCount);
+        _itemDataList = InitializeData<ItemRomData>(_defaultItemData, ItemRomData.BlockCount);
+        _spellDataList = InitializeData<SpellRomData>(_defaultSpellData, SpellRomData.BlockCount);
+        _esperDataList = InitializeData<EsperRomData>(_defaultEsperData, EsperRomData.BlockCount);
+        _characterDataList = InitializeRamData<CharacterRamData>(CharacterRamData.BlockCount);
+        _characterSpellDataList = InitializeRamData<CharacterSpellRamData>(CharacterSpellRamData.BlockCount);
 
         _itemNamesList = InitializeData<ItemName>(_defaultItemNamesData, ItemName.BlockCount);
         _spellMagicalNamesList = InitializeData<SpellMagicalName>(_defaultSpellMagicalNamesData, SpellMagicalName.BlockCount);
@@ -277,14 +277,14 @@ public class CrowdControl
             bool isSpellTeachEffect = args.CharacterEffect == CharacterEffect.teach;
             byte spellLearnedValue = (byte)(isSpellTeachEffect ? 0xFF : 0x00);
 
-            uint targetSpellAddress = CharacterSpellData.GetSpellAddress(args.Spell, args.Character);
+            uint targetSpellAddress = CharacterSpellRamData.GetSpellAddress(args.Spell, args.Character);
 
             _sniClient.WriteMemory(targetSpellAddress, new byte[] { spellLearnedValue });
 
             return;
         }
         
-        CharacterData targetCharacter = _characterDataList[(int)args.Character];
+        CharacterRamData targetCharacter = _characterDataList[(int)args.Character];
         
         // Equipment effect.
         if (Enum.IsDefined(typeof(EquipmentSlot), args.CharacterEffect.ToString())) // TODO: get rid of string checking?
@@ -293,7 +293,7 @@ public class CrowdControl
             // We don't need to read the character or access any instance data.
             // In the future, it might be nice to implement a method that puts the currently held item in the inventory,
             // and equips the given one.
-            uint equipmentAddress = CharacterData.GetEquipmentAddress(args.Character, args.EquipmentSlot);
+            uint equipmentAddress = CharacterRamData.GetEquipmentAddress(args.Character, args.EquipmentSlot);
             byte itemValue = (byte)args.Item;
 
             _sniClient.WriteMemory(equipmentAddress, new byte[] { itemValue });
@@ -319,7 +319,7 @@ public class CrowdControl
 
     private void ModifySpell(CrowdControlArgs args)
     {
-        SpellData targetSpell = _spellDataList[(int)args.Spell];
+        SpellRomData targetSpell = _spellDataList[(int)args.Spell];
         
         switch (args.SpellEffect)
         {
@@ -359,7 +359,7 @@ public class CrowdControl
 
     private void ModifyItem(CrowdControlArgs args)
     {
-        ItemData targetItem = _itemDataList[(int)args.Item];
+        ItemRomData targetItem = _itemDataList[(int)args.Item];
 
         switch (args.ItemEffect)
         {
@@ -439,7 +439,7 @@ public class CrowdControl
         }
 
         // Write byte array to memory.
-        uint characterNameIndex = CharacterData.StartAddress + (uint)CharacterDataStructure.Name + (CharacterData.BlockSize * (uint)args.Character);
+        uint characterNameIndex = CharacterRamData.StartAddress + (uint)CharacterDataStructure.Name + (CharacterRamData.BlockSize * (uint)args.Character);
         _sniClient.WriteMemory(characterNameIndex, nameData);
     }
 

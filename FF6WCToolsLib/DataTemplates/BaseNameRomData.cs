@@ -1,8 +1,8 @@
 ﻿namespace FF6WCToolsLib.DataTemplates;
 
-public abstract class BaseName : BaseRomData
+public abstract class BaseNameRomData : BaseRomData
 {
-    protected BaseName(byte[] data, int dataIndex) : base(data, dataIndex) { }
+    protected BaseNameRomData(byte[] data, int dataIndex) : base(data, dataIndex) { }
 
     /// <summary>
     /// Mirrors the name.

@@ -1,4 +1,4 @@
-﻿namespace FF6WCToolsLib.DataTemplates;
+﻿namespace FF6WCToolsLib;
 
 public interface IWritableMemoryBlock
 {

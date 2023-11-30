@@ -3,7 +3,7 @@ using static FF6WCToolsLib.DataTemplates.DataEnums;
 
 namespace FF6WCToolsLib.DataTemplates;
 
-public class EsperData : BaseRomData
+public class EsperRomData : BaseRomData
 {
     public static uint StartAddress => ESPER_DATA_START;
     public static byte BlockSize => ESPER_DATA_BLOCK_SIZE;
@@ -12,7 +12,7 @@ public class EsperData : BaseRomData
 
     public override uint TargetAddress => StartAddress + (uint)(BlockSize * _dataIndex);
     
-    public EsperData(byte[] esperData, int esperIndex) : base(esperData, esperIndex) { }
+    public EsperRomData(byte[] esperData, int esperIndex) : base(esperData, esperIndex) { }
 
     public override string ToString()
     {

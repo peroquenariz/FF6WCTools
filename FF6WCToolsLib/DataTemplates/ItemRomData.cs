@@ -4,7 +4,7 @@ using System;
 
 namespace FF6WCToolsLib.DataTemplates;
 
-public class ItemData : BaseRomData
+public class ItemRomData : BaseRomData
 {
     private readonly ItemType _itemType;
 
@@ -15,7 +15,7 @@ public class ItemData : BaseRomData
 
     public override uint TargetAddress => StartAddress + (uint)(BlockSize * _dataIndex);
 
-    public ItemData(byte[] itemData, int itemIndex) : base(itemData, itemIndex)
+    public ItemRomData(byte[] itemData, int itemIndex) : base(itemData, itemIndex)
     {
         // Extract the item type.
         _itemType = (ItemType)(itemData[0] & 0x07);
@@ -108,7 +108,7 @@ public class ItemData : BaseRomData
         return itemDescription;
     }
 
-    public void SpellProc(SpellData spell)
+    public void SpellProc(SpellRomData spell)
     {
         // Enable spell proccing. TODO: research if proc targeting can be modified per spell.
         _data[(int)ItemDataStructure.WeaponSpellCasting] |= (byte)WeaponSpellCasting.ALLOW_RANDOM_CASTING;
@@ -121,7 +121,7 @@ public class ItemData : BaseRomData
         _data[(int)ItemDataStructure.WeaponSpellCasting] |= (byte)spell.Index;
     }
 
-    public void Breakable(SpellData spell)
+    public void Breakable(SpellRomData spell)
     {
         // Enable breakability.
         _data[(int)ItemDataStructure.WeaponSpellCasting] |= (byte)WeaponSpellCasting.REMOVE_FROM_INVENTORY;
@@ -143,7 +143,7 @@ public class ItemData : BaseRomData
         _data[(int)ItemDataStructure.ItemType] &= (byte)~ItemTypeFlags.CAN_BE_THROWN;
     }
 
-    public void TeachSpell(SpellData spell, byte learnRate)
+    public void TeachSpell(SpellRomData spell, byte learnRate)
     {
         // Set the spell to be taught.
         _data[(int)ItemDataStructure.SpellToLearn] = (byte)spell.Index;
@@ -152,7 +152,7 @@ public class ItemData : BaseRomData
         _data[(int)ItemDataStructure.SpellLearnRate] = learnRate;
     }
 
-    public void AddRelicEffect(ItemData relicEffectItem)
+    public void AddRelicEffect(ItemRomData relicEffectItem)
     {
         // Get the original relic data. Use default data in case the current data is modified!
         byte[] dataToCopy = relicEffectItem.DefaultData;

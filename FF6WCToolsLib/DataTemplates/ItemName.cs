@@ -2,7 +2,7 @@
 
 namespace FF6WCToolsLib.DataTemplates;
 
-public class ItemName : BaseName
+public class ItemName : BaseNameRomData
 {
     public static uint StartAddress => ITEM_NAMES_START;
     public static byte BlockSize => ITEM_NAMES_BLOCK_SIZE;

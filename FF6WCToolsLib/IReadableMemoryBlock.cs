@@ -4,5 +4,5 @@ public interface IReadableMemoryBlock
 {
     public uint TargetAddress { get; }
 
-    public byte GetBlockSize();
+    public uint GetDataSize();
 }

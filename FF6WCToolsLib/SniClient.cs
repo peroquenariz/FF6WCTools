@@ -150,7 +150,7 @@ public class SniClient
     /// <returns>A byte array containing the game memory data requested.</returns>
     public byte[] ReadMemory(IReadableMemoryBlock readableMemoryBlock)
     {
-        return ReadMemory(readableMemoryBlock.TargetAddress, readableMemoryBlock.GetBlockSize());
+        return ReadMemory(readableMemoryBlock.TargetAddress, readableMemoryBlock.GetDataSize());
     }
 
     /// <summary>

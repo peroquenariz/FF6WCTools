@@ -11,8 +11,8 @@ public abstract class BaseRamData : BaseData, IReadableMemoryBlock
         _data = newData;
     }
 
-    public virtual byte GetBlockSize()
+    public virtual uint GetDataSize()
     {
-        return (byte)_data.Length;
+        return (uint)_data.Length;
     }
 }

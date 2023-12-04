@@ -16,6 +16,8 @@ public class CrowdControl
     private readonly SniClient _sniClient;
     private readonly string? _libVersion;
 
+    private readonly List<CrowdControlMessage> _crowdControlMessageQueue;
+
     private readonly byte[] _defaultSpellData;
     private readonly byte[] _defaultItemData;
     private readonly byte[] _defaultEsperData;
@@ -80,6 +82,8 @@ public class CrowdControl
         _libVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
         _sniClient = sniClient;
 
+        _crowdControlMessageQueue = new List<CrowdControlMessage>();
+
         // Get all ROM default data.
         _defaultItemData = _sniClient.ReadMemory(ItemRomData.StartAddress, ItemRomData.DataSize);
         _defaultSpellData = _sniClient.ReadMemory(SpellRomData.StartAddress, SpellRomData.DataSize);
@@ -123,12 +127,22 @@ public class CrowdControl
 
         DataHandler.InitializeInverseCharDict();
 
-        _commandHandler = new CommandHandler(_commands, chatbot.CrowdControlMessageQueue);
-
+        // Subscribe to chat messages event.
+        chatbot.OnCrowdControlMessageReceived += Chatbot_OnCrowdControlMessageReceived;
+        
+        // Instantiate the command handler and pass the list of crowd control commands.
+        _commandHandler = new CommandHandler(_commands);
+        
+        // Send command notifications to chat.
         _commandHandler.OnSuccessfulEffectLoaded += chatbot.CrowdControl_OnSuccessfulEffectLoaded;
         _commandHandler.OnFailedEffect += chatbot.CrowdControl_OnFailedEffect;
 
         InitializeCommunityNames();
+    }
+
+    private void Chatbot_OnCrowdControlMessageReceived(object? sender, MessageEventArgs e)
+    {
+        _crowdControlMessageQueue.Add(new CrowdControlMessage(e.User, e.Message));
     }
 
     private void InitializeCommunityNames()
@@ -160,7 +174,15 @@ public class CrowdControl
 
             while (true)
             {
-                bool wasEffectLoaded = _commandHandler.TryLoadEffect(); // TODO: handle list here
+                // Check that the queue isn't empty.
+                if (_crowdControlMessageQueue.Count != 0)
+                {
+                    // Attempt to parse the oldest message.
+                    bool wasEffectLoaded = _commandHandler.TryLoadEffect(_crowdControlMessageQueue[0]);
+
+                    // Remove oldest message from the list. TODO: don't remove if they're time or currency throttled.
+                    _crowdControlMessageQueue.RemoveAt(0);
+                }
                 await Task.Delay(1000);
             }
         }

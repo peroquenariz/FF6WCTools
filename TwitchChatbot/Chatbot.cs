@@ -10,6 +10,7 @@ namespace TwitchChatbot;
 public class Chatbot
 {
     public event EventHandler<IRCConnectionSuccesfulEventArgs>? OnIRCConnectionSuccessful;
+    public event EventHandler<MessageEventArgs>? OnCrowdControlMessageReceived;
     
     private const string TWITCH_IRC_ADDRESS = "irc.chat.twitch.tv";
     private const int TWITCH_IRC_PORT = 6667;
@@ -29,10 +30,6 @@ public class Chatbot
     private bool _isConnectedToChannel;
     private bool _isLoginValid;
 
-    private readonly List<Message> _crowdControlMessageQueue;
-
-    public List<Message> CrowdControlMessageQueue => _crowdControlMessageQueue;
-
     public Chatbot(NameValueCollection config)
     {
         _nick = config.Get("nick")!;
@@ -44,8 +41,6 @@ public class Chatbot
         _reader = new StreamReader(_networkStream);
         _writer = new StreamWriter(_networkStream);
         _writer.AutoFlush = true;
-
-        _crowdControlMessageQueue = new List<Message>();
     }
 
     public async Task StartAsync()
@@ -93,7 +88,7 @@ public class Chatbot
                         {
                             if (chatMessage.Type == Message.MessageType.CROWD_CONTROL_MESSAGE)
                             {
-                                _crowdControlMessageQueue.Add(chatMessage); // TODO: fire an event with the message and store it in CrowdControl.cs
+                                OnCrowdControlMessageReceived?.Invoke(this, new MessageEventArgs(chatMessage.DisplayName, chatMessage.Content));
                             }
                             else if (!_isConnectedToChannel && chatMessage.Type == Message.MessageType.CONNECTED_TO_CHANNEL)
                             {

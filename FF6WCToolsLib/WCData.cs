@@ -1371,7 +1371,6 @@ public static class WCData
 
     /// <summary>
     /// Index of each spell.
-    /// TODO: add the rest of the spells!
     /// </summary>
     public static readonly Dictionary<byte, string> SPELL_DICT = new Dictionary<byte, string>()
     {

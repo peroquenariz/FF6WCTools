@@ -18,7 +18,7 @@ public class CommandHandler
     }
 
     /// <summary>
-    /// Removes the first message in the queue and attempts to load it.
+    /// Attempts to load a crowd control effect.
     /// </summary>
     /// <returns>True if an effect was successfully loaded, otherwise false.</returns>
     internal bool TryLoadEffect(CrowdControlMessage message)

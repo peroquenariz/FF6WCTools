@@ -75,4 +75,78 @@ public class InventoryRamData : BaseRamData
 
         return inventory;
     }
+
+    /// <summary>
+    /// Adds an item to the inventory.
+    /// </summary>
+    /// <param name="item">The item to add</param>
+    /// <param name="addQuantity">The quantity of items to add.</param>
+    /// <param name="wasEmpty">True if the slot was empty before adding the item, otherwise false.</param>
+    /// <returns>The inventory slot on which the item was added, or null if there was no room in the inventory.</returns>
+    public InventorySlot? AddItem(Item item, byte addQuantity, out bool wasEmpty)
+    {
+        InventorySlot? emptySlot = null;
+        InventorySlot? targetSlot = null;
+        wasEmpty = false;
+
+        foreach (var slot in _inventorySlotList)
+        {
+            // Save the first empty slot, in case the item doesn't exist in the inventory.
+            if (emptySlot == null && slot.IsEmpty)
+            {
+                emptySlot = slot;
+            }
+
+            // If the item exists in the inventory, get the slot and break the loop.
+            if (slot.Item == item)
+            {
+                targetSlot = slot;
+                break;
+            }
+        }
+
+        // If item exists, increase the quantity and return the slot.
+        if (targetSlot != null)
+        {
+            targetSlot.Quantity += addQuantity;
+            return targetSlot;
+        }
+        // If item doesn't exist and there is inventory space available,
+        // add the item to the first empty slot available and return it.
+        else if (emptySlot != null)
+        {
+            emptySlot.Item = item;
+            emptySlot.Quantity += addQuantity;
+            wasEmpty = true;
+            return emptySlot;
+        }
+        // In the extremely rare circumstance the inventory is full and the item wasn't found, return null.
+        // This shouldn't happen unless there are multiple slots with the same item.
+        else return null;
+    }
+
+    /// <summary>
+    /// Removes an item from the inventory.
+    /// </summary>
+    /// <param name="item">The item to add</param>
+    /// <param name="removeQuantity">The quantity of items to remove.</param>
+    /// <param name="isEmpty">True if the slot is emptied after item removal, otherwise false.</param>
+    /// /// <returns>The inventory slot on which the item was removed, or null if the item wasn't found.</returns>
+    public InventorySlot? RemoveItem(Item item, byte removeQuantity, out bool isEmpty)
+    {
+        isEmpty = false;
+
+        foreach (var slot in _inventorySlotList)
+        {
+            // If the item exists in the inventory, subtract from the quantity.
+            if (slot.Item == item)
+            {
+                slot.Quantity -= removeQuantity;
+                isEmpty = slot.IsEmpty;
+                return slot;
+            }
+        }
+
+        return null;
+    }
 }

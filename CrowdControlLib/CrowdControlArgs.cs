@@ -46,6 +46,7 @@ public class CrowdControlArgs
     private StatusEffect _statusEffect;
     private CharacterEffect _characterEffect;
     private EquipmentSlot _equipmentSlot;
+    private InventoryEffect _inventoryEffect;
 
     public bool IsValid => _isValid;
     public string ErrorMessage => _errorMessage;
@@ -74,6 +75,7 @@ public class CrowdControlArgs
     public byte StatusEffectByteOffset { get; private set; }
     public CharacterEffect CharacterEffect => _characterEffect;
     public EquipmentSlot EquipmentSlot => _equipmentSlot;
+    public InventoryEffect InventoryEffect => _inventoryEffect;
 
     public CrowdControlArgs(string message)
     {
@@ -101,7 +103,7 @@ public class CrowdControlArgs
                 SetCharacterArgs(splitMessage);
                 break;
             case Effect.inventory:
-                _errorMessage = $"'{_effectType}' not implemented yet!";
+                SetInventoryArgs(splitMessage);
                 break;
             case Effect.itemname:
                 SetItemNameArgs(splitMessage);
@@ -122,6 +124,41 @@ public class CrowdControlArgs
                 _isValid = true;
                 break;
         }
+    }
+
+    private void SetInventoryArgs(string[] splitMessage)
+    {
+        // Check if the message length is valid.
+        if (splitMessage.Length != 3)
+        {
+            _errorMessage = "Invalid inventory command!";
+            return;
+        }
+
+        // Check if the inventory effect is valid.
+        if (!Enum.TryParse(splitMessage[1], true, out _inventoryEffect))
+        {
+            _errorMessage = $"Inventory effect {splitMessage[1]} invalid!";
+            return;
+        }
+
+        // Parse the item to add or remove from the inventory.
+        // Don't allow Empty item to be used.
+        if (!Enum.TryParse(splitMessage[2], true, out _item) && _item != Item.Empty)
+        {
+            _errorMessage = $"Item {splitMessage[2]} invalid!";
+            return;
+        }
+
+        // Don't allow Moogle charms to be modified.
+        // TODO: expose this setting in a config file.
+        if (_item == Item.MoogleCharm)
+        {
+            _errorMessage = "Moogle charms can't be modified!";
+            return;
+        }
+
+        _isValid = true;
     }
 
     private void SetCharacterArgs(string[] splitMessage)

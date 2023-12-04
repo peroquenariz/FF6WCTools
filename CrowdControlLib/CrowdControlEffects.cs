@@ -47,6 +47,7 @@ public static class CrowdControlEffects
         gp,
         window,
         mirror,
+        //unequipcharms,
     }
 
     public enum WindowEffect
@@ -131,5 +132,11 @@ public static class CrowdControlEffects
         magic,
         teach,
         forget,
+    }
+
+    public enum InventoryEffect
+    {
+        add,
+        remove,
     }
 }

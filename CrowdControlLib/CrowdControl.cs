@@ -241,7 +241,38 @@ public class CrowdControl
 
     private void ModifyInventory(CrowdControlArgs args)
     {
-        throw new NotImplementedException();
+        // Read inventory.
+        _inventory.UpdateData(_sniClient.ReadMemory(_inventory));
+
+        InventorySlot? targetInventorySlot = null;
+
+        bool emptySlotWasUsed = false;
+        
+        switch (args.InventoryEffect)
+        {
+            case InventoryEffect.add:
+                // For now, adding items is limited to 1 per effect. This might change in the future.
+                targetInventorySlot = _inventory.AddItem(args.Item, 1, out emptySlotWasUsed);
+                break;
+            case InventoryEffect.remove:
+                targetInventorySlot = _inventory.RemoveItem(args.Item, 1, out emptySlotWasUsed);
+                break;
+            default:
+                throw new NotImplementedException();
+        }
+
+        // Write slot to memory.
+        if (targetInventorySlot != null)
+        {
+            // Write new item quantity.
+            _sniClient.WriteMemory(targetInventorySlot.GetItemQuantitySlotData());
+
+            // If the item slot was empty, also write the item.
+            if (emptySlotWasUsed)
+            {
+                _sniClient.WriteMemory(targetInventorySlot.GetItemIndexSlotData());
+            }
+        }
     }
 
     private void ModifyGP(CrowdControlArgs args)

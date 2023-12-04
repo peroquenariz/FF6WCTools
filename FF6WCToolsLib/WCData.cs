@@ -390,6 +390,7 @@ public static class WCData
     
     /// <summary>
     /// Size of the inventory (and inventory count).
+    /// There's 1 "separator" Empty item after each of the blocks.
     /// </summary>
     public const byte INVENTORY_SIZE = 255;
     

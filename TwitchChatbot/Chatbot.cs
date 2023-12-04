@@ -93,7 +93,7 @@ public class Chatbot
                         {
                             if (chatMessage.Type == Message.MessageType.CROWD_CONTROL_MESSAGE)
                             {
-                                _crowdControlMessageQueue.Add(chatMessage);
+                                _crowdControlMessageQueue.Add(chatMessage); // TODO: fire an event with the message and store it in CrowdControl.cs
                             }
                             else if (!_isConnectedToChannel && chatMessage.Type == Message.MessageType.CONNECTED_TO_CHANNEL)
                             {

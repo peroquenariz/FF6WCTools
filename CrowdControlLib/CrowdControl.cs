@@ -40,6 +40,8 @@ public class CrowdControl
     private readonly List<SpellEsperAttackName> _spellEsperAttackNamesList;
     private readonly List<SpellDanceName> _spellDanceNamesList;
 
+    private readonly InventoryRamData _inventory;
+
     private readonly List<string> _communityNames = new()
     {
         "PLEX",
@@ -96,6 +98,7 @@ public class CrowdControl
         _esperDataList = InitializeData<EsperRomData>(_defaultEsperData, EsperRomData.BlockCount);
         _characterDataList = InitializeRamData<CharacterRamData>(CharacterRamData.BlockCount);
         _characterSpellDataList = InitializeRamData<CharacterSpellRamData>(CharacterSpellRamData.BlockCount);
+        _inventory = new InventoryRamData();
 
         _itemNamesList = InitializeData<ItemName>(_defaultItemNamesData, ItemName.BlockCount);
         _spellMagicalNamesList = InitializeData<SpellMagicalName>(_defaultSpellMagicalNamesData, SpellMagicalName.BlockCount);
@@ -157,7 +160,7 @@ public class CrowdControl
 
             while (true)
             {
-                bool wasEffectLoaded = _commandHandler.TryLoadEffect();
+                bool wasEffectLoaded = _commandHandler.TryLoadEffect(); // TODO: handle list here
                 await Task.Delay(1000);
             }
         }

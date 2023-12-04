@@ -31,7 +31,7 @@ public class ItemRomData : BaseRomData
             $"Equipable Actors (high): {(EquipableActorsHigh)_data[(int)ItemDataStructure.EquipableActorsHigh]}\n" +
             $"Spell learn rate: {_data[(int)ItemDataStructure.SpellLearnRate]}\n" +
             $"Spell to learn: {_data[(int)ItemDataStructure.SpellToLearn]}\n" +
-            $"Field effect: {_data[(int)ItemDataStructure.SpellLearnRate]}\n" + // TODO: What even is this byte????
+            $"Field effect: {_data[(int)ItemDataStructure.FieldEffect]}\n" + // TODO: What even is this byte????
             $"Status protection 1: {(StatusCondition1)_data[(int)ItemDataStructure.StatusProtection1]}\n" +
             $"Status protection 2: {(StatusCondition2)_data[(int)ItemDataStructure.StatusProtection2]}\n" +
             $"Equipment status: {(StatusCondition3)_data[(int)ItemDataStructure.EquipmentStatus]}\n" +

@@ -1,9 +1,11 @@
 ﻿using static FF6WCToolsLib.WCData;
 using static FF6WCToolsLib.DataTemplates.DataEnums;
-using System;
 
 namespace FF6WCToolsLib.DataTemplates;
 
+/// <summary>
+/// Represents a spell's ROM block.
+/// </summary>
 public class SpellRomData : BaseRomData
 {
     public static uint StartAddress => SPELL_DATA_START;
@@ -36,6 +38,9 @@ public class SpellRomData : BaseRomData
         return spellDescription;
     }
 
+    /// <summary>
+    /// Modifies a spell to make it usable in the menu.
+    /// </summary>
     public void ToggleUsableOnMenu()
     {
         byte usableInMenu = _data[(int)SpellDataStructure.SpellFlags2];
@@ -43,6 +48,10 @@ public class SpellRomData : BaseRomData
         _data[(int)SpellDataStructure.SpellFlags2] = usableInMenu;
     }
 
+    /// <summary>
+    /// Modifies a spell to change its targeting.
+    /// </summary>
+    /// <param name="targetingPreset"></param>
     public void ModifyTargeting(TargetingPreset targetingPreset)
     {
         Targeting currentTargeting = (Targeting)_data[(int)SpellDataStructure.Targeting];
@@ -63,11 +72,19 @@ public class SpellRomData : BaseRomData
         }
     }
 
+    /// <summary>
+    /// Modifies a spell to change its spell power.
+    /// </summary>
+    /// <param name="spellPower">The new spell power value.</param>
     public void SetSpellPower(byte spellPower)
     {
         _data[(int)SpellDataStructure.SpellPower] = spellPower;
     }
 
+    /// <summary>
+    /// Modifies a spell to toggle their elements.
+    /// </summary>
+    /// <param name="element">The element to toggle.</param>
     public void ToggleElement(ElementalProperties element)
     {
         byte elementData = _data[(int)SpellDataStructure.ElementalProperties];
@@ -75,6 +92,9 @@ public class SpellRomData : BaseRomData
         _data[(int)SpellDataStructure.ElementalProperties] = elementData;
     }
 
+    /// <summary>
+    /// Modifies a spell to enable or disable MP damage.
+    /// </summary>
     public void ToggleMPDamage()
     {
         byte mpDamageData = _data[(int)SpellDataStructure.SpellFlags2];
@@ -82,6 +102,9 @@ public class SpellRomData : BaseRomData
         _data[(int)SpellDataStructure.SpellFlags2] = mpDamageData;
     }
 
+    /// <summary>
+    /// Modifies a spell to toggle defense piercing damage.
+    /// </summary>
     public void ToggleIgnoreDefense()
     {
         byte ignoreDefenseData = _data[(int)SpellDataStructure.SpellFlags1];
@@ -89,11 +112,20 @@ public class SpellRomData : BaseRomData
         _data[(int)SpellDataStructure.SpellFlags1] = ignoreDefenseData;
     }
 
+    /// <summary>
+    /// Modifies a spell to change its MP cost.
+    /// </summary>
+    /// <param name="spellMPCost">The new MP cost to set.</param>
     public void SetMPCost(byte spellMPCost)
     {
         _data[(int)SpellDataStructure.MPCost] = spellMPCost;
     }
 
+    /// <summary>
+    /// Modifies a spell to apply a status on hit.
+    /// </summary>
+    /// <param name="statusFlag">The status bit flag.</param>
+    /// <param name="statusByteOffset">The status byte offset.</param>
     public void ToggleStatus(byte statusFlag, byte statusByteOffset)
     {
         int statusByteIndex = (int)SpellDataStructure.Status1 + statusByteOffset;
@@ -102,6 +134,9 @@ public class SpellRomData : BaseRomData
         _data[statusByteIndex] = statusData;
     }
 
+    /// <summary>
+    /// Modifies a spell to toggle its status lifting capabilities.
+    /// </summary>
     public void ToggleLiftStatus()
     {
         byte liftStatus = _data[(int)SpellDataStructure.SpellFlags3];

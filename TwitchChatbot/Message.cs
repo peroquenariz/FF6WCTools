@@ -1,5 +1,8 @@
 ﻿namespace TwitchChatbot
 {
+    /// <summary>
+    /// Represents a Twitch IRC chat message.
+    /// </summary>
     public class Message
     {
         // Twitch PRIVMSG template:

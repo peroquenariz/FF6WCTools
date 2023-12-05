@@ -1,9 +1,16 @@
-﻿using static FF6WCToolsLib.WCData;
+﻿using System;
+using static FF6WCToolsLib.WCData;
 using static FF6WCToolsLib.DataTemplates.DataEnums;
-using System;
 
 namespace FF6WCToolsLib.DataTemplates;
 
+/// <summary>
+/// Represents a character's RAM block.
+/// TODO: for memory optimization reasons, renaming characters is currently being done in CrowdControl.cs
+/// to avoid having to write the entire character to memory in each rename.
+/// It would probably be a good idea to return the data to write on each method,
+/// to avoid doing the same on the other crowd control commands.
+/// </summary>
 public class CharacterRamData : BaseRamData
 {
     private const int MIN_STAT_VALUE = 10; // TODO: expose these in a config file.
@@ -18,6 +25,11 @@ public class CharacterRamData : BaseRamData
 
     public CharacterRamData(int characterIndex) : base(BlockSize, characterIndex) { }
     
+    /// <summary>
+    /// Renames the character.
+    /// </summary>
+    /// <param name="characterName"></param>
+    /// <returns></returns>
     public byte[] RenameCharacter(byte[] characterName)
     {
         for (int i = 0; i < 6; i++)

@@ -4,7 +4,7 @@ using static FF6WCToolsLib.WCData;
 namespace FF6WCToolsLib.DataTemplates;
 
 /// <summary>
-/// Represents the FF6 inventory memory.
+/// Represents the inventory's RAM block.
 /// Two 256 bytes sections, one for item indexes, the other one for item quantities.
 /// </summary>
 public class InventoryRamData : BaseRamData
@@ -32,7 +32,11 @@ public class InventoryRamData : BaseRamData
         _inventorySlotList = InitializeInventorySlots();
     }
 
-    private List<InventorySlot> InitializeInventorySlots()
+    /// <summary>
+    /// Instantiates all inventory slot objects.
+    /// </summary>
+    /// <returns>A list containing all the inventory slots.</returns>
+    private static List<InventorySlot> InitializeInventorySlots()
     {
         List<InventorySlot> inventory = new();
 
@@ -50,6 +54,9 @@ public class InventoryRamData : BaseRamData
         UpdateInventorySlots();
     }
 
+    /// <summary>
+    /// Updates all inventory slots with new items.
+    /// </summary>
     private void UpdateInventorySlots()
     {
         for (int i = 0; i < INVENTORY_SIZE; i++)

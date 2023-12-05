@@ -2,6 +2,9 @@
 
 namespace FF6WCToolsLib.DataTemplates;
 
+/// <summary>
+/// Holds information about the different FF6WC data structures.
+/// </summary>
 public static class DataEnums
 {
     public enum SpellDataStructure
@@ -67,8 +70,7 @@ public static class DataEnums
         /// <summary>
         /// Like Merton, W Wind.
         /// </summary>
-        all = 
-            Targeting.SELECT_ALL_TARGETS_BOTH_GROUPS,
+        all = Targeting.SELECT_ALL_TARGETS_BOTH_GROUPS,
         /// <summary>
         /// Standard, defaults to random.
         /// </summary>

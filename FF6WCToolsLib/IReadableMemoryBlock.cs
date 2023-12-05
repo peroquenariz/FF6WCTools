@@ -1,5 +1,8 @@
 ﻿namespace FF6WCToolsLib;
 
+/// <summary>
+/// Provides methods to support directly reading from memory.
+/// </summary>
 public interface IReadableMemoryBlock
 {
     /// <summary>

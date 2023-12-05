@@ -2,6 +2,9 @@
 
 namespace FF6WCToolsLib.DataTemplates;
 
+/// <summary>
+/// Represents a spell attack name's ROM block.
+/// </summary>
 public class SpellAttackName : BaseNameRomData
 {
     public static uint StartAddress => SPELLS_ALL_NAMES_START + SPELLS_ATTACK_NAMES_OFFSET;

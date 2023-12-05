@@ -1,5 +1,9 @@
 ﻿namespace FF6WCToolsLib.DataTemplates;
 
+/// <summary>
+/// The base class for all FF6WC data.
+/// It consists of a byte array that holds the data, and an index.
+/// </summary>
 public abstract class BaseData : IWritableMemoryBlock
 {
     protected byte[] _data;
@@ -15,9 +19,8 @@ public abstract class BaseData : IWritableMemoryBlock
     }
 
     /// <summary>
-    /// Code spaghetti for debugging game data.
+    /// Provides a text representation of the stored data.
     /// </summary>
-    /// <returns></returns>
     public new abstract string ToString();
 
     public byte[] ToByteArray()

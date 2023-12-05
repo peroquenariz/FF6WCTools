@@ -1,5 +1,8 @@
 ﻿namespace FF6WCToolsLib.DataTemplates;
 
+/// <summary>
+/// The base class for all name's ROM blocks.
+/// </summary>
 public abstract class BaseNameRomData : BaseRomData
 {
     protected BaseNameRomData(byte[] data, int dataIndex) : base(data, dataIndex) { }

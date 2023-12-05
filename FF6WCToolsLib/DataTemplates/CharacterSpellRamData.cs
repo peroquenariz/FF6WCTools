@@ -2,6 +2,11 @@
 
 namespace FF6WCToolsLib.DataTemplates;
 
+/// <summary>
+/// Represents a character's spell data RAM block.
+/// Only the magic spells are stored here.
+/// Lores/blitzes/swdtechs are located after all the magical spells and they're global.
+/// </summary>
 public class CharacterSpellRamData : BaseRamData
 {
     public static uint StartAddress => CHARACTER_SKILL_DATA_START;
@@ -11,12 +16,12 @@ public class CharacterSpellRamData : BaseRamData
 
     public override uint TargetAddress => StartAddress + (uint)(BlockSize * _dataIndex);
 
-    public byte GetSpellLearnedData(int spellIndex)
+    public byte GetSpellLearnedData(uint spellIndex)
     {
         return _data[spellIndex];
     }
 
-    public uint GetSpellLearnedAddress(int spellIndex)
+    public uint GetSpellLearnedAddress(uint spellIndex)
     {
         return (uint)(StartAddress + (BlockSize * _dataIndex) + spellIndex);
     }
@@ -37,6 +42,12 @@ public class CharacterSpellRamData : BaseRamData
         return description;
     }
 
+    /// <summary>
+    /// Gets the memory address of a spell.
+    /// </summary>
+    /// <param name="spell">The spell offset.</param>
+    /// <param name="character">The character offset.</param>
+    /// <returns>The memory address of the spell.</returns>
     public static uint GetSpellAddress(Spell spell, Character character)
     {
         return (uint)(StartAddress + (byte)spell + ((byte)character * BlockSize));

@@ -1,5 +1,8 @@
 ﻿namespace TwitchChatbot;
 
+/// <summary>
+/// Provides methods to handle Twitch IRC messages.
+/// </summary>
 static internal class MessageParser
 {
     private const string LOGIN_SUCCESFUL_MESSAGE_FORMAT = "tmi.twitch.tv 001";

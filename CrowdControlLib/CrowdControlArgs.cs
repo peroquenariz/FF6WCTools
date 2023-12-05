@@ -1,8 +1,8 @@
-﻿using FF6WCToolsLib;
-using System;
+﻿using System;
 using static FF6WCToolsLib.DataTemplates.DataEnums;
 using static FF6WCToolsLib.WCData;
 using static CrowdControlLib.CrowdControlEffects;
+using FF6WCToolsLib;
 using FF6WCToolsLib.DataTemplates;
 
 namespace CrowdControlLib;
@@ -12,7 +12,10 @@ namespace CrowdControlLib;
 /// </summary>
 public class CrowdControlArgs
 {
-    private const string VALID_NAME_CHARACTERS = // Characters available in the rename screen, plus whitespace.
+    /// <summary>
+    /// Characters available in the rename screen, plus whitespace.
+    /// </summary>
+    private const string VALID_NAME_CHARACTERS = 
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!?/:\"\'-.0123456789 ";
     
     private bool _isValid;
@@ -21,7 +24,7 @@ public class CrowdControlArgs
     private const int GP_AMOUNT_MIN = -10000; // TODO: expose customizable parameters in a config file
     private const int GP_AMOUNT_MAX = 10000;
     private const byte MIN_SPELL_LEARN_RATE = 1;
-    private const byte MAX_SPELL_LEARN_RATE = 20;
+    private const byte MAX_SPELL_LEARN_RATE = 20; // More than 20 is possible, I just capped it to FF6's max vanilla learn rate.
     private const int CHARACTER_STAT_BOOST_MIN = -10;
     private const int CHARACTER_STAT_BOOST_MAX = 10;
     private const int ITEM_STAT_BOOST_MIN_VALUE = -7;
@@ -84,8 +87,10 @@ public class CrowdControlArgs
         _newItemName = string.Empty;
         _newSpellName = string.Empty;
         
+        // Split chat message.
         string[] splitMessage = message.Split(" ");
 
+        // Try to parse the main effect type.
         Enum.TryParse(splitMessage[0], true, out _effectType);
 
         switch (_effectType)
@@ -237,7 +242,7 @@ public class CrowdControlArgs
             Enum.TryParse(characterEffect, true, out _equipmentSlot);
             
             // Check if the item is valid for the given slot
-            // TODO: expose this in a config file to allow people to equip glitched items.
+            // TODO: expose this in a config file to allow equipping glitched items.
             _isValid = CheckIfEquipmentIsValid(_item, _equipmentSlot);
             return;
         }
@@ -263,6 +268,7 @@ public class CrowdControlArgs
 
         bool isValidEquipment = false;
 
+        // Check item ranges.
         if (slot is EquipmentSlot.relic1 or EquipmentSlot.relic2)
         {
             isValidEquipment = DataHandler.CheckItemInRange((byte)item, RANGE_RELICS);
@@ -287,6 +293,7 @@ public class CrowdControlArgs
             }
         }
 
+        // Set error message if the item doesn't correspond to the slot.
         if (!isValidEquipment)
         {
             _errorMessage = $"Character equipment item '{item}' invalid for {slot} slot!";
@@ -352,6 +359,7 @@ public class CrowdControlArgs
 
     private bool CheckStatusEffect(string[] splitMessage)
     {
+        // Check if the status effect is valid.
         if (!Enum.TryParse(splitMessage[3], true, out _statusEffect))
         {
             _errorMessage = $"Invalid or not supported status '{splitMessage[3]}'!";
@@ -359,27 +367,30 @@ public class CrowdControlArgs
         }
 
         // Get bit flag and byte offset for the corresponding status.
-        var statusData = StatusEffectByteData[_statusEffect];
+        (byte bitFlag, byte offset) = StatusEffectByteData[_statusEffect];
         
-        StatusEffectFlag = statusData.BitFlag;
-        StatusEffectByteOffset = statusData.Offset;
+        StatusEffectFlag = bitFlag;
+        StatusEffectByteOffset = offset;
         
         return true;
     }
 
     private bool CheckSpellMPCost(string[] splitMessage)
     {
+        // Check if spell cost has been specified.
         if (splitMessage.Length != 4)
         {
             _errorMessage = "Spell cost value not specified!";
             return false;
         }
 
+        // Check if spell cost is a valid number.
         if (!int.TryParse(splitMessage[3], out int spellMPCost))
         {
             _errorMessage = $"Spell cost value '{splitMessage[3]}' invalid!";
             return false;
         }
+        // Check if spell cost is within a valid range.
         else if (spellMPCost < byte.MinValue || spellMPCost > SPELL_COST_MAX_VALUE)
         {
             _errorMessage = $"Spell cost value '{spellMPCost}' invalid! Valid range: {byte.MinValue}-{SPELL_COST_MAX_VALUE}";
@@ -392,12 +403,14 @@ public class CrowdControlArgs
 
     private bool CheckSpellElement(string[] splitMessage)
     {
+        // Check if an element has been specified.
         if (splitMessage.Length != 4)
         {
             _errorMessage = "Element not specified!";
             return false;
         }
 
+        // Check if the element is valid.
         if (!Enum.TryParse(splitMessage[3], true, out _element))
         {
             _errorMessage = $"Element '{splitMessage[3]}' invalid!";
@@ -409,17 +422,20 @@ public class CrowdControlArgs
 
     private bool CheckSpellPowerValue(string[] splitMessage)
     {
+        // Check if the spell power has been specified.
         if (splitMessage.Length != 4)
         {
             _errorMessage = "Spell power value not specified!";
             return false;
         }
         
+        // Check if the spell power is a valid number.
         if (!int.TryParse(splitMessage[3], out int spellPower))
         {
             _errorMessage = $"Spell power value '{splitMessage[3]}' invalid!";
             return false;
         }
+        // Check if the spell power specified is within a valid range.
         else if (spellPower < byte.MinValue || spellPower > byte.MaxValue)
         {
             _errorMessage = $"Spell power value '{spellPower}' invalid! Valid range: {byte.MinValue}-{byte.MaxValue}";
@@ -432,11 +448,13 @@ public class CrowdControlArgs
 
     private bool CheckTargetingPreset(string[] splitMessage)
     {
+        // Check if a targeting preset has been specified.
         if (splitMessage.Length != 4)
         {
             _errorMessage = $"Spell targeting not specified!";
             return false;
         }
+        // Check if the specified targeting preset is valid.
         else if (!Enum.TryParse(splitMessage[3], true, out _targetingPreset))
         {
             _errorMessage = $"Spell targeting invalid!";
@@ -636,6 +654,7 @@ public class CrowdControlArgs
             return false;
         }
 
+        // Check if the item is a relic.
         bool isRelic = DataHandler.CheckItemInRange(_relicEffectItem, RANGE_RELICS);
 
         if (!isRelic)
@@ -660,6 +679,7 @@ public class CrowdControlArgs
 
         LearnRate = learnRate;
 
+        // Check if the spell learn rate is within a valid range.
         if (LearnRate >= MIN_SPELL_LEARN_RATE &&
             LearnRate <= MAX_SPELL_LEARN_RATE)
         {
@@ -714,14 +734,18 @@ public class CrowdControlArgs
 
     private void SetSpellNameArgs(string[] splitMessage)
     {
+        // Check if a spell has been specified.
         if (splitMessage.Length <= 1)
         {
             _errorMessage = "Spell not specified!";
             return;
         }
+
+        // Check if the specified spell is valid.
         bool isValidSpell = Enum.TryParse(splitMessage[1], true, out _spell);
 
-        if (!isValidSpell || (int)_spell > 53) // Only allow magical spells.
+        // Check if it's a magical spell. TODO: allow other spell types.
+        if (!isValidSpell || (int)_spell > 53)
         {
             _errorMessage = $"Spell '{splitMessage[1]}' invalid!";
             return;
@@ -748,12 +772,14 @@ public class CrowdControlArgs
 
     private void SetItemNameArgs(string[] splitMessage)
     {
+        // Check if an item has been specified.
         if (splitMessage.Length <= 1)
         {
             _errorMessage = "Item not specified!";
             return;
         }
         
+        // Check if the specified item is valid.
         bool isValidItem = Enum.TryParse(splitMessage[1], true, out _item);
 
         if (!isValidItem)
@@ -783,17 +809,18 @@ public class CrowdControlArgs
 
     private void SetWindowArgs(string[] splitMessage)
     {
+        // Check if a window effect has been specified.
         if (splitMessage.Length == 1)
         {
             _errorMessage = "Window effect not specified!";
             return;
         }
+        // Check if the specified window effect is valid.
         else if (splitMessage.Length > 2)
         {
             _errorMessage = "Invalid window command!";
             return;
         }
-
         bool isValidWindowEffect = Enum.TryParse(splitMessage[1], true, out _windowEffect);
         
         if (!isValidWindowEffect)
@@ -807,12 +834,14 @@ public class CrowdControlArgs
 
     private void SetCharacterNameArgs(string[] splitMessage)
     {
+        // Check if a character name effect has been specified.
         if (splitMessage.Length < 3)
         {
             _errorMessage = "Invalid character rename command!";
             return;
         }
         
+        // Check that the specified character is valid.
         bool isValidCharacter = Enum.TryParse(splitMessage[1], true, out _character);
         
         if (!isValidCharacter)
@@ -844,6 +873,7 @@ public class CrowdControlArgs
 
     private void SetGPArgs(string[] splitMessage)
     {
+        // Check if the GP command is valid.
         if (splitMessage.Length < 2 || splitMessage.Length > 3)
         {
             _errorMessage = "Invalid GP command!";
@@ -884,6 +914,7 @@ public class CrowdControlArgs
                 return;
             }
 
+            // Check if the GP amount is within a valid range.
             if (gpAmount >= GP_AMOUNT_MIN &&
                 gpAmount <= GP_AMOUNT_MAX)
             {
@@ -901,11 +932,21 @@ public class CrowdControlArgs
         }
     }
 
+    /// <summary>
+    /// Check if a name is valid.
+    /// </summary>
+    /// <param name="newName">The name to check.</param>
+    /// <param name="nameSize">The size to compare against.</param>
+    /// <returns>True if the name is valid, otherwise false.</returns>
     private static bool IsNameValid(string newName, byte nameSize)
     {
-        for (int i = 0; i < newName.Length; i++) // ignore the item icon
+        for (int i = 0; i < newName.Length; i++)
         {
+            // Only check characters that are going to be written to memory.
+            // The remaining ones will be trimmed.
             if (i > nameSize) break;
+            
+            // Check against valid character names.
             if (!VALID_NAME_CHARACTERS.Contains(newName[i]))
             {
                 return false;

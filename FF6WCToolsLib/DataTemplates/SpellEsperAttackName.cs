@@ -2,6 +2,9 @@
 
 namespace FF6WCToolsLib.DataTemplates;
 
+/// <summary>
+/// Represents an esper spell attack name's ROM block.
+/// </summary>
 public class SpellEsperAttackName : BaseNameRomData
 {
     public static uint StartAddress => SPELLS_ALL_NAMES_START + SPELLS_ESPER_ATTACK_NAMES_OFFSET;

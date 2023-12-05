@@ -3,7 +3,7 @@
 namespace FF6WCToolsLib.DataTemplates;
 
 /// <summary>
-/// Represents a writable byte of the inventory data.
+/// Represents a byte of the inventory data.
 /// </summary>
 public readonly struct InventorySlotData : IWritableMemoryBlock
 {

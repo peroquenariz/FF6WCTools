@@ -6,18 +6,24 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 using FF6WCToolsLib.DataTemplates;
-using TwitchChatbot;
+using TwitchChatbot; // TODO: decouple from chatbot!
 using static CrowdControlLib.CrowdControlEffects;
 
 namespace CrowdControlLib;
 
+/// <summary>
+/// Main logic for FF6WC Crowd Control.
+/// </summary>
 public class CrowdControl
 {
+    // SNI client.
     private readonly SniClient _sniClient;
     private readonly string? _libVersion;
 
+    // Crowd control message queue.
     private readonly List<CrowdControlMessage> _crowdControlMessageQueue;
 
+    // Default data arrays.
     private readonly byte[] _defaultSpellData;
     private readonly byte[] _defaultItemData;
     private readonly byte[] _defaultEsperData;
@@ -29,6 +35,7 @@ public class CrowdControl
     private readonly byte[] _defaultSpellEsperAttackNamesData;
     private readonly byte[] _defaultSpellDanceNamesData;
 
+    // Data lists.
     private readonly List<SpellRomData> _spellDataList;
     private readonly List<ItemRomData> _itemDataList;
     private readonly List<EsperRomData> _esperDataList;
@@ -44,6 +51,7 @@ public class CrowdControl
 
     private readonly InventoryRamData _inventory;
 
+    // Community names!
     private readonly List<string> _communityNames = new()
     {
         "PLEX",
@@ -70,8 +78,13 @@ public class CrowdControl
         "SABRE",
     };
 
+    // Crowd Control commands dictionary.
     private readonly Dictionary<Effect, Action<CrowdControlArgs>> _commands;
+    
+    // Crowd control command handler.
     private readonly CommandHandler _commandHandler;
+    
+    // Random number generator.
     private static readonly Random _rng = new Random();
 
     public string? LibVersion { get => _libVersion; }
@@ -125,6 +138,7 @@ public class CrowdControl
             { Effect.mirror, MirrorAllItemNames }
         };
 
+        // Inverse character dictionary for writing names into memory.
         DataHandler.InitializeInverseCharDict();
 
         // Subscribe to chat messages event.
@@ -137,6 +151,7 @@ public class CrowdControl
         _commandHandler.OnSuccessfulEffectLoaded += chatbot.CrowdControl_OnSuccessfulEffectLoaded;
         _commandHandler.OnFailedEffect += chatbot.CrowdControl_OnFailedEffect;
 
+        // Set community names at startup.
         InitializeCommunityNames();
     }
 
@@ -145,6 +160,9 @@ public class CrowdControl
         _crowdControlMessageQueue.Add(new CrowdControlMessage(e.User, e.Message));
     }
 
+    /// <summary>
+    /// Sets specific names to community names at startup.
+    /// </summary>
     private void InitializeCommunityNames()
     {
         // Rename Fenrir to SabrWolf - arooooo!
@@ -164,6 +182,10 @@ public class CrowdControl
         _sniClient.WriteMemory(palidorSpell);
     }
 
+    /// <summary>
+    /// Main Crowd Control loop.
+    /// </summary>
+    /// <returns></returns>
     public async Task ExecuteAsync()
     {
         await Console.Out.WriteLineAsync("Running...");
@@ -171,6 +193,7 @@ public class CrowdControl
         try
         {
             // TODO: add timer shenanigans.
+            // TODO: better error messages (remove the exception throwing for non-implemented effects).
 
             while (true)
             {
@@ -193,12 +216,12 @@ public class CrowdControl
     }
 
     /// <summary>
-    /// Generic data instantiator.
+    /// Populates a list with RAM data objects.
     /// </summary>
     /// <typeparam name="T">The type of data to instantiate.</typeparam>
     /// <param name="blockCount">Amount of items to instantiate.</param>
     /// <returns>A list with the data objects.</returns>
-    private List<T> InitializeRamData<T>(int blockCount) where T : BaseRamData
+    private static List<T> InitializeRamData<T>(int blockCount) where T : BaseRamData
     {
         List<T> dataList = new List<T>();
 
@@ -213,13 +236,13 @@ public class CrowdControl
     }
 
     /// <summary>
-    /// Generic data instantiator.
+    /// Populates a list with ROM data objects.
     /// </summary>
     /// <typeparam name="T">The type of data to instantiate.</typeparam>
     /// <param name="defaultData">Byte data section.</param>
     /// <param name="blockCount">Amount of items to instantiate.</param>
     /// <returns>A list with the data objects.</returns>
-    private List<T> InitializeData<T>(byte[] defaultData, int blockCount) where T : BaseRomData
+    private static List<T> InitializeData<T>(byte[] defaultData, int blockCount) where T : BaseRomData
     {
         List<T> dataList = new List<T>();
 
@@ -245,13 +268,12 @@ public class CrowdControl
         _inventory.UpdateData(_sniClient.ReadMemory(_inventory));
 
         InventorySlot? targetInventorySlot = null;
-
         bool emptySlotWasUsed = false;
         
+        // For now, adding and removing items is limited to 1 per effect. This might change in the future.
         switch (args.InventoryEffect)
         {
             case InventoryEffect.add:
-                // For now, adding items is limited to 1 per effect. This might change in the future.
                 targetInventorySlot = _inventory.AddItem(args.Item, 1, out emptySlotWasUsed);
                 break;
             case InventoryEffect.remove:
@@ -277,50 +299,56 @@ public class CrowdControl
 
     private void ModifyGP(CrowdControlArgs args)
     {
+        // GP limits.
         const int MIN_GP = 0;
         const int MAX_GP = 999999;
 
+        // Add or remove GP.
         if (args.GPEffect == GPEffect.modify)
         {
+            // Get the current GP amount.
             int currentGP = DataHandler.ConcatenateByteArray(_sniClient.ReadMemory(CURRENT_GP_START, CURRENT_GP_SIZE));
 
-            currentGP += args.GPAmount;
-            if (currentGP < MIN_GP)
-            {
-                currentGP = MIN_GP;
-            }
-            else if (currentGP > MAX_GP)
-            {
-                currentGP = MAX_GP;
-            }
-            _sniClient.WriteMemory(CURRENT_GP_START, DataHandler.DecatenateInteger(currentGP, 3));
+            // Add the current GP to the amount provided and clamp to limits.
+            int newGP = Math.Clamp(currentGP + args.GPAmount, MIN_GP, MAX_GP);
+
+            // Write the new GP amount to memory.
+            _sniClient.WriteMemory(CURRENT_GP_START, DataHandler.DecatenateInteger(newGP, 3));
         }
+        // Empty GP.
         else if (args.GPEffect == GPEffect.empty)
         {
+            // Write 0 GP to memory.
             _sniClient.WriteMemory(CURRENT_GP_START, DataHandler.DecatenateInteger(MIN_GP, 3));
         }
     }
 
     private void ModifySpellName(CrowdControlArgs args)
     {
+        // Get the target spell name.
         SpellMagicalName targetSpellName = _spellMagicalNamesList[(int)args.Spell];
         string newSpellName = args.NewSpellName;
         int nameBytesSize = SpellMagicalName.BlockSize - 1; // Subtract 1 for the spell icon
         
+        // Encode the new name.
         byte[] nameBytes = DataHandler.EncodeName(newSpellName, nameBytesSize);
 
+        // Write the new name to memory.
         targetSpellName.Rename(nameBytes, true);
         _sniClient.WriteMemory(targetSpellName);
     }
 
     private void ModifyItemName(CrowdControlArgs args)
     {
+        // Get the target item name.
         ItemName targetItemName = _itemNamesList[(int)args.Item];
         string newItemName = args.NewItemName;
         int nameBytesSize = ItemName.BlockSize - 1; // Subtract 1 for the item icon
         
+        // Encode the new name.
         byte[] nameBytes = DataHandler.EncodeName(newItemName, nameBytesSize);
 
+        // Write the new name to memory.
         targetItemName.Rename(nameBytes, true);
         _sniClient.WriteMemory(targetItemName);
     }
@@ -330,13 +358,19 @@ public class CrowdControl
         // Spell teach/forget effect.
         if (args.CharacterEffect is CharacterEffect.forget or CharacterEffect.teach)
         {
+            // Are we teaching or forgetting a spell?
             bool isSpellTeachEffect = args.CharacterEffect == CharacterEffect.teach;
+            
+            // If teaching, set value to 0xFF (spell learned), otherwise 0x00 (spell unlearned).
+            // Note: it's possible to set any value between 1 and 99 to mark a spell as partially learned.
+            // Not sure if worth the trouble, though.
             byte spellLearnedValue = (byte)(isSpellTeachEffect ? 0xFF : 0x00);
 
+            // Get the target spell address.
             uint targetSpellAddress = CharacterSpellRamData.GetSpellAddress(args.Spell, args.Character);
 
+            // Write the character spell data to memory.
             _sniClient.WriteMemory(targetSpellAddress, new byte[] { spellLearnedValue });
-
             return;
         }
         
@@ -350,8 +384,11 @@ public class CrowdControl
             // In the future, it might be nice to implement a method that puts the currently held item in the inventory,
             // and equips the given one.
             uint equipmentAddress = CharacterRamData.GetEquipmentAddress(args.Character, args.EquipmentSlot);
+            
+            // Get the item index.
             byte itemValue = (byte)args.Item;
 
+            // Write the character item to memory.
             _sniClient.WriteMemory(equipmentAddress, new byte[] { itemValue });
         }
         // Stat boost effect.
@@ -369,14 +406,15 @@ public class CrowdControl
         else
         {
             throw new NotImplementedException();
-            // TODO: event that logs error in console.
         }
     }
 
     private void ModifySpell(CrowdControlArgs args)
     {
+        // Get the target spell data.
         SpellRomData targetSpell = _spellDataList[(int)args.Spell];
         
+        // Apply the appropiate effect.
         switch (args.SpellEffect)
         {
             case SpellEffect.reset:
@@ -407,16 +445,19 @@ public class CrowdControl
                 targetSpell.ToggleLiftStatus();
                 break;
             default:
-                throw new NotImplementedException(); // TODO: event that logs error in console.
+                throw new NotImplementedException();
         }
 
+        // Write spell data to memory.
         _sniClient.WriteMemory(targetSpell);
     }
 
     private void ModifyItem(CrowdControlArgs args)
     {
+        // Get target item data.
         ItemRomData targetItem = _itemDataList[(int)args.Item];
 
+        // Apply the appropiate effect.
         switch (args.ItemEffect)
         {
             case ItemEffect.reset:
@@ -453,19 +494,27 @@ public class CrowdControl
                 targetItem.SetPrice(args.GPAmount);
                 break;
             default:
-                throw new NotImplementedException(); // Something is really wrong if we're hitting this.
+                throw new NotImplementedException();
         }
 
+        // Write item data to memory.
         _sniClient.WriteMemory(targetItem);
     }
 
+    /// <summary>
+    /// Inverts the characters in all item names.
+    /// </summary>
     private void MirrorAllItemNames(CrowdControlArgs args) // TODO: refactor to mirror any name data type?
     {
+        // Create a new list with the mirrored data.
         List<byte> mirroredDataList = new();
 
+        // Loop and mirror all item names.
         foreach (var item in _itemNamesList)
         {
             item.Mirror(true);
+            
+            // Add mirrored name to list.
             byte[] mirroredData = item.ToByteArray();
             for (int i = 0; i < mirroredData.Length; i++)
             {
@@ -473,9 +522,13 @@ public class CrowdControl
             }
         }
         
+        // Write mirrored names to memory.
         _sniClient.WriteMemory(ItemName.StartAddress, mirroredDataList.ToArray());
     }
 
+    /// <summary>
+    /// Renames a character.
+    /// </summary>
     private void ModifyCharacterName(CrowdControlArgs args) // TODO: move character name to its own class????
     {
         string newCharacterName = args.NewCharactername;
@@ -487,48 +540,58 @@ public class CrowdControl
             // Take a random name from the community list.
             string communityName = _communityNames[_rng.Next(0, _communityNames.Count)];
 
+            // Encode the name.
             nameData = DataHandler.EncodeName(communityName, CHARACTER_DATA_NAME_SIZE);
         }
         else // Not a community name
         {
+            // Encode the name provided in args.
             nameData = DataHandler.EncodeName(newCharacterName, CHARACTER_DATA_NAME_SIZE);
         }
 
-        // Write byte array to memory.
+        // Write new name to memory.
         uint characterNameIndex = CharacterRamData.StartAddress + (uint)CharacterDataStructure.Name + (CharacterRamData.BlockSize * (uint)args.Character);
         _sniClient.WriteMemory(characterNameIndex, nameData);
     }
 
     private void ModifyWindow(CrowdControlArgs args)
     {
+        // Gets the current wallpaper config.
+        // The wallpaper data shares a byte with other game configuration data so we need to keep it.
         byte[] wallpaper = _sniClient.ReadMemory(WALLPAPER, 1);
         wallpaper[0] &= 0xF0;
         
+        // Random window colors.
         if (args.WindowEffect == WindowEffect.random)
         {
             wallpaper[0] |= (byte)_rng.Next(0, 8); // Randomly select a wallpaper
 
             byte[] colors = new byte[114]; // Font + all window colors
+            
+            // Fill the byte array with random colors.
             _rng.NextBytes(colors);
 
+            // Write the new wallpaper type and colors to memory.
             _sniClient.WriteMemory(WALLPAPER, wallpaper);
             _sniClient.WriteMemory(FONT_COLOR, colors);
         }
+        // HAIL THE DEMON CHOCOBO!
         else if (args.WindowEffect == WindowEffect.demonchocobo)
         {
-            // Select chocobo window
+            // Set window to chocobo and write it to memory.
             byte chocoboWindowIndex = 7;
             wallpaper[0] |= chocoboWindowIndex;
             _sniClient.WriteMemory(WALLPAPER, wallpaper);
             
-            // Write demon chocobo colors to chocobo window
+            // Write demon chocobo colors to chocobo window palette. Font color is not modified.
             byte[] demonChocoboPalette = new byte[] { 0x1f, 0x7c, 0x00, 0x00, 0x1f, 0x7c, 0xe0, 0x03, 0xe0, 0x03, 0x74, 0x01, 0x84, 0x10 };
             uint chocoboWindowAddress = WINDOW_COLOR_START + (WINDOW_COLOR_BLOCK_SIZE * (uint)chocoboWindowIndex);
             _sniClient.WriteMemory(chocoboWindowAddress, demonChocoboPalette);
         }
+        // Boring vanilla blue window.
         else if (args.WindowEffect == WindowEffect.vanilla)
         {
-            // Select default window
+            // Set default window and write it to memory.
             byte chocoboWindowIndex = 0;
             wallpaper[0] |= chocoboWindowIndex;
             _sniClient.WriteMemory(WALLPAPER, wallpaper);

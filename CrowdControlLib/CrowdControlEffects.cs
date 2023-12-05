@@ -3,6 +3,9 @@ using static FF6WCToolsLib.DataTemplates.DataEnums;
 
 namespace CrowdControlLib;
 
+/// <summary>
+/// Holds data about the different Crowd Control effects.
+/// </summary>
 public static class CrowdControlEffects
 {
     /// <summary>

@@ -2,6 +2,9 @@
 
 namespace FF6WCToolsLib.DataTemplates;
 
+/// <summary>
+/// Represents a magical spell name's ROM block.
+/// </summary>
 public class SpellMagicalName : BaseNameRomData
 {
     // No need to add an offset to this one, it's just for naming consistency and OCD :)

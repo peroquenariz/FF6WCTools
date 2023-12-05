@@ -3,6 +3,9 @@ using static FF6WCToolsLib.DataTemplates.DataEnums;
 
 namespace FF6WCToolsLib.DataTemplates;
 
+/// <summary>
+/// Represents an esper's ROM block.
+/// </summary>
 public class EsperRomData : BaseRomData
 {
     public static uint StartAddress => ESPER_DATA_START;

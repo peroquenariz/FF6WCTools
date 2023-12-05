@@ -2,6 +2,9 @@
 
 namespace FF6WCToolsLib.DataTemplates;
 
+/// <summary>
+/// Represents an item name's ROM block.
+/// </summary>
 public class ItemName : BaseNameRomData
 {
     public static uint StartAddress => ITEM_NAMES_START;

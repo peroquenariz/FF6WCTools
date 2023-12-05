@@ -1,9 +1,12 @@
-﻿using static FF6WCToolsLib.WCData;
+﻿using System;
+using static FF6WCToolsLib.WCData;
 using static FF6WCToolsLib.DataTemplates.DataEnums;
-using System;
 
 namespace FF6WCToolsLib.DataTemplates;
 
+/// <summary>
+/// Represents an item's ROM data.
+/// </summary>
 public class ItemRomData : BaseRomData
 {
     private readonly ItemType _itemType;
@@ -108,6 +111,10 @@ public class ItemRomData : BaseRomData
         return itemDescription;
     }
 
+    /// <summary>
+    /// Modifies an item to be able to proc a spell on hit.
+    /// </summary>
+    /// <param name="spell">The spell to proc.</param>
     public void SpellProc(SpellRomData spell)
     {
         // Enable spell proccing. TODO: research if proc targeting can be modified per spell.
@@ -121,6 +128,10 @@ public class ItemRomData : BaseRomData
         _data[(int)ItemDataStructure.WeaponSpellCasting] |= (byte)spell.Index;
     }
 
+    /// <summary>
+    /// Modifies an item to be able to be broken to cast a spell.
+    /// </summary>
+    /// <param name="spell">The spell to cast on item break.</param>
     public void Breakable(SpellRomData spell)
     {
         // Enable breakability.
@@ -143,6 +154,11 @@ public class ItemRomData : BaseRomData
         _data[(int)ItemDataStructure.ItemType] &= (byte)~ItemTypeFlags.CAN_BE_THROWN;
     }
 
+    /// <summary>
+    /// Modifies an item to make it teach a spell.
+    /// </summary>
+    /// <param name="spell">The spell to teach.</param>
+    /// <param name="learnRate">The learn rate of the spell.</param>
     public void TeachSpell(SpellRomData spell, byte learnRate)
     {
         // Set the spell to be taught.
@@ -152,6 +168,10 @@ public class ItemRomData : BaseRomData
         _data[(int)ItemDataStructure.SpellLearnRate] = learnRate;
     }
 
+    /// <summary>
+    /// Modifies an item to add a relic property to it.
+    /// </summary>
+    /// <param name="relicEffectItem">The relic to copy its effects from.</param>
     public void AddRelicEffect(ItemRomData relicEffectItem)
     {
         // Get the original relic data. Use default data in case the current data is modified!
@@ -184,6 +204,12 @@ public class ItemRomData : BaseRomData
         }
     }
 
+    /// <summary>
+    /// Toggles an item's elemental properties.
+    /// Usable for weapon damage and absorb/nullify/weak element.
+    /// </summary>
+    /// <param name="element">The element to toggle.</param>
+    /// <param name="dataIndex">The elemental property to modify.</param>
     public void ToggleElementalProperty(ElementalProperties element, int dataIndex)
     {
         byte data = _data[dataIndex];
@@ -191,6 +217,11 @@ public class ItemRomData : BaseRomData
         _data[dataIndex] = data;
     }
 
+    /// <summary>
+    /// Modifies an item to provide a stat boost/debuff.
+    /// </summary>
+    /// <param name="statBoostType">The stat to modify.</param>
+    /// <param name="statBoostValue">The boost value.</param>
     public void SetStatBoost(Stat statBoostType, int statBoostValue)
     {
         // Take the stat boost type and value and generate the corresponding byte data.
@@ -216,6 +247,10 @@ public class ItemRomData : BaseRomData
         _data[(int)statIndex] |= statBoostData;
     }
 
+    /// <summary>
+    /// Modifies an item to change its vendor price.
+    /// </summary>
+    /// <param name="gpAmount">The GP value to set.</param>
     public void SetPrice(int gpAmount)
     {
         byte[] priceArray = DataHandler.DecatenateInteger(gpAmount, 2); // Item price is 2 bytes.

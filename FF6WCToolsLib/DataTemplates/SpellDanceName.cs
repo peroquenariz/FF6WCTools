@@ -2,6 +2,9 @@
 
 namespace FF6WCToolsLib.DataTemplates;
 
+/// <summary>
+/// Represents a spell dance name's ROM block.
+/// </summary>
 public class SpellDanceName : BaseNameRomData
 {
     public static uint StartAddress => SPELLS_ALL_NAMES_START + SPELLS_DANCE_NAMES_OFFSET;

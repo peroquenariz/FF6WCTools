@@ -5,7 +5,7 @@ using static FF6WCToolsLib.WCData;
 namespace FF6WCToolsLib;
 
 /// <summary>
-/// Contains methods for processing game memory.
+/// Provides methods for processing FF6's memory and data.
 /// </summary>
 public static class DataHandler
 {

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Net.Sockets;
@@ -7,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace TwitchChatbot;
 
+/// <summary>
+/// Simple IRC chatbot that connects to a Twitch chat and parses the messages.
+/// </summary>
 public class Chatbot
 {
     public event EventHandler<IRCConnectionSuccesfulEventArgs>? OnIRCConnectionSuccessful;
@@ -43,6 +45,10 @@ public class Chatbot
         _writer.AutoFlush = true;
     }
 
+    /// <summary>
+    /// Main Chatbot loop.
+    /// </summary>
+    /// <returns></returns>
     public async Task StartAsync()
     {
         await Task.Delay(1);
@@ -128,6 +134,7 @@ public class Chatbot
         _writer.WriteLine($"PRIVMSG #{_channel} :{message}");
     }
 
+    // TODO: condense this 2 events if no further logic is needed?
     public void CrowdControl_OnSuccessfulEffectLoaded(object? sender, MessageEventArgs e)
     {
         WriteMessage($"@{e.User} {e.Message}");

@@ -129,6 +129,20 @@ public static class WCData
     public const string WORLD_KEY = "world";
     public const string FIELD_KEY = "field";
     public const string MODE7_KEY = "mode7";
+
+    /// <summary>
+    /// Defines the game states.
+    /// TODO: refactor Companion, get rid of string constants and use this.
+    /// </summary>
+    public enum GameState
+    {
+        FIELD,
+        BATTLE,
+        MENU,
+        WORLD,
+        MODE7,
+        UNKNOWN,
+    }
     
     /// <summary>
     /// Data used to determine game mode. Size: 3 bytes.

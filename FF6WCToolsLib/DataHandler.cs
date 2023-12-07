@@ -592,4 +592,46 @@ public static class DataHandler
 
         return byteArray;
     }
+
+    /// <summary>
+    /// Reads the NMI jump code and extracts the game state.
+    /// </summary>
+    /// <param name="gameStateData">NMI jump code data.</param>
+    /// <returns>The current game state.</returns>
+    public static GameState GetGameState(byte[] gameStateData)
+    {
+        int firstTwoBytes = ConcatenateByteArray(gameStateData[0..2]);
+        byte lastByte = gameStateData[2];
+
+        // Look at these magic numbers, aren't they beautiful?
+        // These values are taken from the FF6 TAS Lua script.
+        // I have no idea where they came from, but they work. :)
+        // Thanks JCMTG for showing me the script.
+        if (firstTwoBytes == 0x0ba7 && lastByte == 0xC1)
+        {
+            return GameState.BATTLE;
+        }
+        else if (firstTwoBytes == 0x0182 && lastByte == 0xC0)
+        {
+            return GameState.FIELD;
+        }
+        else if (firstTwoBytes == 0xa728 && lastByte == 0xEE)
+        {
+            return GameState.WORLD;
+        }
+        else if (firstTwoBytes == 0x1387 && lastByte == 0xC3)
+        {
+            return GameState.MENU;
+        }
+        else if ((firstTwoBytes == 0xa509 && lastByte == 0xEE) ||
+                    (firstTwoBytes == 0xa94d && lastByte == 0xEE))
+        {
+            return GameState.MODE7;
+        }
+        else
+        {
+            // We discovered a new game state!
+            return GameState.UNKNOWN;
+        }
+    }
 }

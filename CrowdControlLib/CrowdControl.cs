@@ -87,6 +87,9 @@ public class CrowdControl
     // Random number generator.
     private static readonly Random _rng = new Random();
 
+    // Game state.
+    private GameState _gameState;
+
     public string? LibVersion { get => _libVersion; }
     public static Random Rng => _rng;
 
@@ -195,8 +198,22 @@ public class CrowdControl
             // TODO: add timer shenanigans.
             // TODO: better error messages (remove the exception throwing for non-implemented effects).
 
+
+            // Seed start detection code goes here (same logic as Companion)
+
+
             while (true)
             {
+                await Task.Delay(1000);
+                
+                // Get game state.
+                byte[] gameStateData = _sniClient.ReadMemory(NMI_JUMP_CODE, 3);
+                _gameState = DataHandler.GetGameState(gameStateData);
+
+                // Don't execute Crowd Control commands if in battle.
+                // TODO: consider if updating battle ram is worth the trouble.
+                if (_gameState == GameState.BATTLE) continue;
+
                 // Check that the queue isn't empty.
                 if (_crowdControlMessageQueue.Count != 0)
                 {
@@ -206,7 +223,6 @@ public class CrowdControl
                     // Remove oldest message from the list. TODO: don't remove if they're time or currency throttled.
                     _crowdControlMessageQueue.RemoveAt(0);
                 }
-                await Task.Delay(1000);
             }
         }
         catch (Exception e)

@@ -10,7 +10,7 @@ namespace CrowdControlLib;
 /// <summary>
 /// Handles the crowd control message parsing.
 /// </summary>
-public class CrowdControlArgs
+internal class CrowdControlArgs
 {
     /// <summary>
     /// Characters available in the rename screen, plus whitespace.
@@ -80,7 +80,7 @@ public class CrowdControlArgs
     public EquipmentSlot EquipmentSlot => _equipmentSlot;
     public InventoryEffect InventoryEffect => _inventoryEffect;
 
-    public CrowdControlArgs(string message)
+    public CrowdControlArgs(CrowdControlMessage message)
     {
         _errorMessage = string.Empty;
         _newCharacterName = string.Empty;
@@ -88,7 +88,7 @@ public class CrowdControlArgs
         _newSpellName = string.Empty;
         
         // Split chat message.
-        string[] splitMessage = message.Split(" ");
+        string[] splitMessage = message.Content.Split(" ");
 
         // Try to parse the main effect type.
         Enum.TryParse(splitMessage[0], true, out _effectType);

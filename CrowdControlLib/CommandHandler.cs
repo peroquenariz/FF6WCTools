@@ -8,7 +8,7 @@ namespace CrowdControlLib;
 /// <summary>
 /// Handles all Crowd Control command execution.
 /// </summary>
-public class CommandHandler
+internal class CommandHandler
 {
     public event EventHandler<MessageEventArgs>? OnSuccessfulEffectLoaded; // TODO: decouple from TwitchChatbot!
     public event EventHandler<MessageEventArgs>? OnFailedEffect;
@@ -28,7 +28,7 @@ public class CommandHandler
     internal bool TryLoadEffect(CrowdControlMessage message)
     {
         // Create the arguments from the Crowd Control message.
-        CrowdControlArgs args = new CrowdControlArgs(message.Content);
+        CrowdControlArgs args = new CrowdControlArgs(message);
 
         // Return if command arguments are not valid.
         if (!args.IsValid)

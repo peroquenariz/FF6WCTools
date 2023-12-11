@@ -1780,10 +1780,47 @@ public static class WCData
         [255] = "Empty"
     };
 
-    /// <summary>
-    /// Byte value for each letter and symbol.
-    /// </summary>
-    public static readonly Dictionary<byte, char> CHAR_DICT = new Dictionary<byte, char>()
+    public enum BattleCommand : byte
+    {
+        Fight,
+        Item,
+        Magic,
+        Morph,
+        Revert,
+        Steal,
+        Capture,
+        SwdTech,
+        Throw,
+        Tools,
+        Blitz,
+        Runic,
+        Lore,
+        Sketch,
+        Control,
+        Slot,
+        Rage,
+        Leap,
+        Mimic,
+        Dance,
+        Row,
+        Def,
+        Jump,
+        XMagic,
+        GPRain,
+        Summon,
+        Health,
+        Shock,
+        Possess,
+        MagiTek,
+        unused1,
+        unused2,
+        Empty = 255
+    }
+
+/// <summary>
+/// Byte value for each letter and symbol.
+/// </summary>
+public static readonly Dictionary<byte, char> CHAR_DICT = new Dictionary<byte, char>()
     {
         { 0x80, 'A' },
         { 0x81, 'B' },

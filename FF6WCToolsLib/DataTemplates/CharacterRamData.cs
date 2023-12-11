@@ -86,4 +86,10 @@ public class CharacterRamData : BaseRamData
         // Save the boosted stat in the character data.
         _data[statIndex] = (byte)newStatValue;
     }
+
+    public void SetCommand(BattleCommand command, int commandIndex)
+    {
+        int dataOffset = commandIndex + (int)CharacterDataStructure.BattleCommand1;
+        _data[dataOffset] = (byte)command;
+    }
 }

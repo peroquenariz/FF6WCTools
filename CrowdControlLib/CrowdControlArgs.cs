@@ -18,9 +18,18 @@ internal class CrowdControlArgs
     private const string VALID_NAME_CHARACTERS = 
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!?/:\"\'-.0123456789 ";
     
+    // Global effect triggers.
+    private const string INVENTORY_COMMAND_TRIGGER = "inventory";
+    private const string GP_COMMAND_TRIGGER = "gp";
+    private const string WINDOW_COMMAND_TRIGGER = "window";
+    private const string MIRROR_COMMAND_TRIGGER = "mirror";
+
+    private const int MIN_COMMAND_LENGTH = 2;
+
     private bool _isValid;
     private string _errorMessage;
 
+    // Command ranges.
     private const int GP_AMOUNT_MIN = -10000; // TODO: expose customizable parameters in a config file
     private const int GP_AMOUNT_MAX = 10000;
     private const byte MIN_SPELL_LEARN_RATE = 1;
@@ -50,6 +59,7 @@ internal class CrowdControlArgs
     private CharacterEffect _characterEffect;
     private EquipmentSlot _equipmentSlot;
     private InventoryEffect _inventoryEffect;
+    private Esper _esper;
 
     public bool IsValid => _isValid;
     public string ErrorMessage => _errorMessage;
@@ -79,6 +89,7 @@ internal class CrowdControlArgs
     public CharacterEffect CharacterEffect => _characterEffect;
     public EquipmentSlot EquipmentSlot => _equipmentSlot;
     public InventoryEffect InventoryEffect => _inventoryEffect;
+    public Esper Esper => _esper;
 
     public CrowdControlArgs(CrowdControlMessage message)
     {
@@ -90,8 +101,23 @@ internal class CrowdControlArgs
         // Split chat message.
         string[] splitMessage = message.Content.Split(" ");
 
-        // Try to parse the main effect type.
-        Enum.TryParse(splitMessage[0], true, out _effectType);
+        if (splitMessage.Length < MIN_COMMAND_LENGTH)
+        {
+            _errorMessage = $"Invalid command '{message.Content}'";
+            return;
+        }
+        else
+        {
+            _effectType = GetEffectTypeAndTarget(splitMessage); 
+        }
+
+        // Get effect and command parameters.
+        string effect = splitMessage[1];
+        string[] parameters = Array.Empty<string>();
+        if (splitMessage.Length > MIN_COMMAND_LENGTH)
+        {
+            parameters = splitMessage[2..];
+        }
 
         switch (_effectType)
         {
@@ -99,31 +125,22 @@ internal class CrowdControlArgs
                 _errorMessage = $"Invalid crowd control effect '{splitMessage[0]}'!";
                 return;
             case Effect.item:
-                SetItemArgs(splitMessage);
+                SetItemArgs(effect, parameters);
                 break;
             case Effect.spell:
-                SetSpellArgs(splitMessage);
+                SetSpellArgs(effect, parameters);
                 break;
             case Effect.character:
-                SetCharacterArgs(splitMessage);
+                SetCharacterArgs(effect, parameters);
                 break;
             case Effect.inventory:
-                SetInventoryArgs(splitMessage);
-                break;
-            case Effect.itemname:
-                SetItemNameArgs(splitMessage);
-                break;
-            case Effect.spellname:
-                SetSpellNameArgs(splitMessage);
-                break;
-            case Effect.charactername:
-                SetCharacterNameArgs(splitMessage);
+                SetInventoryArgs(effect, parameters);
                 break;
             case Effect.gp:
-                SetGPArgs(splitMessage);
+                SetGPArgs(effect, parameters);
                 break;
             case Effect.window:
-                SetWindowArgs(splitMessage);
+                SetWindowArgs(effect);
                 break;
             case Effect.mirror:
                 _isValid = true;
@@ -131,67 +148,133 @@ internal class CrowdControlArgs
         }
     }
 
-    private void SetInventoryArgs(string[] splitMessage)
+    /// <summary>
+    /// Checks that the effect target is valid, saves the target and set the effect type.
+    /// </summary>
+    /// <param name="splitMessage">The message to parse.</param>
+    /// <returns>A crowd control effect type, or _INVALID if the target is invalid.</returns>
+    private Effect GetEffectTypeAndTarget(string[] splitMessage)
     {
-        // Check if the message length is valid.
-        if (splitMessage.Length != 3)
+        string target = splitMessage[0].ToLower();
+        string effect = splitMessage[1].ToLower();
+
+        if (target == "ragnarok") // Stupid Square naming both sword and esper the same
         {
-            _errorMessage = "Invalid inventory command!";
+            // Check if it's the item or the esper.
+            if (Enum.IsDefined(typeof(ItemEffect), effect))
+            {
+                return Effect.item;
+            }
+            else if (Enum.IsDefined(typeof(EsperEffect), effect))
+            {
+                // TODO: implement esper effects.
+                return Effect._INVALID;
+            }
+            else
+            {
+                return Effect._INVALID;
+            }
+        }
+        else if (target == "remedy") // lmao
+        {
+            // Check if it's the item or the spell.
+            if (Enum.IsDefined(typeof(ItemEffect), effect))
+            {
+                return Effect.item;
+            }
+            else if (Enum.IsDefined(typeof(SpellEffect), effect))
+            {
+                // TODO: implement esper effects.
+                return Effect.spell;
+            }
+            else
+            {
+                return Effect._INVALID;
+            }
+        }
+        else if (Enum.TryParse(target, true, out Item item))
+        {
+            _item = item;
+            return Effect.item;
+        }
+        else if (Enum.TryParse(target, true, out Spell spell))
+        {
+            _spell = spell;
+            return Effect.spell;
+        }
+        else if (Enum.TryParse(target, true, out Esper esper))
+        {
+            // TODO: add esper effects
+            _esper = esper;
+            return Effect._INVALID;
+        }
+        else if (Enum.TryParse(target, true, out Character character))
+        {
+            _character = character;
+            return Effect.character;
+        }
+        else if (target == INVENTORY_COMMAND_TRIGGER)
+        {
+            return Effect.inventory;
+        }
+        else if (target == GP_COMMAND_TRIGGER)
+        {
+            return Effect.gp;
+        }
+        else if (target == WINDOW_COMMAND_TRIGGER)
+        {
+            return Effect.window;
+        }
+        else if (target == MIRROR_COMMAND_TRIGGER)
+        {
+            // TODO: mirror command triggers even if you put other parameters
+            // This is a placeholder for future text mirroring effects.
+            return Effect.mirror;
+        }
+        else
+        {
+            return Effect._INVALID;
+        }
+    }
+
+    private void SetInventoryArgs(string effect, string[] parameters)
+    {
+        // Check if the inventory effect is valid.
+        if (!Enum.TryParse(effect, true, out _inventoryEffect))
+        {
+            _errorMessage = $"Inventory effect {effect} invalid!";
             return;
         }
 
-        // Check if the inventory effect is valid.
-        if (!Enum.TryParse(splitMessage[1], true, out _inventoryEffect))
-        {
-            _errorMessage = $"Inventory effect {splitMessage[1]} invalid!";
-            return;
-        }
+        string itemParameter = parameters[0];
 
         // Parse the item to add or remove from the inventory.
         // Don't allow Empty item to be used.
-        if (!Enum.TryParse(splitMessage[2], true, out _item) && _item != Item.Empty)
+        if (!Enum.TryParse(itemParameter, true, out _item) && _item != Item.Empty)
         {
-            _errorMessage = $"Item {splitMessage[2]} invalid!";
-            return;
-        }
-
-        // Don't allow Moogle charms to be modified.
-        // TODO: expose this setting in a config file.
-        if (_item == Item.MoogleCharm)
-        {
-            _errorMessage = "Moogle charms can't be modified!";
+            _errorMessage = $"Item {itemParameter} invalid!";
             return;
         }
 
         _isValid = true;
     }
 
-    private void SetCharacterArgs(string[] splitMessage)
+    private void SetCharacterArgs(string effect, string[] parameters)
     {
-        // Check if the message length is valid.
-        if (splitMessage.Length != 4)
-        {
-            _errorMessage = "Invalid character command!";
-            return;
-        }
-
-        // Check if the character is valid.
-        if (!Enum.TryParse(splitMessage[1], true, out _character))
-        {
-            _errorMessage = $"Character '{splitMessage[1]}' invalid!";
-            return;
-        }
-
-        string characterEffect = splitMessage[2].ToLower();
-
         // Check if the character effect is valid.
-        if (!Enum.TryParse(characterEffect, true, out _characterEffect))
+        if (!Enum.TryParse(effect, true, out _characterEffect))
         {
-            _errorMessage = $"Character effect '{splitMessage[2]}' invalid!";
+            _errorMessage = $"Character effect '{effect}' invalid!";
             return;
         }
 
-        string parameter = splitMessage[3];
+        if (_characterEffect == CharacterEffect.rename)
+        {
+            SetCharacterNameArgs(parameters);
+            return;
+        }
+
+        string parameter = parameters[0];
 
         // If it's a spell teaching effect, save the spell.
         if (_characterEffect is CharacterEffect.teach or CharacterEffect.forget)
@@ -220,16 +303,16 @@ internal class CrowdControlArgs
             return;
         }
         // If it's a stat boost effect, save the value.
-        else if (Enum.IsDefined(typeof(Stat), characterEffect))
+        else if (Enum.IsDefined(typeof(Stat), effect))
         {
             // Get the stat type.
-            Enum.TryParse(characterEffect, true, out _statBoostType);
+            Enum.TryParse(effect, true, out _statBoostType);
 
-            _isValid = CheckIfStatBoostValueIsValid(parameter, CHARACTER_STAT_BOOST_MIN, CHARACTER_STAT_BOOST_MAX);
+            _isValid = IsStatBoostValid(parameter, CHARACTER_STAT_BOOST_MIN, CHARACTER_STAT_BOOST_MAX);
             return;
         }
         // If it's an equipment effect, save the item to equip.
-        else if (Enum.IsDefined(typeof(EquipmentSlot), characterEffect))
+        else if (Enum.IsDefined(typeof(EquipmentSlot), effect))
         {
             // Check if it's a correct item.
             if (!Enum.TryParse(parameter, true, out _item))
@@ -239,11 +322,11 @@ internal class CrowdControlArgs
             }
             
             // Get the equipment slot.
-            Enum.TryParse(characterEffect, true, out _equipmentSlot);
+            Enum.TryParse(effect, true, out _equipmentSlot);
             
             // Check if the item is valid for the given slot
             // TODO: expose this in a config file to allow equipping glitched items.
-            _isValid = CheckIfEquipmentIsValid(_item, _equipmentSlot);
+            _isValid = IsEquipmentValidForSlot(_item, _equipmentSlot);
             return;
         }
     }
@@ -254,13 +337,13 @@ internal class CrowdControlArgs
     /// <param name="item">Message parameter.</param>
     /// <param name="slot">The character equipment slot.</param>
     /// <returns>True if it's a valid item for the slot, otherwise false.</returns>
-    private bool CheckIfEquipmentIsValid(Item item, EquipmentSlot slot)
+    private bool IsEquipmentValidForSlot(Item item, EquipmentSlot slot)
     {
         // Empty item is compatible with any slot.
         if (item == Item.Empty) return true;
 
         // Ignore consumables.
-        if (DataHandler.CheckIfItemIsConsumable(item))
+        if (DataHandler.IsItemConsumable(item))
         {
             _errorMessage = $"Character equipment item '{item}' invalid - can't equip consumables!";
             return false;
@@ -302,42 +385,31 @@ internal class CrowdControlArgs
         return isValidEquipment;
     }
 
-    private void SetSpellArgs(string[] splitMessage)
+    private void SetSpellArgs(string effect, string[] parameters)
     {
-        // Check if the message length is valid.
-        if (splitMessage.Length < 3 || splitMessage.Length > 4)
-        {
-            _errorMessage = "Invalid spell command!";
-            return;
-        }
-
-        // Check if the spell is valid.
-        if (!Enum.TryParse(splitMessage[1], true, out _spell))
-        {
-            _errorMessage = $"Spell '{splitMessage[1]}' invalid!";
-            return;
-        }
-
         // Check if the spell effect is valid.
-        if (!Enum.TryParse(splitMessage[2], true, out _spellEffect))
+        if (!Enum.TryParse(effect, true, out _spellEffect))
         {
-            _errorMessage = $"Spell effect '{splitMessage[2]}' invalid!";
+            _errorMessage = $"Spell effect '{effect}' invalid!";
             return;
         }
 
         switch (_spellEffect)
         {
+            case SpellEffect.rename:
+                SetSpellNameArgs(parameters);
+                break;
             case SpellEffect.reset:
                 _isValid = true;
                 break;
             case SpellEffect.targeting:
-                _isValid = CheckTargetingPreset(splitMessage);
+                _isValid = IsTargetingPresetValid(parameters);
                 break;
             case SpellEffect.spellpower:
-                _isValid = CheckSpellPowerValue(splitMessage);
+                _isValid = IsSpellPowerValid(parameters);
                 break;
             case SpellEffect.element:
-                _isValid = CheckSpellElement(splitMessage);
+                _isValid = IsSpellElementValid(parameters);
                 break;
             case SpellEffect.mpdamage:
                 _isValid = true;
@@ -346,10 +418,10 @@ internal class CrowdControlArgs
                 _isValid = true;
                 break;
             case SpellEffect.mpcost:
-                _isValid = CheckSpellMPCost(splitMessage);
+                _isValid = IsSpellMPCostValid(parameters);
                 break;
             case SpellEffect.status:
-                _isValid = CheckStatusEffect(splitMessage);
+                _isValid = IsStatusEffectValid(parameters);
                 break;
             case SpellEffect.liftstatus:
                 _isValid = true;
@@ -357,12 +429,20 @@ internal class CrowdControlArgs
         }
     }
 
-    private bool CheckStatusEffect(string[] splitMessage)
+    private bool IsStatusEffectValid(string[] parameters)
     {
-        // Check if the status effect is valid.
-        if (!Enum.TryParse(splitMessage[3], true, out _statusEffect))
+        if (parameters.Length == 0)
         {
-            _errorMessage = $"Invalid or not supported status '{splitMessage[3]}'!";
+            _errorMessage = "Status effect not specified!";
+            return false;
+        }
+
+        string statusEffectParameter = parameters[0];
+        
+        // Check if the status effect is valid.
+        if (!Enum.TryParse(statusEffectParameter, true, out _statusEffect))
+        {
+            _errorMessage = $"Invalid or not supported status '{statusEffectParameter}'!";
             return false;
         }
 
@@ -375,19 +455,21 @@ internal class CrowdControlArgs
         return true;
     }
 
-    private bool CheckSpellMPCost(string[] splitMessage)
+    private bool IsSpellMPCostValid(string[] parameters)
     {
         // Check if spell cost has been specified.
-        if (splitMessage.Length != 4)
+        if (parameters.Length == 0)
         {
             _errorMessage = "Spell cost value not specified!";
             return false;
         }
 
+        string mpCostParameter = parameters[0];
+
         // Check if spell cost is a valid number.
-        if (!int.TryParse(splitMessage[3], out int spellMPCost))
+        if (!int.TryParse(mpCostParameter, out int spellMPCost))
         {
-            _errorMessage = $"Spell cost value '{splitMessage[3]}' invalid!";
+            _errorMessage = $"Spell cost value '{mpCostParameter}' invalid!";
             return false;
         }
         // Check if spell cost is within a valid range.
@@ -401,38 +483,42 @@ internal class CrowdControlArgs
         return true;
     }
 
-    private bool CheckSpellElement(string[] splitMessage)
+    private bool IsSpellElementValid(string[] parameters)
     {
         // Check if an element has been specified.
-        if (splitMessage.Length != 4)
+        if (parameters.Length == 0)
         {
             _errorMessage = "Element not specified!";
             return false;
         }
 
+        string elementParameter = parameters[0];
+
         // Check if the element is valid.
-        if (!Enum.TryParse(splitMessage[3], true, out _element))
+        if (!Enum.TryParse(elementParameter, true, out _element))
         {
-            _errorMessage = $"Element '{splitMessage[3]}' invalid!";
+            _errorMessage = $"Element '{elementParameter}' invalid!";
             return false;
         }
         
         return true;
     }
 
-    private bool CheckSpellPowerValue(string[] splitMessage)
+    private bool IsSpellPowerValid(string[] parameters)
     {
         // Check if the spell power has been specified.
-        if (splitMessage.Length != 4)
+        if (parameters.Length == 0)
         {
             _errorMessage = "Spell power value not specified!";
             return false;
         }
-        
+
+        string spellPowerParameter = parameters[0];
+
         // Check if the spell power is a valid number.
-        if (!int.TryParse(splitMessage[3], out int spellPower))
+        if (!int.TryParse(spellPowerParameter, out int spellPower))
         {
-            _errorMessage = $"Spell power value '{splitMessage[3]}' invalid!";
+            _errorMessage = $"Spell power value '{spellPowerParameter}' invalid!";
             return false;
         }
         // Check if the spell power specified is within a valid range.
@@ -446,16 +532,16 @@ internal class CrowdControlArgs
         return true;
     }
 
-    private bool CheckTargetingPreset(string[] splitMessage)
+    private bool IsTargetingPresetValid(string[] parameters)
     {
         // Check if a targeting preset has been specified.
-        if (splitMessage.Length != 4)
+        if (parameters.Length == 0)
         {
             _errorMessage = $"Spell targeting not specified!";
             return false;
         }
         // Check if the specified targeting preset is valid.
-        else if (!Enum.TryParse(splitMessage[3], true, out _targetingPreset))
+        else if (!Enum.TryParse(parameters[0], true, out _targetingPreset))
         {
             _errorMessage = $"Spell targeting invalid!";
             return false;
@@ -464,54 +550,67 @@ internal class CrowdControlArgs
         return true;
     }
 
-    private void SetItemArgs(string[] splitMessage)
+    /// <summary>
+    /// Checks if the string array is of a valid length.
+    /// </summary>
+    /// <param name="splitMessage">The string array with the message.</param>
+    /// <param name="minLength">The inclusive minimum length.</param>
+    /// <param name="maxLength">The inclusive maximum length.</param>
+    /// <returns>True if the array length is between the given ranges, otherwise false.</returns>
+    private static bool IsValidLength(string[] splitMessage, int minLength, int maxLength)
     {
-        // Check if the message length is valid.
-        if (splitMessage.Length < 3 || splitMessage.Length > 5)
+        return splitMessage.Length >= minLength && splitMessage.Length <= maxLength;
+    }
+
+    private void SetItemArgs(string itemEffect, string[] parameters)
+    {
+        // Disable editing the empty item.
+        if (_item == Item.Empty)
         {
-            _errorMessage = "Invalid item command!";
+            _errorMessage = $"Item '{_item}' can't be modified!";
             return;
         }
-
-        // Check if the item is valid.
-        if (!Enum.TryParse(splitMessage[1], true, out _item))
+        
+        if (Enum.TryParse(itemEffect, true, out _statBoostType)) // Is a stat boost.
         {
-            _errorMessage = $"Item '{splitMessage[1]}' invalid!";
+            _itemEffect = ItemEffect.statboost;
+        }
+        else if (!Enum.TryParse(itemEffect, true, out _itemEffect)) // Is a valid item effect.
+        {
+            _errorMessage = $"Item effect '{itemEffect}' invalid!";
             return;
         }
-
-        // Check if the item effect is valid.
-        if (!Enum.TryParse(splitMessage[2], true, out _itemEffect))
-        {
-            _errorMessage = $"Item effect '{splitMessage[2]}' invalid!";
-            return;
-        }
-
-        // Check if it's a reset message.
-        if (_itemEffect == ItemEffect.reset)
+        
+        if (_itemEffect == ItemEffect.reset) // Is a reset.
         {
             _isValid = true;
             return;
         }
-        // If it's not a reset and the length is invalid, return.
-        else if (splitMessage.Length < 4)
+        // If it's not a reset and there are no parameters specified, return.
+        else if (parameters.Length == 0)
         {
+            _errorMessage = "Invalid item command or no parameters specified!";
             return;
         }
 
+        if (_itemEffect == ItemEffect.rename)
+        {
+            SetItemNameArgs(parameters);
+            return;
+        }
         // If it's a item spell casting effect, check that the parameters are valid.
-        if (_itemEffect is ItemEffect.spellproc or ItemEffect.breakable or ItemEffect.teach)
+        else if (_itemEffect is ItemEffect.proc or ItemEffect.breakable or ItemEffect.teach)
         {
             // Check if the item is valid for spell casting effects.
-            if (!CheckIfItemIsValidForSpellCastingEffect()) return; // Please make a longer method name, kkthxbye.
+            if (!IsItemValidForSpellCastingEffect()) return; // Please make a longer method name, kkthxbye.
             
             // Check if it's a valid spell.
-            bool isValidSpell = Enum.TryParse(splitMessage[3], true, out _spell);
+            bool isValidSpell = Enum.TryParse(parameters[0], true, out _spell);
             
             // Only allow magical spells for procing.
             if (!isValidSpell || (int)_spell >= SPELLS_MAGICAL_NAMES_BLOCK_COUNT)
             {
-                _errorMessage = $"Spell '{splitMessage[3]}' invalid!";
+                _errorMessage = $"Spell '{parameters[0]}' invalid!";
                 return;
             }
 
@@ -525,21 +624,28 @@ internal class CrowdControlArgs
             else
             {
                 // Check if the learn rate is valid.
-                if (!TryParseSpellLearnRate(splitMessage)) return;
+                if (!TryParseSpellLearnRate(parameters[1])) return;
             }
         }
         
         // Relic effect.
         if (_itemEffect == ItemEffect.reliceffect)
         {
-            // Check that the relic effect provided is valid (is a relic?)
-            if (!Enum.TryParse(splitMessage[3], true, out _relicEffectItem))
+            // Check that the target item is equippable
+            if (DataHandler.IsItemConsumable(_item))
             {
-                _errorMessage = $"Invalid relic '{_relicEffectItem}'!";
+                _errorMessage = $"Relic effect can't be copied to '{_item}'!";
+                return;
+            }
+            
+            // Check that the relic effect provided is valid (is a relic?)
+            if (!Enum.TryParse(parameters[0], true, out _relicEffectItem))
+            {
+                _errorMessage = $"Invalid relic '{parameters[0]}'!";
                 return;
             }
 
-            _isValid = CheckIfItemIsRelic(splitMessage);
+            _isValid = IsItemARelic(parameters[0]);
             return;
         }
 
@@ -557,12 +663,12 @@ internal class CrowdControlArgs
         // Parse element for all elemental effect types.
         if (_itemEffect is ItemEffect.absorb or ItemEffect.nullify or ItemEffect.weak or ItemEffect.weaponelement)
         {
-            string element = splitMessage[3];
+            string element = parameters[0];
 
             // Return if it's not a valid element.
             if (!Enum.TryParse(element, true, out _element))
             {
-                _errorMessage = $"Invalid element '{splitMessage[3]}'!";
+                _errorMessage = $"Invalid element '{element}'!";
                 return;
             }
 
@@ -573,41 +679,25 @@ internal class CrowdControlArgs
         // Stat boost effect.
         if (_itemEffect == ItemEffect.statboost)
         {
-            string statBoostType = splitMessage[3];
-
-            // Check if it's a valid stat.
-            if (!Enum.TryParse(statBoostType, true, out _statBoostType))
-            {
-                _errorMessage = $"Invalid stat '{statBoostType}'!";
-                return;
-            }
-
-            // Check if the stat value was specified.
-            if (splitMessage.Length != 5)
-            {
-                _errorMessage = $"Stat boost value not specified!";
-                return;
-            }
-            
-            _isValid = CheckIfStatBoostValueIsValid(splitMessage[4], ITEM_STAT_BOOST_MIN_VALUE, ITEM_STAT_BOOST_MAX_VALUE);
+            _isValid = IsStatBoostValid(parameters[0], ITEM_STAT_BOOST_MIN_VALUE, ITEM_STAT_BOOST_MAX_VALUE);
             return;
         }
 
         // Price effect.
         if (_itemEffect == ItemEffect.price)
         {
-            _isValid = TryParseGPAmount(splitMessage);
+            _isValid = TryParseGPAmount(parameters[0]);
             return;
         }
     }
 
-    private bool TryParseGPAmount(string[] splitMessage)
+    private bool TryParseGPAmount(string parameter)
     {
         // Try parse the gp amount.
-        if (!int.TryParse(splitMessage[3], out int gpAmount))
+        if (!int.TryParse(parameter, out int gpAmount))
         {
             // Not a number.
-            _errorMessage = $"{splitMessage[3]} is not a number!";
+            _errorMessage = $"{parameter} is not a number!";
             return false;
         }
         else if (gpAmount < ushort.MinValue ||
@@ -623,7 +713,7 @@ internal class CrowdControlArgs
         return true;
     }
 
-    private bool CheckIfStatBoostValueIsValid(string statBoostValueString, int minValue, int maxValue)
+    private bool IsStatBoostValid(string statBoostValueString, int minValue, int maxValue)
     {
         // Check if the value provided is valid and within range.
         if (!int.TryParse(statBoostValueString, out int statBoostValue))
@@ -644,7 +734,7 @@ internal class CrowdControlArgs
         return true;
     }
 
-    private bool CheckIfItemIsRelic(string[] splitMessage)
+    private bool IsItemARelic(string parameter)
     {
         // Ignore tintinabar :(
         // Apparently this effect is hardcoded to item #229.
@@ -659,21 +749,21 @@ internal class CrowdControlArgs
 
         if (!isRelic)
         {
-            _errorMessage = $"Invalid relic '{splitMessage[3]}'!";
+            _errorMessage = $"Invalid relic '{parameter}'!";
             return false;
         }
         
         return isRelic;
     }
 
-    private bool TryParseSpellLearnRate(string[] splitMessage)
+    private bool TryParseSpellLearnRate(string parameter)
     {
         // Parse the spell learn rate.
-        bool isValidNumber = byte.TryParse(splitMessage[4], out byte learnRate);
+        bool isValidNumber = byte.TryParse(parameter, out byte learnRate);
 
         if (!isValidNumber)
         {
-            _errorMessage = $"Invalid number '{splitMessage[4]}'!";
+            _errorMessage = $"Invalid number '{parameter}'!";
             return false;
         }
 
@@ -688,17 +778,17 @@ internal class CrowdControlArgs
         }
         else
         {
-            _errorMessage = $"Invalid learning rate '{splitMessage[4]}'! Valid range: {MIN_SPELL_LEARN_RATE}-{MAX_SPELL_LEARN_RATE}.";
+            _errorMessage = $"Invalid learning rate '{parameter}'! Valid range: {MIN_SPELL_LEARN_RATE}-{MAX_SPELL_LEARN_RATE}.";
             return false;
         }
     }
 
-    private bool CheckIfItemIsValidForSpellCastingEffect()
+    private bool IsItemValidForSpellCastingEffect()
     {
         // Check for correct item type.
         switch (_itemEffect)
         {
-            case ItemEffect.spellproc:
+            case ItemEffect.proc:
                 // Only allow weapons.
                 bool isWeapon = DataHandler.CheckItemInRange(_item, RANGE_WEAPONS);
                 if (!isWeapon)
@@ -732,204 +822,114 @@ internal class CrowdControlArgs
         return true;
     }
 
-    private void SetSpellNameArgs(string[] splitMessage)
+    private void SetSpellNameArgs(string[] parameters)
     {
-        // Check if a spell has been specified.
-        if (splitMessage.Length <= 1)
-        {
-            _errorMessage = "Spell not specified!";
-            return;
-        }
-
-        // Check if the specified spell is valid.
-        bool isValidSpell = Enum.TryParse(splitMessage[1], true, out _spell);
-
-        // Check if it's a magical spell. TODO: allow other spell types.
-        if (!isValidSpell || (int)_spell > 53)
-        {
-            _errorMessage = $"Spell '{splitMessage[1]}' invalid!";
-            return;
-        }
-
-        // Concatenate spell name.
-        for (int i = 2; i < splitMessage.Length; i++)
-        {
-            _newSpellName += splitMessage[i] + " ";
-        }
-
-        // Remove trailing whitespaces.
-        _newSpellName = _newSpellName.TrimEnd();
-
-        // Check for invalid characters
-        bool isValidName = IsNameValid(_newSpellName, SPELLS_MAGICAL_NAMES_BLOCK_SIZE - 1); // Don't count the spell icon.
-        if (!isValidName)
-        {
-            _errorMessage = $"Spell name {_newSpellName} invalid!";
-            return;
-        }
-        _isValid = isValidSpell;
+        byte nameSize = (byte)(SpellRomData.BlockSize - 1); // Ignore spell icon.
+        _isValid = TryGetName(parameters, nameSize, out _newSpellName);
     }
 
-    private void SetItemNameArgs(string[] splitMessage)
+    private void SetItemNameArgs(string[] parameters)
     {
-        // Check if an item has been specified.
-        if (splitMessage.Length <= 1)
-        {
-            _errorMessage = "Item not specified!";
-            return;
-        }
-        
-        // Check if the specified item is valid.
-        bool isValidItem = Enum.TryParse(splitMessage[1], true, out _item);
+        byte nameSize = (byte)(ItemRomData.BlockSize - 1); // Ignore item icon.
+        _isValid = TryGetName(parameters, nameSize, out _newItemName);
+    }
 
-        if (!isValidItem)
-        {
-            _errorMessage = $"Item '{splitMessage[1]}' invalid!";
-            return;
-        }
+    private bool TryGetName(string[] parameters, byte maxValidNameLength, out string name)
+    {
+        name = string.Empty;
 
         // Concatenate item name.
-        for (int i = 2; i < splitMessage.Length; i++)
+        for (int i = 0; i < parameters.Length; i++)
         {
-            _newItemName += splitMessage[i] + " ";
+            name += parameters[i] + " ";
         }
 
         // Remove trailing whitespaces.
-        _newItemName = _newItemName.TrimEnd();
+        name = name.TrimEnd();
 
         // Check for invalid characters
-        bool isValidName = IsNameValid(_newItemName, ITEM_NAMES_BLOCK_SIZE - 1);
-        if (!isValidName)
+        bool isNameValid = IsNameValid(name, maxValidNameLength);
+        if (!isNameValid)
         {
-            _errorMessage = $"Item name {_newItemName} invalid!";
-            return;
+            _errorMessage = $"Item name {name} invalid!";
+            return false;
         }
-        _isValid = isValidItem;
+
+        return true;
     }
 
-    private void SetWindowArgs(string[] splitMessage)
+    private void SetWindowArgs(string effect)
     {
-        // Check if a window effect has been specified.
-        if (splitMessage.Length == 1)
-        {
-            _errorMessage = "Window effect not specified!";
-            return;
-        }
-        // Check if the specified window effect is valid.
-        else if (splitMessage.Length > 2)
-        {
-            _errorMessage = "Invalid window command!";
-            return;
-        }
-        bool isValidWindowEffect = Enum.TryParse(splitMessage[1], true, out _windowEffect);
+        bool isValidWindowEffect = Enum.TryParse(effect, true, out _windowEffect);
         
         if (!isValidWindowEffect)
         {
-            _errorMessage = $"Invalid window effect '{splitMessage[1]}'!";
+            _errorMessage = $"Invalid window effect '{effect}'!";
             return;
         }
         
         _isValid = isValidWindowEffect;
     }
 
-    private void SetCharacterNameArgs(string[] splitMessage)
+    private void SetCharacterNameArgs(string[] parameters)
     {
-        // Check if a character name effect has been specified.
-        if (splitMessage.Length < 3)
-        {
-            _errorMessage = "Invalid character rename command!";
-            return;
-        }
-        
-        // Check that the specified character is valid.
-        bool isValidCharacter = Enum.TryParse(splitMessage[1], true, out _character);
-        
-        if (!isValidCharacter)
-        {
-            _errorMessage = $"Character '{splitMessage[1]}' invalid!";
-            return;
-        }
-        
-        // Concatenate character name.
-        for (int i = 2; i < splitMessage.Length; i++)
-        {
-            _newCharacterName += splitMessage[i] + " ";
-        }
-
-        // Remove trailing whitespaces.
-        _newCharacterName = _newCharacterName.TrimEnd();
-
-        // Check for invalid characters
-        bool isValidName = IsNameValid(_newCharacterName, CHARACTER_DATA_NAME_SIZE);
-        
-        if (!isValidName)
-        {
-            _errorMessage = $"Character name {_newCharacterName} invalid!";
-            return;
-        }
-
-        _isValid = isValidCharacter;
+        byte nameSize = CHARACTER_DATA_NAME_SIZE;
+        _isValid = TryGetName(parameters, nameSize, out _newCharacterName);
     }
 
-    private void SetGPArgs(string[] splitMessage)
+    private void SetGPArgs(string effect, string[] parameters)
     {
-        // Check if the GP command is valid.
-        if (splitMessage.Length < 2 || splitMessage.Length > 3)
+        // Get GP effect.
+        bool isValidGPEffect = Enum.TryParse(effect, true, out _gpEffect);
+        if (!isValidGPEffect)
         {
-            _errorMessage = "Invalid GP command!";
+            // If not valid, return.
+            _errorMessage = $"Invalid GP command: '{effect}'!";
             return;
+        }
+        else if (_gpEffect == GPEffect.empty)
+        {
+            // If it's empty GP, mark as valid and return.
+            _isValid = isValidGPEffect;
+            return;
+        }
+
+        // If it's modify GP effect:
+        if (parameters.Length == 0)
+        {
+            _errorMessage = "GP amount not specified!";
+            return;
+        }
+        
+        bool isValidGPRange = false;
+        
+        string gpParameter = parameters[0];
+        
+        // Check that GP amount is an actual number.
+        bool isValidNumber = Int32.TryParse(gpParameter, out int gpAmount);
+
+        if (!isValidNumber)
+        {
+            // If not a valid number, return.
+            _errorMessage = $"GP amount '{gpParameter}' not a valid number!";
+            return;
+        }
+
+        // Check if the GP amount is within a valid range.
+        if (gpAmount >= GP_AMOUNT_MIN &&
+            gpAmount <= GP_AMOUNT_MAX)
+        {
+            isValidGPRange = true;
+            GPAmount = gpAmount;
         }
         else
         {
-            // Get GP effect.
-            bool isValidGPEffect = Enum.TryParse(splitMessage[1], true, out _gpEffect);
-            if (!isValidGPEffect)
-            {
-                // If not valid, return.
-                _errorMessage = $"Invalid GP command: '{splitMessage[1]}'!";
-                return;
-            }
-            else if (_gpEffect == GPEffect.empty)
-            {
-                // If it's empty GP, mark as valid and return.
-                _isValid = isValidGPEffect;
-                return;
-            }
-
-            // If it's modify GP effect:
-            if (splitMessage.Length != 3)
-            {
-                _errorMessage = "GP amount not specified!";
-                return;
-            }
-            bool isValidGPRange = false;
-
-            // Check that GP amount is an actual number.
-            bool isValidNumber = Int32.TryParse(splitMessage[2], out int gpAmount);
-
-            if (!isValidNumber)
-            {
-                // If not a valid number, return.
-                _errorMessage = $"GP amount '{splitMessage[2]}' not a valid number!";
-                return;
-            }
-
-            // Check if the GP amount is within a valid range.
-            if (gpAmount >= GP_AMOUNT_MIN &&
-                gpAmount <= GP_AMOUNT_MAX)
-            {
-                isValidGPRange = true;
-                GPAmount = gpAmount;
-            }
-            else
-            {
-                // If not a valid GP range, return.
-                _errorMessage = $"GP amount '{splitMessage[2]}' out of range - valid range: {GP_AMOUNT_MIN}-{GP_AMOUNT_MAX}";
-                return;
-            }
-
-            _isValid = isValidGPEffect && isValidGPRange;
+            // If not a valid GP range, return.
+            _errorMessage = $"GP amount '{gpParameter}' out of range - valid range: {GP_AMOUNT_MIN}-{GP_AMOUNT_MAX}";
+            return;
         }
+
+        _isValid = isValidGPEffect && isValidGPRange;
     }
 
     /// <summary>

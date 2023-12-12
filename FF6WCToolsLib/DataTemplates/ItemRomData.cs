@@ -193,6 +193,7 @@ public class ItemRomData : BaseRomData
             (int)ItemDataStructure.Status4__WeakElement,
             (int)ItemDataStructure.EquipmentStatus,
             (int)ItemDataStructure._EquipmentStatus,
+            (int)ItemDataStructure.FieldEffect,
         };
 
         for (int i = 0; i < indexesToCopy.Length; i++)

@@ -44,9 +44,6 @@ public static class CrowdControlEffects
         spell,
         character,
         inventory,
-        itemname,
-        spellname,
-        charactername,
         gp,
         window,
         mirror,
@@ -69,7 +66,7 @@ public static class CrowdControlEffects
 
     public enum ItemEffect
     {
-        spellproc,
+        proc,
         breakable,
         teach,
         reliceffect,
@@ -80,6 +77,7 @@ public static class CrowdControlEffects
         weaponelement,
         price,
         reset,
+        rename,
     }
 
     public enum SpellEffect
@@ -93,6 +91,7 @@ public static class CrowdControlEffects
         liftstatus,
         mpcost,
         reset,
+        rename,
     }
 
     public enum StatusEffect
@@ -135,11 +134,17 @@ public static class CrowdControlEffects
         magic,
         teach,
         forget,
+        rename,
     }
 
     public enum InventoryEffect
     {
         add,
         remove,
+    }
+
+    public enum EsperEffect
+    {
+        bonus,
     }
 }

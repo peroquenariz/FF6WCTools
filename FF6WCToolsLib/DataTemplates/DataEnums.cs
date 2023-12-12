@@ -558,4 +558,18 @@ public static class DataEnums
         Relic1,
         Relic2
     }
+
+    [Flags]
+    public enum FieldEffect : byte
+    {
+        NONE = 0x00,
+        LESS_RANDOM_ENCOUNTERS = 0x01,
+        NO_RANDOM_ENCOUNTERS = 0x02,
+        UNKNOWN_0x04 = 0x04,
+        UNKNOWN_0x08 = 0x08,
+        UNKNOWN_0x10 = 0x10,
+        WALK_FASTER = 0x20,
+        UNKNOWN_0x40 = 0x40,
+        TINTINABAR = 0x80
+    }
 }

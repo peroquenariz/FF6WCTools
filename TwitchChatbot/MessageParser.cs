@@ -10,7 +10,7 @@ static internal class MessageParser
     private const string JOINED_CHANNEL_MESSAGE_FORMAT = "tmi.twitch.tv JOIN #";
     private const string PRIVMSG_MESSAGE_FORMAT = "PRIVMSG";
 
-    private const string CROWD_CONTROL_COMMAND_TRIGGER = "!cc";
+    private const string CROWD_CONTROL_COMMAND_TRIGGER = "!";
 
     public static Message? Parse(string message)
     {
@@ -71,7 +71,7 @@ static internal class MessageParser
                     // Ignore if message doesn't start with the command trigger.
                     return null;
                 }
-                else if (messageContent.Length < 5)
+                else if (messageContent.Length == CROWD_CONTROL_COMMAND_TRIGGER.Length)
                 {
                     // Ignore if the trigger is correct but no command has been provided.
                     return null;
@@ -79,7 +79,7 @@ static internal class MessageParser
                 else
                 {
                     // Save the crowd control message.
-                    messageContent = messageContent[(CROWD_CONTROL_COMMAND_TRIGGER.Length + 1)..].Trim();
+                    messageContent = messageContent[CROWD_CONTROL_COMMAND_TRIGGER.Length..].Trim();
                 }
             }
         }

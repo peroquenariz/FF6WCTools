@@ -133,9 +133,6 @@ public class CrowdControl
             { Effect.item, ModifyItem },
             { Effect.spell, ModifySpell },
             { Effect.character, ModifyCharacter },
-            { Effect.itemname, ModifyItemName },
-            { Effect.spellname, ModifySpellName },
-            { Effect.charactername, ModifyCharacterName },
             { Effect.gp, ModifyGP },
             { Effect.inventory, ModifyInventory },
             { Effect.mirror, MirrorAllItemNames }
@@ -197,7 +194,7 @@ public class CrowdControl
         {
             // TODO: add timer shenanigans.
             // TODO: better error messages (remove the exception throwing for non-implemented effects).
-
+            
 
             // Seed start detection code goes here (same logic as Companion)
 
@@ -354,6 +351,12 @@ public class CrowdControl
         _sniClient.WriteMemory(targetSpellName);
     }
 
+    private void ResetSpellName(SpellMagicalName name)
+    {
+        name.ResetData();
+        _sniClient.WriteMemory(name);
+    }
+
     private void ModifyItemName(CrowdControlArgs args)
     {
         // Get the target item name.
@@ -369,10 +372,21 @@ public class CrowdControl
         _sniClient.WriteMemory(targetItemName);
     }
 
+    private void ResetItemName(ItemName name)
+    {
+        name.ResetData();
+        _sniClient.WriteMemory(name);
+    }
+
     private void ModifyCharacter(CrowdControlArgs args)
     {
+        if (args.CharacterEffect == CharacterEffect.rename)
+        {
+            ModifyCharacterName(args);
+            return;
+        }
         // Spell teach/forget effect.
-        if (args.CharacterEffect is CharacterEffect.forget or CharacterEffect.teach)
+        else if (args.CharacterEffect is CharacterEffect.forget or CharacterEffect.teach)
         {
             // Are we teaching or forgetting a spell?
             bool isSpellTeachEffect = args.CharacterEffect == CharacterEffect.teach;
@@ -429,12 +443,17 @@ public class CrowdControl
     {
         // Get the target spell data.
         SpellRomData targetSpell = _spellDataList[(int)args.Spell];
+        SpellMagicalName targetSpellName = _spellMagicalNamesList[(int)args.Spell];
         
         // Apply the appropiate effect.
         switch (args.SpellEffect)
         {
+            case SpellEffect.rename:
+                ModifySpellName(args);
+                return;
             case SpellEffect.reset:
                 targetSpell.ResetData();
+                ResetSpellName(targetSpellName);
                 break;
             case SpellEffect.targeting:
                 targetSpell.ModifyTargeting(args.TargetingPreset);
@@ -472,14 +491,19 @@ public class CrowdControl
     {
         // Get target item data.
         ItemRomData targetItem = _itemDataList[(int)args.Item];
+        ItemName targetItemName = _itemNamesList[(int)args.Item];
 
         // Apply the appropiate effect.
         switch (args.ItemEffect)
         {
+            case ItemEffect.rename:
+                ModifyItemName(args);
+                return;
             case ItemEffect.reset:
                 targetItem.ResetData();
+                ResetItemName(targetItemName);
                 break;
-            case ItemEffect.spellproc:
+            case ItemEffect.proc:
                 targetItem.SpellProc(_spellDataList[(int)args.Spell]);
                 break;
             case ItemEffect.breakable:

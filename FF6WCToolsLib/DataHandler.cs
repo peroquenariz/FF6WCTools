@@ -9,7 +9,12 @@ namespace FF6WCToolsLib;
 /// </summary>
 public static class DataHandler
 {
-    public static bool CheckIfItemIsConsumable(Item item)
+    /// <summary>
+    /// Checks if the item is a consumable or throwable (non-equippable) item.
+    /// </summary>
+    /// <param name="item">The item to check.</param>
+    /// <returns>True if the item is non-equippable, otherwise false.</returns>
+    public static bool IsItemConsumable(Item item)
     {
         return CheckItemInRange(item, RANGE_CONSUMABLES) ||
                CheckItemInRange(item, RANGE_SKEANS) ||

@@ -53,15 +53,16 @@ public class FileHandler
     public TimeSpan RefreshInterval { get => _refreshInterval; }
     public char DirectorySeparator { get => Path.DirectorySeparatorChar; }
 
-    public FileHandler(string seedDirectory)
+    public FileHandler(bool requestRunsDirectory, string seedDirectory = "")
     {
         _appDirectory = Directory.GetCurrentDirectory();
         _runsDirectory = $"{_appDirectory}{DirectorySeparator}runs";
         _crashlogDirectory = $"{_appDirectory}{DirectorySeparator}crashlog";
         _seedDirectory = seedDirectory;
 
-        _directoryList = new List<string>() { _runsDirectory, _crashlogDirectory };
-        
+        _directoryList = new List<string>() { _crashlogDirectory };
+        if (requestRunsDirectory) _directoryList.Add(_runsDirectory);
+
         _lastLoadedSeed = "";
         _lastDirectoryRefresh = DateTime.Now;
 

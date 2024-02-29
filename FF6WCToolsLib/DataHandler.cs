@@ -1,13 +1,36 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using static FF6WCToolsLib.WCData;
 
 namespace FF6WCToolsLib;
 
 /// <summary>
-/// Contains methods for processing game memory.
+/// Provides methods for processing FF6's memory and data.
 /// </summary>
 public static class DataHandler
 {
+    /// <summary>
+    /// Checks if the item is a consumable or throwable (non-equippable) item.
+    /// </summary>
+    /// <param name="item">The item to check.</param>
+    /// <returns>True if the item is non-equippable, otherwise false.</returns>
+    public static bool IsItemConsumable(Item item)
+    {
+        return CheckItemInRange(item, RANGE_CONSUMABLES) ||
+               CheckItemInRange(item, RANGE_SKEANS) ||
+               CheckItemInRange(item, RANGE_NINJASTARS);
+    }
+
+    public static void InitializeInverseCharDict()
+    {
+        // Build inverse character dictionary
+        for (byte i = 0x80; i < 0xC6; i++)
+        {
+            CHAR_TO_BYTE_DICT.Add(CHAR_DICT[i], i);
+        }
+        CHAR_TO_BYTE_DICT.Add(' ', 0xFF);
+    }
+
     /// <summary>
     /// Takes 2 arrays of the same size and type and checks if they have the same data.
     /// </summary>
@@ -328,6 +351,28 @@ public static class DataHandler
     }
 
     /// <summary>
+    /// Toggles a bit in a given byte.
+    /// </summary>
+    /// <param name="data">The byte to modify.</param>
+    /// <param name="flag">The bit to flip.</param>
+    /// <returns></returns>
+    public static byte ToggleBit(byte data, byte flag)
+    {
+        // Check if the bit is set.
+        bool isBitSet = CheckBitSet(data, flag);
+
+        // Toggle on/off depending its status.
+        if (isBitSet)
+        {
+            return data &= (byte)~flag;
+        }
+        else
+        {
+            return data |= flag;
+        }
+    }
+
+    /// <summary>
     /// Takes a byte and a bit offset and checks if the bit is set.
     /// </summary>
     /// <param name="data">The byte to check.</param>
@@ -379,6 +424,40 @@ public static class DataHandler
     }
 
     /// <summary>
+    /// Decatenates an integer into a byte array of a specified size.
+    /// </summary>
+    /// <param name="number">The number to decatenate.</param>
+    /// <param name="numberSizeInBytes">Size of the data.</param>
+    /// <returns></returns>
+    public static byte[] DecatenateInteger(int number, int numberSizeInBytes)
+    {
+        byte[] array = BitConverter.GetBytes(number);
+        return array[..numberSizeInBytes];
+    }
+
+    /// <summary>
+    /// Checks if a given item index is part of an item range.
+    /// </summary>
+    /// <param name="itemIndex">The item index to check.</param>
+    /// <param name="range">The item range to compare against.</param>
+    /// <returns>True if the item is in range, otherwise false.</returns>
+    public static bool CheckItemInRange(byte itemIndex, Range range)
+    {
+        return itemIndex >= range.Start.Value && itemIndex <= range.End.Value;
+    }
+
+    /// <summary>
+    /// Checks if a given item is part of an item range.
+    /// </summary>
+    /// <param name="item">The item to check.</param>
+    /// <param name="range">The item range to compare against.</param>
+    /// <returns>True if the item is in range, otherwise false.</returns>
+    public static bool CheckItemInRange(Item item, Range range)
+    {
+        return CheckItemInRange((byte)item, range);
+    }
+
+    /// <summary>
     /// Extracts the character name from the character data in SRAM.
     /// These might change if a rename card was used, or in crowd control!
     /// </summary>
@@ -397,5 +476,167 @@ public static class DataHandler
         string name = new string(characterName);
 
         return name.Trim();
+    }
+
+    /// <summary>
+    /// Takes the byte that contains an item stat boost properties,
+    /// and extracts the stat boosts and plus/minus signals.
+    /// Structure: [VIG/STAM | VIG/STAM sign | SPEED/MAGPOW | SPEED/MAGPOW sign]
+    /// </summary>
+    /// <param name="itemStatBoost">The item stat boost byte.</param>
+    /// <returns>An array containing the separated info.</returns>
+    public static byte[] GetItemStatBoostInfo(byte itemStatBoost)
+    {
+        byte[] statBoostInfo = new byte[4];
+
+        statBoostInfo[0] = (byte)(itemStatBoost & 0x07);
+        statBoostInfo[1] = (byte)(itemStatBoost & 0x08);
+        statBoostInfo[2] = (byte)((itemStatBoost & 0x70) >> 4);
+        statBoostInfo[3] = (byte)((itemStatBoost & 0x80) >> 4);
+
+        return statBoostInfo;
+    }
+
+    /// <summary>
+    /// Constructs a byte with the given stat boost information.
+    /// Use it with bitwise operators, otherwise you'll overwrite other stat boosts.
+    /// </summary>
+    /// <param name="statType">Which one of the 4 stats to modify.</param>
+    /// <param name="value">The value of the stat boost.</param>
+    /// <param name="statBoostData">A byte with the 4 corresponding bits of data.</param>
+    /// <returns>true if the stat resides in the high 4 bits, otherwise false.</returns>
+    public static bool SetStatBoost(Stat statType, int value, out byte statBoostData)
+    {
+        // Clamp the value from -7 to 7. Should be sanitized in Crowd Control anyways.
+        int clampedValue = Math.Clamp(value, -7, 7);
+        
+        statBoostData = 0;
+        byte offset = 0;
+
+        // Set the sign of the boost.
+        bool isNegative = clampedValue < 0;
+        
+        // Save absolute value of the boost.
+        byte absValue = (byte)MathF.Abs(clampedValue);
+
+        // Offset the data if it's one of the stats in the high 4 bytes.
+        bool isHighBits = statType is Stat.speed or Stat.magic;
+        if (isHighBits) offset = 4;
+
+        // Create the byte data.
+        statBoostData |= (byte)(absValue << offset);
+        if (isNegative)
+        {
+            statBoostData |= (byte)(0x08 << offset);
+        }
+
+        return isHighBits;
+    }
+
+    /// <summary>
+    /// Takes a byte array and extracts the name or text stored.
+    /// </summary>
+    /// <param name="nameBytes">The text data in bytes.</param>
+    /// <returns>A trimmed string with the name.</returns>
+    public static string ExtractName(byte[] nameBytes)
+    {
+        char[] nameChars = new char[nameBytes.Length];
+
+        for (byte i = 0; i < nameBytes.Length; i++)
+        {
+            nameChars[i] = CHAR_DICT[nameBytes[i]];
+        }
+
+        return new string(nameChars).Trim();
+    }
+
+    /// <summary>
+    /// Takes a string and encodes the name in a byte array.
+    /// </summary>
+    /// <param name="name">The name to encode.</param>
+    /// <returns>A byte array with the encoded name.</returns>
+    public static byte[] EncodeName(string name, int blockSize, byte fillData = 0xFF)
+    {
+        int maxCharacterCount = name.Length;
+
+        if (name.Length > blockSize)
+        {
+            maxCharacterCount = blockSize;
+        }
+
+        byte[] encodedName = InitializeArrayWithData(blockSize, fillData);
+        
+        for (int i = 0; i < maxCharacterCount; i++)
+        {
+            char character = name[i];
+            if (character == ' ' && fillData != 0xFF)
+            {
+                encodedName[i] = fillData;
+                continue;
+            }
+            encodedName[i] = CHAR_TO_BYTE_DICT[character];
+        }
+
+        return encodedName;
+    }
+
+    /// <summary>
+    /// Creates an array filled with a given type of data.
+    /// </summary>
+    /// <param name="arraySize">The size of the array to initialize.</param>
+    /// <param name="defaultData">The byte to fill the array with.</param>
+    /// <returns>An array initialized with a given byte.</returns>
+    public static byte[] InitializeArrayWithData(int arraySize, byte defaultData)
+    {
+        byte[] byteArray = new byte[arraySize];
+
+        for (int i = 0; i < arraySize; i++)
+        {
+            byteArray[i] = defaultData;
+        }
+
+        return byteArray;
+    }
+
+    /// <summary>
+    /// Reads the NMI jump code and extracts the game state.
+    /// </summary>
+    /// <param name="gameStateData">NMI jump code data.</param>
+    /// <returns>The current game state.</returns>
+    public static GameState GetGameState(byte[] gameStateData)
+    {
+        int firstTwoBytes = ConcatenateByteArray(gameStateData[0..2]);
+        byte lastByte = gameStateData[2];
+
+        // Look at these magic numbers, aren't they beautiful?
+        // These values are taken from the FF6 TAS Lua script.
+        // I have no idea where they came from, but they work. :)
+        // Thanks JCMTG for showing me the script.
+        if (firstTwoBytes == 0x0ba7 && lastByte == 0xC1)
+        {
+            return GameState.BATTLE;
+        }
+        else if (firstTwoBytes == 0x0182 && lastByte == 0xC0)
+        {
+            return GameState.FIELD;
+        }
+        else if (firstTwoBytes == 0xa728 && lastByte == 0xEE)
+        {
+            return GameState.WORLD;
+        }
+        else if (firstTwoBytes == 0x1387 && lastByte == 0xC3)
+        {
+            return GameState.MENU;
+        }
+        else if ((firstTwoBytes == 0xa509 && lastByte == 0xEE) ||
+                    (firstTwoBytes == 0xa94d && lastByte == 0xEE))
+        {
+            return GameState.MODE7;
+        }
+        else
+        {
+            // We discovered a new game state!
+            return GameState.UNKNOWN;
+        }
     }
 }

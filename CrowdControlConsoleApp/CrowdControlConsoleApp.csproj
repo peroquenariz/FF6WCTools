@@ -5,23 +5,19 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <ApplicationIcon>_UncleUlty.ico</ApplicationIcon>
-    <Title>Stats Companion Console App</Title>
-    <Version>1.0.1</Version>
-    <Configurations>Debug;Release;JSON_DEBUG</Configurations>
+    <Title>Crowd Control Console App</Title>
+    <Version>1.0.0</Version>
     <Authors>peroquenariz</Authors>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Content Include="_UncleUlty.ico" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="7.0.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\CrowdControlLib\CrowdControlLib.csproj" />
     <ProjectReference Include="..\FF6WCToolsLib\FF6WCToolsLib.csproj" />
-    <ProjectReference Include="..\StatsCompanionLib\StatsCompanionLib.csproj" />
+    <ProjectReference Include="..\TwitchChatbot\TwitchChatbot.csproj" />
   </ItemGroup>
+
 </Project>

@@ -72,7 +72,7 @@ public class StatsCompanion
 
                 // TODO: move this to FileHandler and make it a function (get rid of copypasted auto-reset code)
                 if (isValidDirectory &&
-                    DateTime.Now - _fileHandler.LastDirectoryRefresh > _fileHandler.RefreshInterval)
+                    DateTime.Now - _fileHandler.LastDirectoryRefresh > _fileHandler.RefreshInterval) // TODO: make this a bool property in FileHandler
                 {
                     isValidDirectory = _fileHandler.UpdateLastSeed(run.SeedInfo, out string[] updatedSeedInfo);
                     run.SeedInfo = updatedSeedInfo;
@@ -199,7 +199,8 @@ public class StatsCompanion
                     // Read KT unlock and skip status only if the bits haven't been set.
                     if (!run.IsKTSkipUnlocked || !run.IsKefkaTowerUnlocked)
                     {
-                        run.KefkaTowerEventByte = _sniClient.ReadMemory(EVENT_BIT_START_ADDRESS + 0x093 / 8, 1)[0];
+                        // KT unlock and skip event bits are in the same byte.
+                        run.KefkaTowerEventByte = _sniClient.ReadMemory(EVENT_BIT_START_ADDRESS + EVENT_BIT_OFFSET_KT_SKIP_UNLOCK / 8, 1)[0];
                     }
 
                     if (run.IsMenuTimerRunning)
@@ -249,7 +250,7 @@ public class StatsCompanion
                     if (run.MapId == 0x02B && !run.IsWhelkPeeked)
                     {
                         run.PartyYPosition = _sniClient.ReadMemory(PARTY_Y_POSITION, 1)[0];
-                        if (run.PartyYPosition <= 32 && run.PartyYPosition >= 30)
+                        if (run.PartyYPosition <= 32 && run.PartyYPosition >= 30) // Coordinates past whelk gate
                         {
                             run.IsWhelkPeeked = true;
                         }
@@ -258,7 +259,7 @@ public class StatsCompanion
                     // Esper Mountain peek.
                     if (run.MapId == 0x177 && !run.IsEsperMountainPeeked)
                     {
-                        run.EsperMountainPeekByte = _sniClient.ReadMemory(EVENT_BIT_START_ADDRESS + 0x17B / 8, 1)[0];
+                        run.EsperMountainPeekByte = _sniClient.ReadMemory(EVENT_BIT_START_ADDRESS + 0x17B / 8, 1)[0]; // NPC running offscreen
                         run.IsEsperMountainPeeked = DataHandler.CheckBitByOffset(run.EsperMountainPeekByte, 0x17B);
                     }
 
@@ -266,7 +267,8 @@ public class StatsCompanion
                     if (run.MapId == 0x053 && !run.IsSouthFigaroBasementPeeked)
                     {
                         run.PartyXPosition = _sniClient.ReadMemory(PARTY_X_POSITION, 1)[0];
-                        //byte basementNpcStatus = sniConnection.ReadMemory(FieldObjectStartAddress + 41 * 0x10, 1)[0];
+                        // TODO: this is currently flagging as peeked even if Celes isn't on the party.
+                        // Open world seeds are fine, but character gating needs this fixed.
                         if (run.PartyXPosition >= 0x37 && run.PartyXPosition <= 0x3B)
                         {
                             run.IsSouthFigaroBasementPeeked = true;

@@ -27,6 +27,7 @@ public class FileHandler
     private readonly string[] _validSeedPrefixes = {
         "ff6wc_",
         "preset_",
+        "ff6_wc_",
         "manually",
         "standard_",
         "chaos_",

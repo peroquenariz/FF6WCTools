@@ -29,11 +29,7 @@ internal class ConsoleViewer
         sniClient.OnConnectionSuccessful += SniClient_OnConnectionSuccessful;
         sniClient.OnCountdownTick += SniClient_OnCountdownTick;
 
-        fileHandler.OnSeedDirectoryNotFound += FileHandler_OnSeedDirectoryNotFound;
-        fileHandler.OnSeedDirectoryInvalid += FileHandler_OnSeedDirectoryInvalid;
-        fileHandler.OnSeedNotFound += FileHandler_OnSeedNotFound;
-        fileHandler.OnSeedInfoFound += FileHandler_OnSeedInfoFound;
-        fileHandler.OnSeedInfoNotFound += FileHandler_OnSeedInfoNotFound;
+        fileHandler.OnShowSeedInfoStatus += FileHandler_OnShowSeedInfoStatus;
 
         statsCompanion.OnExecutionLoopStart += StatsCompanion_OnExecutionLoopStart;
         statsCompanion.OnShowVersionDebug += StatsCompanion_OnShowVersionDebug;
@@ -45,6 +41,31 @@ internal class ConsoleViewer
         statsCompanion.OnCheckKeypress += StatsCompanion_OnCheckKeypress;
 
         Version();
+    }
+
+    private void FileHandler_OnShowSeedInfoStatus(object? sender, SeedInfoEventArgs e)
+    {
+        switch (e.SeedData.Status)
+        {
+            case FileHandler.SeedDirectoryStatus.NONE:
+                NoSeedDirectory();
+                break;
+            case FileHandler.SeedDirectoryStatus.INVALID:
+                InvalidSeedDirectory();
+                break;
+            case FileHandler.SeedDirectoryStatus.NO_FILES_FOUND:
+                NoFilesFound();
+                break;
+            case FileHandler.SeedDirectoryStatus.NO_SEEDS_FOUND:
+                NoSeedsFound();
+                break;
+            case FileHandler.SeedDirectoryStatus.SEED_FOUND:
+                SeedInformation(e.SeedData);
+                break;
+            case FileHandler.SeedDirectoryStatus.SEED_FOUND_NO_INFO_AVAILABLE:
+                if (e.SeedData.Filename != null) NoMatchingSeedInfoFound(e.SeedData.Filename);
+                break;
+        }
     }
 
     private void StatsCompanion_OnCheckKeypress(object? sender, EventArgs e)
@@ -90,31 +111,6 @@ internal class ConsoleViewer
     private void StatsCompanion_OnShowVersionDebug(object? sender, EventArgs e)
     {
         Version(true);
-    }
-
-    private void FileHandler_OnSeedInfoNotFound(object? sender, SeedInfoNotFoundEventArgs e)
-    {
-        NoMatchingSeedInfoFound(e.Filename);
-    }
-
-    private void FileHandler_OnSeedInfoFound(object? sender, SeedInfoFoundEventArgs e)
-    {
-        SeedInformation(e.Filename, e.SeedInfo, e.SeedInfoLines);
-    }
-
-    private void FileHandler_OnSeedNotFound(object? sender, EventArgs e)
-    {
-        NoSeedsFound();
-    }
-
-    private void FileHandler_OnSeedDirectoryInvalid(object? sender, EventArgs e)
-    {
-        InvalidSeedDirectory();
-    }
-
-    private void FileHandler_OnSeedDirectoryNotFound(object? sender, EventArgs e)
-    {
-        NoSeedDirectory();
     }
 
     private void SniClient_OnConnectionSuccessful(object? sender, ConnectionSuccessfulEventArgs e)
@@ -170,8 +166,21 @@ internal class ConsoleViewer
         ClearLines(10);
     }
 
-    public static void SeedInformation(string filename, string[] seedInfo, List<string> seedInfoLines)
+    public static void NoFilesFound()
     {
+        Console.CursorLeft = 0;
+        Console.CursorTop = 8;
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.Write($"Seed directory is empty! Make sure your seed is in the correct folder.".PadRight(RIGHT_PADDING));
+        ClearLines(10);
+    }
+
+    public static void SeedInformation(SeedData seedData)
+    {
+        // If status is SEED_INFO_FOUND, data will not be null.
+        string filename = seedData.Filename!;
+        string[] seedInfo = seedData.SeedInfo!;
+        List<string> seedInfoLines = seedData.SeedInfoLines!;
         string flags = "";
         string flagset;
         Console.CursorLeft = 0;
@@ -185,11 +194,11 @@ internal class ConsoleViewer
             string lineStart = seedInfo[i].Split(" ")[0];
             if (seedInfoLines.Contains(lineStart))
             {
-                Console.WriteLine(seedInfo[i]);
+                Console.WriteLine(seedInfo[i].PadRight(RIGHT_PADDING));
             }
             if (lineStart == "Flags")
             {
-                flags = seedInfo[i].Substring(10);
+                flags = seedInfo[i].Substring(10).PadRight(RIGHT_PADDING);
             }
         }
         flagset = RunJson.GetFlagset(flags);
@@ -327,12 +336,16 @@ internal class ConsoleViewer
 
     public static void InvalidSeedDirectory()
     {
+        Console.CursorLeft = 0;
+        Console.CursorTop = 8;
         Console.ForegroundColor = ConsoleColor.Yellow;
         Console.WriteLine($"Invalid/non-existant seed directory - not collecting seed information!".PadRight(RIGHT_PADDING));
     }
 
     public static void NoSeedDirectory()
     {
+        Console.CursorLeft = 0;
+        Console.CursorTop = 8;
         Console.ForegroundColor = ConsoleColor.DarkGray;
         Console.WriteLine("No seed directory provided in the config file - not collecting seed information!".PadRight(RIGHT_PADDING));
     }
@@ -342,6 +355,7 @@ internal class ConsoleViewer
         Console.CursorTop = 8;
         Console.ForegroundColor = ConsoleColor.Yellow;
         Console.WriteLine($"No matching .txt found for {filename} - not collecting seed information!".PadRight(RIGHT_PADDING));
+        ClearLines(10);
     }
 
     /// <summary>

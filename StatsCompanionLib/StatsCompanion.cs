@@ -50,8 +50,6 @@ public class StatsCompanion
             
             _enableForceRunReset = false;
             
-            bool isValidDirectory = true; // TODO: possibly move this to FileHandler?
-
             // Open a connection to SNI
             _sniClient.ResetConnection();
 
@@ -70,13 +68,11 @@ public class StatsCompanion
             {
                 OnWaitingForNewGame?.Invoke(this, EventArgs.Empty);
 
-                // TODO: move this to FileHandler and make it a function (get rid of copypasted auto-reset code)
-                if (isValidDirectory &&
-                    DateTime.Now - _fileHandler.LastDirectoryRefresh > _fileHandler.RefreshInterval) // TODO: make this a bool property in FileHandler
+                if (_fileHandler.IsSeedDirectoryValid && _fileHandler.CanRefresh)
                 {
-                    isValidDirectory = _fileHandler.UpdateLastSeed(run.SeedInfo, out string[] updatedSeedInfo);
-                    run.SeedInfo = updatedSeedInfo;
+                    run.SeedInfo = _fileHandler.UpdateSeedInfo(run.SeedInfo);
                 }
+
                 run.MapId = DataHandler.ConcatenateByteArray(_sniClient.ReadMemory(MAP_ID_START, 2)) & 0x1FF;
                 run.MenuNumber = _sniClient.ReadMemory(MENU_NUMBER, 1)[0];
                 run.NewGameSelected = _sniClient.ReadMemory(NEW_GAME_SELECTED, 1)[0];
@@ -345,15 +341,11 @@ public class StatsCompanion
                         break;
                     }
 
-                    // If a new seed is found in the directory, abandon the seed.
-                    // TODO: move this to _fileHandler and make it a function (get rid of copypasted auto-reset code)
-                    if (isValidDirectory &&
-                        DateTime.Now - _fileHandler.LastDirectoryRefresh > _fileHandler.RefreshInterval)
+                    if (_fileHandler.IsSeedDirectoryValid && _fileHandler.CanRefresh)
                     {
                         string previousSeed = _fileHandler.LastLoadedSeed;
-                        isValidDirectory = _fileHandler.UpdateLastSeed(run.SeedInfo, out string[] updatedSeedInfo, false);
+                        _fileHandler.UpdateSeedInfo(run.SeedInfo, false);
 
-                        run.SeedInfo = updatedSeedInfo;
                         if (_fileHandler.LastLoadedSeed != previousSeed)
                         {
                             run.SeedHasBeenAbandoned = true;

@@ -11,18 +11,12 @@ namespace FF6WCToolsLib;
 /// </summary>
 public class FileHandler
 {
-    public event EventHandler? OnSeedDirectoryNotFound;
-    public event EventHandler? OnSeedDirectoryInvalid;
-    public event EventHandler? OnSeedNotFound;
-
-    public event EventHandler<SeedInfoFoundEventArgs>? OnSeedInfoFound;
-    public event EventHandler<SeedInfoNotFoundEventArgs>? OnSeedInfoNotFound;
-
     private readonly TimeSpan _refreshInterval = new(0,0,2);
+    private readonly List<string> _directoryList;
     private readonly string _appDirectory;
     private readonly string _runsDirectory;
     private readonly string _crashlogDirectory;
-    private readonly string _seedDirectory;
+    private string _seedDirectory;
 
     private readonly string[] _validSeedPrefixes = {
         "ff6wc_",
@@ -34,32 +28,87 @@ public class FileHandler
         "true_chaos_",
         "blamethebot",
     };
+    
     private readonly List<string> _seedInfoLines = new List<string>(){
         "Version",
         "Generated",
         "Seed",
         "Hash",
     };
-    private readonly List<string> _directoryList;
     
     private string _lastLoadedSeed;
     private DateTime _lastDirectoryRefresh;
+    private SeedDirectoryStatus _seedDirStatus;
+    private bool _isSeedDirectoryValid;
+    private SeedData _seedData;
 
-    public string AppDirectory { get => _appDirectory; }
-    public string RunsDirectory { get => _runsDirectory; }
-    public string CrashlogDirectory { get => _crashlogDirectory; }
-    public string LastLoadedSeed { get => _lastLoadedSeed; }
-    public string SeedDirectory { get => _seedDirectory; }
-    public DateTime LastDirectoryRefresh { get => _lastDirectoryRefresh; }
-    public TimeSpan RefreshInterval { get => _refreshInterval; }
-    public char DirectorySeparator { get => Path.DirectorySeparatorChar; }
+    public event EventHandler<SeedInfoEventArgs>? OnShowSeedInfoStatus;
 
-    public FileHandler(bool requestRunsDirectory, string seedDirectory = "")
+    public enum SeedDirectoryStatus
+    {
+        /// <summary>
+        /// Seed directory path empty.
+        /// </summary>
+        NONE,
+        
+        /// <summary>
+        /// Seed directory path invalid.
+        /// </summary>
+        INVALID,
+        
+        /// <summary>
+        /// Empty seed directory.
+        /// </summary>
+        NO_FILES_FOUND,
+        
+        /// <summary>
+        /// No seeds in seed directory.
+        /// </summary>
+        NO_SEEDS_FOUND,
+
+        /// <summary>
+        /// Seed with matching .txt found.
+        /// </summary>
+        SEED_FOUND,
+
+        /// <summary>
+        /// Seed found but no matching .txt file available.
+        /// </summary>
+        SEED_FOUND_NO_INFO_AVAILABLE,
+    }
+
+    public char DirectorySeparator => Path.DirectorySeparatorChar;
+    public bool CanRefresh => DateTime.Now - _lastDirectoryRefresh > _refreshInterval;
+    public bool IsSeedDirectoryValid => _isSeedDirectoryValid;
+    public string RunsDirectory => _runsDirectory;
+    public string CrashlogDirectory => _crashlogDirectory;
+    public string LastLoadedSeed => _lastLoadedSeed;
+    public string SeedDirectory
+    {
+        get
+        {
+            return _seedDirectory;
+        }
+        set
+        {
+            _isSeedDirectoryValid = CheckSeedDirectory(value);
+            if (_isSeedDirectoryValid)
+            {
+                _seedDirectory = value;
+            }
+            else
+            {
+                OnShowSeedInfoStatus?.Invoke(this, new SeedInfoEventArgs(new SeedData(_seedDirStatus)));
+            }
+        }
+    }
+
+    public FileHandler(bool requestRunsDirectory)
     {
         _appDirectory = Directory.GetCurrentDirectory();
         _runsDirectory = $"{_appDirectory}{DirectorySeparator}runs";
         _crashlogDirectory = $"{_appDirectory}{DirectorySeparator}crashlog";
-        _seedDirectory = seedDirectory;
+        _seedDirectory = string.Empty;
 
         _directoryList = new List<string>() { _crashlogDirectory };
         if (requestRunsDirectory) _directoryList.Add(_runsDirectory);
@@ -67,13 +116,13 @@ public class FileHandler
         _lastLoadedSeed = "";
         _lastDirectoryRefresh = DateTime.Now;
 
-        CheckDirectory(_directoryList);
+        InitializeDirectories(_directoryList);
     }
 
     /// <summary>
     /// Checks if the directories exist, if not, create them.
     /// </summary>
-    private void CheckDirectory (List<string> directoryList)
+    private void InitializeDirectories (List<string> directoryList)
     {
         foreach (var directory in directoryList)
         {
@@ -94,31 +143,39 @@ public class FileHandler
         File.WriteAllText(path, content);
     }
 
+    private bool CheckSeedDirectory(string seedDirectory)
+    {
+        bool isValid = true;
+        _seedDirStatus = SeedDirectoryStatus.NO_FILES_FOUND;
+
+        if (seedDirectory.Length == 0)
+        {
+            // Empty seed directory path
+            _seedDirStatus = SeedDirectoryStatus.NONE;
+            isValid = false;
+        }
+        else if (!Directory.Exists(seedDirectory))
+        {
+            // Invalid seed directory path
+            _seedDirStatus = SeedDirectoryStatus.INVALID;
+            isValid = false;
+        }
+        
+        return isValid;
+    }
+
     /// <summary>
     /// Scans the seed folder and looks for the zip or text file with the last creation date that matches WC naming.
     /// Reads the txt and gets seed information.
     /// </summary>
-    /// <param name="seedInfo">The first lines of the seed txt. If no file is found, array will have null strings.</param>
-    /// <returns>true if the directory is valid, otherwise false.</returns>
-    public bool UpdateLastSeed(string[] seedInfoPrevious, out string[] seedInfo, bool writeSeedInfo = true)
+    /// <param name="seedInfoPrevious"></param>
+    /// <param name="showData">Should the seed data be shown on screen?</param>
+    /// <returns>An array with the first lines of the seed info txt.</returns>
+    public string[] UpdateSeedInfo(string[] seedInfoPrevious, bool showData = true)
     {
         _lastDirectoryRefresh = DateTime.Now;
-        seedInfo = seedInfoPrevious;
-        bool seedFound = false;
-
-        // If a seed directory wasn't provided in the config file
-        if (_seedDirectory.Length == 0)
-        {
-            if (writeSeedInfo) OnSeedDirectoryNotFound?.Invoke(this, EventArgs.Empty);
-            return false;
-        }
-
-        // If the seed directory provided is invalid
-        if (!Directory.Exists(_seedDirectory))
-        {
-            if (writeSeedInfo) OnSeedDirectoryInvalid?.Invoke(this, EventArgs.Empty);
-            return false;
-        }
+        string[] seedInfo = seedInfoPrevious;
+        _seedDirStatus = SeedDirectoryStatus.NO_FILES_FOUND;
 
         // Scan directory
         DirectoryInfo directory = new(_seedDirectory);
@@ -129,15 +186,16 @@ public class FileHandler
         // If there are no files in the directory
         if (files.Length == 0)
         {
-            if (writeSeedInfo) OnSeedNotFound?.Invoke(this, EventArgs.Empty);
+            _seedData = new(_seedDirStatus);
             _lastLoadedSeed = "";
-            return true;
+            if (showData) OnShowSeedInfoStatus?.Invoke(this, new SeedInfoEventArgs(_seedData));
+            return seedInfo;
         }
         
         FileInfo lastCreatedFile = files[0];
         
         // Iterate the file array and check if there are any seeds
-        for (int i = files.Length-1; i >= 0 && !seedFound; i--)
+        for (int i = files.Length-1; i >= 0 && !(_seedDirStatus == SeedDirectoryStatus.SEED_FOUND); i--)
         {
             FileInfo file = files[i];
             foreach (string prefix in _validSeedPrefixes)
@@ -146,25 +204,27 @@ public class FileHandler
                 if (file.Name.StartsWith(prefix))
                 {
                     lastCreatedFile = file;
-                    seedFound = true;
+                    _seedDirStatus = SeedDirectoryStatus.SEED_FOUND;
                     break;
                 }
             }
         }
 
         // If no seeds were found in the file array
-        if (!seedFound)
+        if (!(_seedDirStatus == SeedDirectoryStatus.SEED_FOUND))
         {
-            if (writeSeedInfo) OnSeedNotFound?.Invoke(this, EventArgs.Empty);
             _lastLoadedSeed = "";
-            return true;
+            _seedDirStatus = SeedDirectoryStatus.NO_SEEDS_FOUND;
+            _seedData = new(_seedDirStatus);
+            if (showData) OnShowSeedInfoStatus?.Invoke(this, new SeedInfoEventArgs(_seedData));
+            return seedInfo;
         }
         
         // If a valid seed filename was found
-        if (lastCreatedFile.Name != _lastLoadedSeed)
+        if ((_seedDirStatus == SeedDirectoryStatus.SEED_FOUND) && lastCreatedFile.Name != _lastLoadedSeed)
         {
+            // Is a different seed.
             _lastLoadedSeed = lastCreatedFile.Name;
-            Stream seedTextStream;
             string entryName = "";
             string filenameWithoutExtension = Path.GetFileNameWithoutExtension(lastCreatedFile.Name);
 
@@ -187,43 +247,56 @@ public class FileHandler
 
                 if (seedTxt != null)
                 {
-                    using (seedTextStream = seedTxt.Open())
-                    {
-                        ReadSeedTextFile(seedTextStream, seedInfo);
-                    }
-                    if (writeSeedInfo) OnSeedInfoFound?.Invoke(this, new SeedInfoFoundEventArgs(filenameWithoutExtension, seedInfo, _seedInfoLines));
+                    _seedData = ReadSeedData(filenameWithoutExtension, seedTxt, seedInfo);
                 }
 
                 seedZip.Dispose();
             }
             else if (lastCreatedFile.Extension == ".txt")
             {
-                using (seedTextStream = File.OpenRead(lastCreatedFile.FullName))
-                {
-                    ReadSeedTextFile(seedTextStream, seedInfo);
-                }
-                if (writeSeedInfo) OnSeedInfoFound?.Invoke(this, new SeedInfoFoundEventArgs(filenameWithoutExtension, seedInfo, _seedInfoLines));
+                _seedData = ReadSeedData(filenameWithoutExtension, lastCreatedFile.FullName, seedInfo);
             }
             else if (lastCreatedFile.Extension == ".smc")
             {
-                string txtPath = $"{lastCreatedFile.DirectoryName}{DirectorySeparator}{filenameWithoutExtension}.txt";
+                string filename = $"{filenameWithoutExtension}.txt";
+                string txtPath = $"{lastCreatedFile.DirectoryName}{DirectorySeparator}{filename}";
                 bool hasTxt = File.Exists(txtPath);
                 if (hasTxt)
                 {
-                    using (seedTextStream = File.OpenRead(txtPath))
-                    {
-                        ReadSeedTextFile(seedTextStream, seedInfo);
-                    }
-                    if (writeSeedInfo) OnSeedInfoFound?.Invoke(this, new SeedInfoFoundEventArgs(filenameWithoutExtension, seedInfo, _seedInfoLines));
+                    _seedData = ReadSeedData(filenameWithoutExtension, txtPath, seedInfo);
                 }
                 else
                 {
-                    if (writeSeedInfo) OnSeedInfoNotFound?.Invoke(this, new SeedInfoNotFoundEventArgs(lastCreatedFile.Name));
+                    _seedDirStatus = SeedDirectoryStatus.SEED_FOUND_NO_INFO_AVAILABLE;
+                    _seedData = new(_seedDirStatus, filenameWithoutExtension);
                     _lastLoadedSeed = "";
                 }
             }
+
+            if (showData) OnShowSeedInfoStatus?.Invoke(this, new SeedInfoEventArgs(_seedData));
         }
-        return true;
+        
+        return seedInfo;
+    }
+
+    private SeedData ReadSeedData(string filename, ZipArchiveEntry seedTxt, string[] seedInfo)
+    {
+        using (Stream seedTextStream = seedTxt.Open())
+        {
+            ReadSeedTextStream(seedTextStream, seedInfo);
+        }
+
+        return new(_seedDirStatus, filename, seedInfo, _seedInfoLines);
+    }
+
+    private SeedData ReadSeedData(string filename, string txtPath, string[] seedInfo)
+    {
+        using (Stream seedTextStream = File.OpenRead(txtPath))
+        {
+            ReadSeedTextStream(seedTextStream, seedInfo);
+        }
+
+        return new(_seedDirStatus, filename, seedInfo, _seedInfoLines);
     }
 
     /// <summary>
@@ -231,7 +304,7 @@ public class FileHandler
     /// </summary>
     /// <param name="seedTextStream">The text file stream.</param>
     /// <param name="seedInfo">The seed information array</param>
-    private static void ReadSeedTextFile(Stream seedTextStream, string[] seedInfo)
+    private static void ReadSeedTextStream(Stream seedTextStream, string[] seedInfo)
     {
         StreamReader reader = new(seedTextStream);
         for (int i = 0; i < 9; i++)
@@ -267,26 +340,11 @@ public class FileHandler
     }
 }
 
-public class SeedInfoFoundEventArgs
+public class SeedInfoEventArgs : EventArgs
 {
-    public string Filename { get; }
-    public string[] SeedInfo { get; }
-    public List<string> SeedInfoLines { get; }
-    
-    public SeedInfoFoundEventArgs(string filename, string[] seedInfo, List<string> seedInfoLines)
+    public SeedData SeedData { get; }
+    public SeedInfoEventArgs(SeedData seedData)
     {
-        Filename = filename;
-        SeedInfo = seedInfo;
-        SeedInfoLines = seedInfoLines;
-    }
-}
-
-public class SeedInfoNotFoundEventArgs
-{
-    public string Filename { get; }
-
-    public SeedInfoNotFoundEventArgs (string filename)
-    {
-        Filename = filename;
+        SeedData = seedData;
     }
 }

@@ -68,7 +68,7 @@ public class StatsCompanion
             {
                 OnWaitingForNewGame?.Invoke(this, EventArgs.Empty);
 
-                if (_fileHandler.IsSeedDirectoryValid && _fileHandler.CanRefresh)
+                if (_fileHandler.CanRefresh)
                 {
                     run.SeedInfo = _fileHandler.UpdateSeedInfo(run.SeedInfo);
                 }

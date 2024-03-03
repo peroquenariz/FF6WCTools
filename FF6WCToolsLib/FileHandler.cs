@@ -173,6 +173,12 @@ public class FileHandler
     /// <returns>An array with the first lines of the seed info txt.</returns>
     public string[] UpdateSeedInfo(string[] seedInfoPrevious, bool showData = true)
     {
+        if (!_isSeedDirectoryValid && showData)
+        {
+            OnShowSeedInfoStatus?.Invoke(this, new SeedInfoEventArgs(_seedData));
+            return seedInfoPrevious;
+        }
+        
         _lastDirectoryRefresh = DateTime.Now;
         string[] seedInfo = seedInfoPrevious;
         _seedDirStatus = SeedDirectoryStatus.NO_FILES_FOUND;

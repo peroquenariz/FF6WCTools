@@ -354,7 +354,18 @@ internal class ConsoleViewer
         Console.CursorLeft = 0;
         Console.CursorTop = 8;
         Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.WriteLine($"No matching .txt found for {filename} - not collecting seed information!".PadRight(RIGHT_PADDING));
+
+        string noMatchingTxt = "No matching .txt found for ";
+        string notCollectingInfo = " - not collecting seed info!";
+        int maxFilenameLength = RIGHT_PADDING - noMatchingTxt.Length - notCollectingInfo.Length;
+
+        if (filename.Length > maxFilenameLength)
+        {
+            int charactersToTrim = filename.Length - maxFilenameLength + 3;
+            filename = filename.Substring(0, filename.Length - charactersToTrim) + "...";
+        }
+
+        Console.WriteLine($"{noMatchingTxt}{filename}{notCollectingInfo}".PadRight(RIGHT_PADDING));
         ClearLines(10);
     }
 

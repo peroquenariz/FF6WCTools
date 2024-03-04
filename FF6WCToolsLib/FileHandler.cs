@@ -35,6 +35,13 @@ public class FileHandler
         "Seed",
         "Hash",
     };
+
+    private readonly List<string> _validSeedFileExtensions = new()
+    {
+        ".zip",
+        ".smc",
+        ".txt",
+    };
     
     private string _lastLoadedSeed;
     private DateTime _lastDirectoryRefresh;
@@ -207,7 +214,7 @@ public class FileHandler
             foreach (string prefix in _validSeedPrefixes)
             {
                 // If it matches one of the WC prefixes
-                if (file.Name.StartsWith(prefix))
+                if (file.Name.StartsWith(prefix) && _validSeedFileExtensions.Contains(file.Extension))
                 {
                     lastCreatedFile = file;
                     _seedDirStatus = SeedDirectoryStatus.SEED_FOUND;

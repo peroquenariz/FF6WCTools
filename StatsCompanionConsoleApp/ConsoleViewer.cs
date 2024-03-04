@@ -201,7 +201,7 @@ internal class ConsoleViewer
                 flags = seedInfo[i].Substring(10).PadRight(RIGHT_PADDING);
             }
         }
-        flagset = RunJson.GetFlagset(flags);
+        flagset = FlagHandler.GetFlagset(flags);
         Console.WriteLine();
         Console.WriteLine($"Detected flagset: {flagset}".PadRight(RIGHT_PADDING));
     }

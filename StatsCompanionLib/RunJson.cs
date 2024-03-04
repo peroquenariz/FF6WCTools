@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 using FF6WCToolsLib;
-using static FF6WCToolsLib.WCData;
 
 namespace StatsCompanionLib;
 
@@ -158,7 +156,7 @@ public class RunJson
             {
                 string flags = seedInfo[i].Substring(10);
                 flagsetRaw = flags;
-                flagset = ReplaceCharacters(GetFlagset(flags));
+                flagset = ReplaceCharacters(FlagHandler.GetFlagset(flags));
             }
             else if (line.StartsWith("Website")) // Website seed ID
             {
@@ -168,52 +166,13 @@ public class RunJson
     }
 
     /// <summary>
-    /// Gets the flagset from the seed flags.
-    /// </summary>
-    /// <param name="flags">The flags of the seed.</param>
-    public static string GetFlagset(string flags)
-    {
-        string flagset = "Other";
-        string flagsReplaced = flags;
-        List<string> patterns = new List<string>() {
-            @"(-cpal [0123456789\.]* )",
-            @"(-cpor [0123456789\.]* )",
-            @"(-cspr [0123456789\.]* )",
-            @"(-cspp [0123456789\.]* )",
-        };
-        
-        // Ignore &palette and sprite changes for flagset comparison.
-        // Regex replace palette, portrait and sprite swaps.
-        foreach (var pattern in patterns)
-        {
-            flagsReplaced = Regex.Replace(flags, pattern, match =>
-                {
-                    string value = match.Value;
-                    string replacedValue = value.Replace(value, "");
-                    return replacedValue;
-                }); 
-        }
-        
-        // Find a matching flagset.
-        foreach (var flagsetValue in FLAGSET_DICT)
-        {
-            if (flagsReplaced == flagsetValue.Value)
-            {
-                flagset = flagsetValue.Key;
-                return flagset;
-            }
-        }
-        return flagset;
-    }
-
-    /// <summary>
     /// Replaces characters from a given string.
     /// StatsCollide requires that all spaces are replaced by underscores,
     /// and " - " are replaced by double underscores.
     /// </summary>
     /// <param name="input">The string to replace.</param>
     /// <returns>a string with replaced characters.</returns>
-    private string ReplaceCharacters (string input)
+    private string ReplaceCharacters(string input)
     {
         string output;
         output = input.Replace(" - ", "__").Replace(" ", "_");
@@ -240,6 +199,7 @@ public class RunJson
 
     /// <summary>
     /// Writes the run JSON file.
+    /// TODO: move to FileHandler?
     /// </summary>
     /// <param name="endTime">Timestamp of the end of the run.</param>
     /// <param name="runJson">The run JSON data to write.</param>

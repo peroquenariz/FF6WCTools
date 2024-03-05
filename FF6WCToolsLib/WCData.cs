@@ -123,16 +123,8 @@ public static class WCData
     public const int EVENT_BIT_OFFSET_KT_SKIP_UNLOCK = 0x093;
     public const int EVENT_BIT_OFFSET_KEFKA_TOWER_UNLOCK = 0x094;
 
-    // Game mode constants.
-    public const string BATTLE_KEY = "battle";
-    public const string MENU_KEY = "menu";
-    public const string WORLD_KEY = "world";
-    public const string FIELD_KEY = "field";
-    public const string MODE7_KEY = "mode7";
-
     /// <summary>
     /// Defines the game states.
-    /// TODO: refactor Companion, get rid of string constants and use this.
     /// </summary>
     public enum GameState
     {

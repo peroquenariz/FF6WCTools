@@ -105,8 +105,8 @@ public class StatsCompanion
                 {
                     // Check if the player is in a menu or shop, track time spent menuing and times they opened a menu.
                     run.EnableDialogWindow = _sniClient.ReadMemory(ENABLE_DIALOG_WINDOW, 1)[0];
-                    run.GameStatusData = _sniClient.ReadMemory(NMI_JUMP_CODE, 3);
-                    run.GetGameStatus();
+                    run.GameStateData = _sniClient.ReadMemory(NMI_JUMP_CODE, 3);
+                    run.GameState = DataHandler.GetGameState(run.GameStateData);
                     run.CheckIfMenuIsOpen();
                 }
 

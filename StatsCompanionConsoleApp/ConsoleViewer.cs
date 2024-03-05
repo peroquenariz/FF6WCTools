@@ -262,7 +262,7 @@ internal class ConsoleViewer
     public static void DebugInformation(Run run)
     {
         Console.Clear();
-        Console.WriteLine($"Game mode: {run.GameStatus}");
+        Console.WriteLine($"Game mode: {run.GameState}");
         Console.WriteLine();
         bool isInAShop = run.IsMenuTimerRunning && run.MenuNumber == 3;
         bool isInAMenu = run.IsMenuTimerRunning && run.MenuNumber != 3;

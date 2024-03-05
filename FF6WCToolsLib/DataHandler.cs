@@ -607,6 +607,7 @@ public static class DataHandler
     {
         int firstTwoBytes = ConcatenateByteArray(gameStateData[0..2]);
         byte lastByte = gameStateData[2];
+        GameState gameState;
 
         // Look at these magic numbers, aren't they beautiful?
         // These values are taken from the FF6 TAS Lua script.
@@ -614,29 +615,31 @@ public static class DataHandler
         // Thanks JCMTG for showing me the script.
         if (firstTwoBytes == 0x0ba7 && lastByte == 0xC1)
         {
-            return GameState.BATTLE;
+            gameState = GameState.BATTLE;
         }
         else if (firstTwoBytes == 0x0182 && lastByte == 0xC0)
         {
-            return GameState.FIELD;
+            gameState = GameState.FIELD;
         }
         else if (firstTwoBytes == 0xa728 && lastByte == 0xEE)
         {
-            return GameState.WORLD;
+            gameState = GameState.WORLD;
         }
         else if (firstTwoBytes == 0x1387 && lastByte == 0xC3)
         {
-            return GameState.MENU;
+            gameState = GameState.MENU;
         }
         else if ((firstTwoBytes == 0xa509 && lastByte == 0xEE) ||
                     (firstTwoBytes == 0xa94d && lastByte == 0xEE))
         {
-            return GameState.MODE7;
+            gameState = GameState.MODE7;
         }
         else
         {
             // We discovered a new game state!
-            return GameState.UNKNOWN;
+            gameState = GameState.UNKNOWN;
         }
+
+        return gameState;
     }
 }

@@ -66,7 +66,7 @@ public class Run
     private byte[] _finalBattleLineup;
     private byte[] _monsterBytes;
     private byte[] _monsterBytesPrevious;
-    private byte[] _gameStatusData;
+    private byte[] _gameStateData;
     private Character[] _finalBattleCharacters;
     private string[] _seedInfo;
     private int _chestCount;
@@ -104,7 +104,7 @@ public class Run
     private string _auctionHouseEsperCountText;
     private string _ktSkipUnlockTimeString;
     private string _battleFormation;
-    private string _gameStatus;
+    private GameState _gameState;
     private List<string> _startingCharacters;
     private List<string> _startingCommands;
     private List<string> _dragonsKilled;
@@ -217,8 +217,8 @@ public class Run
     public TimeSpan TimeSpentOnMenus { get => _timeSpentOnMenus; set => _timeSpentOnMenus = value; }
     public TimeSpan TimeSpentOnShops { get => _timeSpentOnShops; set => _timeSpentOnShops = value; }
     public int ShopOpenCounter { get => _shopOpenCounter; set => _shopOpenCounter = value; }
-    public byte[] GameStatusData { get => _gameStatusData; set => _gameStatusData = value; }
-    public string GameStatus { get => _gameStatus; set => _gameStatus = value; }
+    public byte[] GameStateData { get => _gameStateData; set => _gameStateData = value; }
+    public GameState GameState { get => _gameState; set => _gameState = value; }
     public bool IsReset { get => _isReset; set => _isReset = value; }
     public string[] SeedInfo { get => _seedInfo; set => _seedInfo = value; }
     public TimeSpan FinalTime { get => _finalTime; set => _finalTime = value; }
@@ -239,7 +239,7 @@ public class Run
         _ktSkipUnlockTimeString = "";
         _battleFormation = "";
         _auctionHouseEsperCountText = "Zero";
-        _gameStatus = FIELD_KEY;
+        _gameState = GameState.FIELD;
 
         // Lists
         _startingCharacters = new List<string>();
@@ -268,7 +268,7 @@ public class Run
         _finalBattleLineup = Array.Empty<byte>();
         _monsterBytes = Array.Empty<byte>();
         _monsterBytesPrevious = Array.Empty<byte>();
-        _gameStatusData = Array.Empty<byte>();
+        _gameStateData = Array.Empty<byte>();
         _finalBattleCharacters = new Character[4];
         _seedInfo = new string[9];
 
@@ -295,7 +295,7 @@ public class Run
     {
         if (!_isMenuTimerRunning)
         {
-            if (_gameStatus == MENU_KEY)
+            if (_gameState == GameState.MENU)
             {
                 _menuOpen = DateTime.Now;
                 _isMenuTimerRunning = true;
@@ -303,7 +303,7 @@ public class Run
         }
         else
         {
-            if (_gameStatus != MENU_KEY)
+            if (_gameState != GameState.MENU)
             {
                 _menuClose = DateTime.Now;
                 _isMenuTimerRunning = false;
@@ -325,7 +325,7 @@ public class Run
     {
         if (!_isBattleTimerRunning)
         {
-            if (_gameStatus == BATTLE_KEY)
+            if (_gameState == GameState.BATTLE)
             {
                 _battleStart = DateTime.Now;
                 _battlesFought++;
@@ -334,7 +334,7 @@ public class Run
         }
         else
         {
-            if (_gameStatus != BATTLE_KEY || _hasFinished)
+            if (_gameState != GameState.BATTLE || _hasFinished)
             {
                 _battleEnd = DateTime.Now;
                 _monsterBytesPrevious = Array.Empty<byte>();
@@ -837,41 +837,6 @@ public class Run
     {
         // If reset or menu open and menu state is save menu.
         return _mapId == 3 || (_isMenuTimerRunning && _nextMenuState >= 19 && _nextMenuState <= 22);
-    }
-
-    /// <summary>
-    /// Takes the NMI jump code data and gets the game status.
-    /// </summary>
-    public void GetGameStatus()
-    {
-        int firstTwoBytes = DataHandler.ConcatenateByteArray(_gameStatusData[0..2]);
-        byte lastByte = _gameStatusData[2];
-        
-        // Look at these magic numbers, aren't they beautiful?
-        // These values are taken from the FF6 TAS Lua script.
-        // I have no idea where they came from, but they work. :)
-        // Thanks JCMTG for showing me the script.
-        if (firstTwoBytes == 0x0ba7 && lastByte == 0xC1)
-        {
-            _gameStatus = BATTLE_KEY;
-        }
-        else if (firstTwoBytes == 0x0182 && lastByte == 0xC0)
-        {
-            _gameStatus = FIELD_KEY;
-        }
-        else if (firstTwoBytes == 0xa728 && lastByte == 0xEE)
-        {
-            _gameStatus = WORLD_KEY;
-        }
-        else if (firstTwoBytes == 0x1387 && lastByte == 0xC3)
-        {
-            _gameStatus = MENU_KEY;
-        }
-        else if ((firstTwoBytes == 0xa509 && lastByte == 0xEE) ||
-                 (firstTwoBytes == 0xa94d && lastByte == 0xEE))
-        {
-            _gameStatus = MODE7_KEY;
-        }
     }
 
     /// <summary>

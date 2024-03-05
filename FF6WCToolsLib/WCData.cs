@@ -142,6 +142,16 @@ public static class WCData
     public const uint NMI_JUMP_CODE = 0x7E1501;
 
     /// <summary>
+    /// 3 bytes.
+    /// </summary>
+    public const uint STEP_COUNTER = 0x7E1866;
+
+    /// <summary>
+    /// 2 bytes.
+    /// </summary>
+    public const uint SAVE_COUNTER = 0x7E1DC7;
+
+    /// <summary>
     /// Start of the monster indexes.
     /// 6 monsters, 2 bytes each: 12 bytes total.
     /// </summary>

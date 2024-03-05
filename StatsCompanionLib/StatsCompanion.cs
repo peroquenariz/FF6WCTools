@@ -391,6 +391,8 @@ public class StatsCompanion
             run.ChestCount = DataHandler.GetChestCount(run.ChestData);
             run.CharacterMaxLevel = DataHandler.GetMaximumCharacterLevel(run.CharacterData);
             run.DragonsKilled = DataHandler.GetDragonsKilled(run.DragonsBytes);
+            run.StepsTaken = DataHandler.ConcatenateByteArray(_sniClient.ReadMemory(STEP_COUNTER, 3));
+            run.SaveCount = DataHandler.ConcatenateByteArray(_sniClient.ReadMemory(SAVE_COUNTER, 2));
 
             // Get checks data.
             run.GetListOfCompletedChecks();

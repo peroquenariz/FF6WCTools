@@ -82,6 +82,8 @@ public class Run
     private int _gpPrevious;
     private int _gpSpent;
     private int _resetCount;
+    private int _stepsTaken;
+    private int _saveCount;
     private DateTime _startTime;
     private DateTime _endTime;
     private DateTime _menuOpen;
@@ -222,6 +224,8 @@ public class Run
     public bool IsReset { get => _isReset; set => _isReset = value; }
     public string[] SeedInfo { get => _seedInfo; set => _seedInfo = value; }
     public TimeSpan FinalTime { get => _finalTime; set => _finalTime = value; }
+    public int StepsTaken { get => _stepsTaken; set => _stepsTaken = value; }
+    public int SaveCount { get => _saveCount; set => _saveCount = value; }
 
     public Run()
     {

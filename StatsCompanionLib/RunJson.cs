@@ -31,6 +31,8 @@ public class RunJson
     public string timeSpentonBattles { get; set; }
     public int countBattlesFought { get; set; }
     public int gpSpent { get; set; }
+    public int countTimesGameWasSaved { get; set; }
+    public int stepsTaken { get; set; }
     public List<string> chars { get; set; }
     public List<string> abilities { get; set; }
     public bool disableAbilityCheck { get; set; }
@@ -120,6 +122,8 @@ public class RunJson
         countTimesAirshipWasUsed = run.AirshipCounter;
         timeSpentonBattles = run.TimeSpentOnBattles.ToString(TIME_FORMAT);
         countBattlesFought = run.BattlesFought;
+        countTimesGameWasSaved = run.SaveCount;
+        stepsTaken = run.StepsTaken;
         gpSpent = run.GPSpent;
         checksCompleted = run.ChecksCompleted;
         checksPeeked = run.ChecksPeeked;

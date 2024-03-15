@@ -252,6 +252,9 @@ public static class DataEnums
         FieldEffect,
         StatusProtection1,
         StatusProtection2,
+        /// <summary>
+        /// StatusCondition3 auto-status.
+        /// </summary>
         EquipmentStatus,
         ItemFlags1,
         ItemFlags2,
@@ -269,6 +272,9 @@ public static class DataEnums
         Status2__AbsorbElement,
         Status3__NullifyElement,
         Status4__WeakElement,
+        /// <summary>
+        /// StatusCondition2 auto-status.
+        /// </summary>
         _EquipmentStatus,
         PhysicalAndMagicEvasion,
         /// <summary>

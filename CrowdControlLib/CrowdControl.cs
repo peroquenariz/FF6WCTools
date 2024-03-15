@@ -209,7 +209,6 @@ public class CrowdControl
 
                 // Don't execute Crowd Control commands if in battle.
                 // TODO: consider if updating battle ram is worth the trouble.
-                if (_gameState == GameState.BATTLE) continue;
 
                 // Check that the queue isn't empty.
                 if (_crowdControlMessageQueue.Count != 0)

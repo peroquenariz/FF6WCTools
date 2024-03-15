@@ -10,7 +10,11 @@ public static class WCData
 {
     // ROM data and addresses
     public const int MAP_NAMES_START = 0xCEF100; // 73 items, variable size
-    
+
+    public const uint BATTLE_CHARACTER_MONSTER_DATA_START = 0x7E3AA0;
+    public const byte BATTLE_CHARACTER_MONSTER_DATA_BLOCK_SIZE = 20;
+    public const int BATTLE_CHARACTER_MONSTER_DATA_BLOCK_COUNT = 52;
+
     public const uint SPELL_DATA_START = 0xC46AC0;
     public const byte SPELL_DATA_BLOCK_SIZE = 14;
     public const int SPELL_DATA_BLOCK_COUNT = 256;

@@ -50,6 +50,7 @@ public class CrowdControl
     private readonly List<SpellDanceName> _spellDanceNamesList;
 
     private readonly InventoryRamData _inventory;
+    private readonly BattleInventoryRamData _battleInventory;
 
     // Community names!
     private readonly List<string> _communityNames = new()
@@ -91,8 +92,6 @@ public class CrowdControl
     private GameState _gameState;
     private GameState _previousGameState;
 
-    private byte[]? _battleLineup;
-
     public string? LibVersion { get => _libVersion; }
     public static Random Rng => _rng;
 
@@ -122,6 +121,7 @@ public class CrowdControl
         _characterDataList = InitializeRamData<CharacterRamData>(CharacterRamData.BlockCount);
         _characterSpellDataList = InitializeRamData<CharacterSpellRamData>(CharacterSpellRamData.BlockCount);
         _inventory = new InventoryRamData();
+        _battleInventory = new BattleInventoryRamData();
 
         _itemNamesList = InitializeData<ItemName>(_defaultItemNamesData, ItemName.BlockCount);
         _spellMagicalNamesList = InitializeData<SpellMagicalName>(_defaultSpellMagicalNamesData, SpellMagicalName.BlockCount);
@@ -213,15 +213,14 @@ public class CrowdControl
 
                 if (HasBattleStarted())
                 {
-                    await Console.Out.WriteLineAsync("Waiting...");
                     await Task.Delay(500); // Just in case RAM is not loaded yet
                     // Save battle lineup
                     byte[] masks = _sniClient.ReadMemory(BATTLE_CHARACTER_MASKS, CHARACTER_DATA_BLOCK_COUNT);
-                    _battleLineup = DataHandler.GetBattleLineup(masks);
+                    BattleCharacterMonsterData.CurrentLineupData = DataHandler.GetBattleLineup(masks);
                 }
                 else if (HasBattleEnded())
                 {
-                    _battleLineup = null;
+                    BattleCharacterMonsterData.CurrentLineupData = null;
                 }
 
                 // Check that the queue isn't empty.
@@ -303,22 +302,43 @@ public class CrowdControl
     private void ModifyInventory(CrowdControlArgs args)
     {
         ItemRomData itemToModify = _itemDataList[(int)args.Item];
-        
+
+
+        // TODO: figure out how to make this work with generic inventories without reflection.
+
+        // For now, adding and removing items is limited to 1 per effect. This might change in the future.
         if (_gameState == GameState.BATTLE)
         {
             // Read battle inventory.
+            _battleInventory.UpdateData(_sniClient.ReadMemory(_battleInventory), _itemDataList);
 
+            BattleInventorySlot? targetInventorySlot = null;
 
+            switch (args.InventoryEffect)
+            {
+                case InventoryEffect.add:
+                    targetInventorySlot = _battleInventory.AddItem(itemToModify, 1, out _);
+                    break;
+                case InventoryEffect.remove:
+                    targetInventorySlot = _battleInventory.RemoveItem(itemToModify, 1, out _);
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+
+            // Write slot to memory.
+            if (targetInventorySlot != null)
+            {
+                _sniClient.WriteMemory(targetInventorySlot);
+            }
         }
         else
         {
             // Read sram inventory.
             _inventory.UpdateData(_sniClient.ReadMemory(_inventory), _itemDataList);
+            bool emptySlotWasUsed;
+            InventorySlot? targetInventorySlot;
 
-            InventorySlot? targetInventorySlot = null;
-            bool emptySlotWasUsed = false;
-
-            // For now, adding and removing items is limited to 1 per effect. This might change in the future.
             switch (args.InventoryEffect)
             {
                 case InventoryEffect.add:

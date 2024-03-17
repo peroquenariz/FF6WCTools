@@ -23,6 +23,8 @@ public class ItemRomData : BaseRomData
     public static uint DataSize => (uint)BlockCount * BlockSize;
 
     public override uint TargetAddress => StartAddress + (uint)(BlockSize * _dataIndex);
+    public ItemType ItemType => _itemType;
+    public ItemTypeFlags ItemTypeFlags => (ItemTypeFlags)_data[(int)ItemDataStructure.ItemType];
 
     public ItemRomData(byte[] itemData, int itemIndex) : base(itemData, itemIndex)
     {

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FF6WCToolsLib.DataTemplates;
+using System;
 using System.Collections.Generic;
 using static FF6WCToolsLib.WCData;
 
@@ -9,6 +10,29 @@ namespace FF6WCToolsLib;
 /// </summary>
 public static class DataHandler
 {
+    /// <summary>
+    /// Takes the full item equipability data and extracts the equipability for the current battle characters.
+    /// </summary>
+    /// <param name="fullEquipability">Concatenated data of item equipability.</param>
+    /// <returns>A byte with the battle equipability flags.</returns>
+    public static byte GetEquipability(int fullEquipability)
+    {
+        byte equipFlags = 0b00001111; // Initialize flags as unequippable.
+        if (BattleCharacterMonsterData.CurrentLineupData == null) return equipFlags;
+
+        // Iterate each battle character and toggle equipability bit.
+        for (int i = 0; i < BattleCharacterMonsterData.CurrentLineupData.Length; i++)
+        {
+            int characterIndex = BattleCharacterMonsterData.CurrentLineupData[i];
+            if (CheckBitSet(fullEquipability, characterIndex))
+            {
+                equipFlags = ToggleBit(equipFlags, (byte)(1 << i));
+            }
+        }
+
+        return equipFlags;
+    }
+
     public static byte[] GetBattleLineup(byte[] masks)
     {
         byte[] battleLineup = InitializeArrayWithData(4, 0xFF);

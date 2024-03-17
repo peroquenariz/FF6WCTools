@@ -578,4 +578,27 @@ public static class DataEnums
         UNKNOWN_0x40 = 0x40,
         TINTINABAR = 0x80
     }
+
+    public enum BattleItemDataStructure
+    {
+        Index,
+        ItemType,
+        Targeting,
+        Quantity,
+        Equipability
+    }
+
+    [Flags]
+    public enum BattleItemType
+    {
+        NONE = 0x0,
+        UNKNOWN_0x1 = 0x1,
+        UNKNOWN_0x2 = 0x2,
+        IS_A_SHIELD = 0x4,
+        IS_A_WEAPON = 0x8,
+        CAN_BE_USED_WITH_JUMP = 0x10,
+        CAN_BE_THROWN = 0x20,
+        USEABLE_WITH_TOOLS = 0x40,
+        NOT_USABLE_IN_BATTLE = 0x80
+    }
 }

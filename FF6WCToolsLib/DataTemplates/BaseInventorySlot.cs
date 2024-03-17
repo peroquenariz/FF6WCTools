@@ -13,7 +13,7 @@ public abstract class BaseInventorySlot
     /// <summary>
     /// Current item in the slot.
     /// </summary>
-    public ItemRomData Item
+    public virtual ItemRomData Item
     {
         get => _item;
         set
@@ -34,7 +34,7 @@ public abstract class BaseInventorySlot
     /// <summary>
     /// Current quantity of items in the slot.
     /// </summary>
-    public byte Quantity
+    public virtual byte Quantity
     {
         get => _quantity;
         set

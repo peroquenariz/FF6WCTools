@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using static FF6WCToolsLib.WCData;
+using static FF6WCToolsLib.DataTemplates.DataEnums;
 
 namespace FF6WCToolsLib.DataTemplates;
 
@@ -17,6 +18,13 @@ public class BattleInventoryRamData : BaseInventory<BattleInventorySlot>
 
     protected override void UpdateInventorySlots(List<ItemRomData> itemList)
     {
-        throw new System.NotImplementedException();
+        for (int i = 0; i < INVENTORY_SIZE; i++)
+        {
+            if (i == 255) continue; // Skip inaccessible item slot.
+            
+            BattleInventorySlot slot = _inventorySlots[i];
+            slot.Item = itemList[_data[i * BlockSize]];
+            slot.Quantity = _data[i * BlockSize + (int)BattleItemDataStructure.Quantity];
+        }
     }
 }

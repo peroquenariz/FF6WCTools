@@ -37,20 +37,4 @@ public class InventoryRamData : BaseInventory<InventorySlot>
             slot.Quantity = _data[i + BlockCount];
         }
     }
-
-    public override string ToString()
-    {
-        string inventory = string.Empty;
-
-        for (int i = 0; i < INVENTORY_SIZE; i++)
-        {
-            InventorySlot inventorySlot = _inventorySlots[i];
-
-            if (inventorySlot.IsEmpty) continue; // Skip empty items.
-
-            inventory += $"{inventorySlot.Item}: {inventorySlot.Quantity}\n";
-        }
-
-        return inventory;
-    }
 }

@@ -114,4 +114,20 @@ public abstract class BaseInventory<T> : BaseRamData where T : BaseInventorySlot
 
         return null;
     }
+
+    public override string ToString()
+    {
+        string inventory = string.Empty;
+
+        for (int i = 0; i < _inventorySlots.Length; i++)
+        {
+            T inventorySlot = _inventorySlots[i];
+
+            if (inventorySlot.IsEmpty) continue; // Skip empty items.
+
+            inventory += $"{WCData.ITEM_DICT[(byte)inventorySlot.Item.Index]}: {inventorySlot.Quantity}\n";
+        }
+
+        return inventory;
+    }
 }

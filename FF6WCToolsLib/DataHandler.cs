@@ -9,6 +9,24 @@ namespace FF6WCToolsLib;
 /// </summary>
 public static class DataHandler
 {
+    public static byte[] GetBattleLineup(byte[] masks)
+    {
+        byte[] battleLineup = InitializeArrayWithData(4, 0xFF);
+
+        for (byte i = 0; i < masks.Length; i++)
+        {
+            byte maskValue = masks[i];
+            if (maskValue != 0xFF)
+            {
+                // Halve maskValue to get the character order
+                // 0: top, 3: bottom
+                battleLineup[maskValue / 2] = i;
+            }
+        }
+
+        return battleLineup;
+    }
+    
     /// <summary>
     /// Checks if the item is a consumable or throwable (non-equippable) item.
     /// </summary>

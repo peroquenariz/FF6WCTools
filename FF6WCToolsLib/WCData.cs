@@ -8,6 +8,25 @@ namespace FF6WCToolsLib;
 /// </summary>
 public static class WCData
 {
+    public const uint BATTLE_INVENTORY_START = 0x7E2686;
+    public const byte BATTLE_INVENTORY_BLOCK_SIZE = 5;
+    /// <summary>
+    /// 256 items + 8 items (current characters' rhand and lhand items).
+    /// </summary>
+    public const int BATTLE_INVENTORY_BLOCK_COUNT = 264;
+
+    /// <summary>
+    /// Quantity zero should only be used for Empty items.
+    /// </summary>
+    public const byte ITEM_QUANTITY_MIN_VALUE = 0;
+    public const byte ITEM_QUANTITY_MAX_VALUE = 99;
+
+    /// <summary>
+    /// 1 byte per character. Values 0,2,4,6 correspond to slots 1,2,3,4 respectively.
+    /// If character isn't in the battle, mask value will be 0xFF.
+    /// </summary>
+    public const uint BATTLE_CHARACTER_MASKS = 0x7E3000;
+
     // ROM data and addresses
     public const int MAP_NAMES_START = 0xCEF100; // 73 items, variable size
 
@@ -410,7 +429,7 @@ public static class WCData
     
     /// <summary>
     /// Size of the inventory (and inventory count).
-    /// There's 1 "separator" Empty item after each of the blocks.
+    /// There's 1 inaccessible Empty item after each of the blocks.
     /// </summary>
     public const byte INVENTORY_SIZE = 255;
     

@@ -6,7 +6,7 @@
 /// </summary>
 public abstract class BaseRamData : BaseData, IReadableMemoryBlock
 {
-    protected BaseRamData(int blockSize, int dataIndex) : base(new byte[blockSize], dataIndex) { }
+    protected BaseRamData(int dataSize, int dataIndex) : base(new byte[dataSize], dataIndex) { }
 
     /// <summary>
     /// Updates the data block.

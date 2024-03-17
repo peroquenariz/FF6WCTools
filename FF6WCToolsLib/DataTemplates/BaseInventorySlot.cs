@@ -58,5 +58,6 @@ public abstract class BaseInventorySlot
     {
         _item = ItemRomData.Empty;
         _quantity = 0;
+        _isEmpty = true;
     }
 }

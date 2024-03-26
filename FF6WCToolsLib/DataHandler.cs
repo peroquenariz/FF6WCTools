@@ -18,12 +18,12 @@ public static class DataHandler
     public static byte GetEquipability(int fullEquipability)
     {
         byte equipFlags = 0b00001111; // Initialize flags as unequippable.
-        if (BattleCharacterMonsterData.CurrentLineupData == null) return equipFlags;
+        if (BattleActorData.CurrentLineupData == null) return equipFlags;
 
         // Iterate each battle character and toggle equipability bit.
-        for (int i = 0; i < BattleCharacterMonsterData.CurrentLineupData.Length; i++)
+        for (int i = 0; i < BattleActorData.CurrentLineupData.Length; i++)
         {
-            int characterIndex = BattleCharacterMonsterData.CurrentLineupData[i];
+            int characterIndex = BattleActorData.CurrentLineupData[i];
             if (CheckBitSet(fullEquipability, characterIndex))
             {
                 equipFlags = ToggleBit(equipFlags, (byte)(1 << i));
@@ -539,6 +539,19 @@ public static class DataHandler
         return statBoostInfo;
     }
 
+    public static StatBoostValues GetStatBoostValues(byte vigorAndSpeed, byte staminaAndMagic)
+    {
+        byte[] vigorAndSpeedData = GetItemStatBoostInfo(vigorAndSpeed);
+        byte[] staminaAndMagicData = GetItemStatBoostInfo(staminaAndMagic);
+
+        int vigor = vigorAndSpeedData[1] == 0 ? vigorAndSpeedData[0] : vigorAndSpeedData[0] * -1;
+        int speed = vigorAndSpeedData[3] == 0 ? vigorAndSpeedData[2] : vigorAndSpeedData[2] * -1;
+        int stamina = staminaAndMagicData[1] == 0 ? staminaAndMagicData[0] : staminaAndMagicData[0] * -1;
+        int magic = staminaAndMagicData[3] == 0 ? staminaAndMagicData[2] : staminaAndMagicData[2] * -1;
+
+        return new StatBoostValues(vigor, speed, stamina, magic);
+    }
+
     /// <summary>
     /// Constructs a byte with the given stat boost information.
     /// Use it with bitwise operators, otherwise you'll overwrite other stat boosts.
@@ -683,5 +696,31 @@ public static class DataHandler
         }
 
         return gameState;
+    }
+
+    /// <summary>
+    /// Looks for a given character in the current lineup data, and determines if it's in battle.
+    /// </summary>
+    /// <param name="character">The character to check.</param>
+    /// <returns>true if the character is in battle, false if it isn't or if the game isn't in battle mode.</returns>
+    public static bool IsCharacterInBattle(Character character, out int actorIndex)
+    {
+        bool isCharacterInBattle = false;
+        actorIndex = 0;
+
+        if (BattleActorData.CurrentLineupData != null)
+        {
+            for (int i = 0; i < BattleActorData.CurrentLineupData.Length; i++)
+            {
+                if (BattleActorData.CurrentLineupData[i] == (int)character)
+                {
+                    isCharacterInBattle = true;
+                    actorIndex = i;
+                    break;
+                }
+            } 
+        }
+
+        return isCharacterInBattle;
     }
 }

@@ -18,7 +18,7 @@ public readonly struct InventorySlotData : IWritableMemoryBlock
     public InventorySlotData(byte itemQuantity, int slotIndex)
     {
         _slotIndex = slotIndex;
-        _offset = InventoryRamData.BlockCount;
+        _offset = (uint)InventoryRamData.BlockCount;
         _data = itemQuantity;
     }
 

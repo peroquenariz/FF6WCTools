@@ -9,6 +9,12 @@ public abstract class BaseRamData : BaseData, IReadableMemoryBlock
     protected BaseRamData(int dataSize, int dataIndex) : base(new byte[dataSize], dataIndex) { }
 
     /// <summary>
+    /// Creates RAM data without the underlying byte array.
+    /// Use this constructor if the data is stored elsewhere.
+    /// </summary>
+    protected BaseRamData() : base(System.Array.Empty<byte>(), 0) { }
+
+    /// <summary>
     /// Updates the data block.
     /// </summary>
     /// <param name="newData">A byte array with the new data.</param>

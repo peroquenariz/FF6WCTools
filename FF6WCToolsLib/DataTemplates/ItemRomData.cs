@@ -26,6 +26,9 @@ public class ItemRomData : BaseRomData
     public ItemType ItemType => _itemType;
     public ItemTypeFlags ItemTypeFlags => (ItemTypeFlags)_data[(int)ItemDataStructure.ItemType];
 
+    /// TODO: split this class into each item type and inherit?
+    /// Bytes that have shared information are messy and ugly.
+
     public ItemRomData(byte[] itemData, int itemIndex) : base(itemData, itemIndex)
     {
         // Extract the item type.

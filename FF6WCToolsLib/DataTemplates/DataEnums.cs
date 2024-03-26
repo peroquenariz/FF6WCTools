@@ -495,7 +495,7 @@ public static class DataEnums
         CURATIVE_ATTRIBUTES,
         RANDOMLY_SLICE,
         OGRE_NIX_BREAKS,
-        UNKNOWN
+        UNKNOWN // Consumables have this property
     }
 
     public enum EsperDataStructure
@@ -600,5 +600,41 @@ public static class DataEnums
         CAN_BE_THROWN = 0x20,
         USEABLE_WITH_TOOLS = 0x40,
         NOT_USABLE_IN_BATTLE = 0x80
+    }
+
+    public enum BattleActorDataStructure
+    {
+        Level = 12,
+        Speed,
+        VigorX2,
+        SpeedDummy,
+        Stamina,
+        MagPowX1_5,
+        /// <summary>
+        /// 255 - (Evade * 2) + 1
+        /// </summary>
+        EvadeFormula,
+        /// <summary>
+        /// 255 - (MBlock * 2) + 1
+        /// </summary>
+        MBlockFormula,
+        BatPowMainHand,
+        BatPowOffHand,
+        HitRateMainHand,
+        HitRateOffHand,
+        AttackElementMainHand,
+        AttackElementOffHand,
+        WeaponPropertiesMainHand,
+        WeaponPropertiesOffHand,
+        AbsorbedElements,
+        InmuneElements,
+        WeakElements,
+        HalvedElements,
+        ItemIndexMainHand = 52,
+        ItemIndexOffHand,
+        SpecialEffectMainHand,
+        SpecialEffectOffHand,
+        WeaponSpellIndexMainHand = 66,
+        WeaponSpellIndexOffHand,
     }
 }

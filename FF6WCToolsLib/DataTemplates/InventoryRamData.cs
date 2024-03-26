@@ -17,13 +17,13 @@ public class InventoryRamData : BaseInventory<InventorySlot>
     /// but it's still accounted for in the ram to preserve the indexes correctly.
     /// Slot 256 is always an empty item (item index 0xFF and item quantity 0x0).
     /// </summary>
-    public static uint BlockCount => INVENTORY_SIZE+1;
+    public static int BlockCount => INVENTORY_SIZE+1;
     public static byte BlockSize => 2; // Indexes and quantities
-    public static uint DataSize => BlockCount * BlockSize;
+    public static uint DataSize => (uint)BlockCount * BlockSize;
 
     public override uint TargetAddress => StartAddress;
 
-    public InventoryRamData() : base((int)BlockCount, (int)DataSize) { }
+    public InventoryRamData() : base(BlockCount, (int)DataSize) { }
 
     /// <summary>
     /// Updates all inventory slots with new items.

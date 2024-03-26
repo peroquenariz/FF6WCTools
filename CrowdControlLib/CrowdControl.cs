@@ -51,6 +51,7 @@ public class CrowdControl
 
     private readonly InventoryRamData _inventory;
     private readonly BattleInventoryRamData _battleInventory;
+    private readonly BattleActorData _battleActorData;
 
     // Community names!
     private readonly List<string> _communityNames = new()
@@ -122,6 +123,7 @@ public class CrowdControl
         _characterSpellDataList = InitializeRamData<CharacterSpellRamData>(CharacterSpellRamData.BlockCount);
         _inventory = new InventoryRamData();
         _battleInventory = new BattleInventoryRamData();
+        _battleActorData = new BattleActorData();
 
         _itemNamesList = InitializeData<ItemName>(_defaultItemNamesData, ItemName.BlockCount);
         _spellMagicalNamesList = InitializeData<SpellMagicalName>(_defaultSpellMagicalNamesData, SpellMagicalName.BlockCount);
@@ -207,6 +209,8 @@ public class CrowdControl
 
             while (true)
             {
+                await Task.Delay(1000);
+                
                 // Get game state.
                 byte[] gameStateData = _sniClient.ReadMemory(NMI_JUMP_CODE, 3);
                 _gameState = DataHandler.GetGameState(gameStateData);
@@ -216,11 +220,11 @@ public class CrowdControl
                     await Task.Delay(500); // Just in case RAM is not loaded yet
                     // Save battle lineup
                     byte[] masks = _sniClient.ReadMemory(BATTLE_CHARACTER_MASKS, CHARACTER_DATA_BLOCK_COUNT);
-                    BattleCharacterMonsterData.CurrentLineupData = DataHandler.GetBattleLineup(masks);
+                    BattleActorData.CurrentLineupData = DataHandler.GetBattleLineup(masks);
                 }
                 else if (HasBattleEnded())
                 {
-                    BattleCharacterMonsterData.CurrentLineupData = null;
+                    BattleActorData.CurrentLineupData = null;
                 }
 
                 // Check that the queue isn't empty.
@@ -461,7 +465,8 @@ public class CrowdControl
         }
         
         CharacterRamData targetCharacter = _characterDataList[(int)args.Character];
-        
+        targetCharacter.UpdateData(_sniClient.ReadMemory(targetCharacter));
+
         // Equipment effect.
         if (Enum.IsDefined(typeof(EquipmentSlot), args.CharacterEffect.ToString())) // TODO: get rid of string checking?
         {
@@ -472,17 +477,33 @@ public class CrowdControl
             uint equipmentAddress = CharacterRamData.GetEquipmentAddress(args.Character, args.EquipmentSlot);
             
             // Get the item index.
-            byte itemValue = (byte)args.Item;
+            byte itemIndex = (byte)args.Item;
 
-            // Write the character item to memory.
-            _sniClient.WriteMemory(equipmentAddress, new byte[] { itemValue });
+            // Write the character item to SRAM.
+            _sniClient.WriteMemory(equipmentAddress, new byte[] { itemIndex });
+
+            if (_gameState == GameState.BATTLE && (args.EquipmentSlot is EquipmentSlot.rhand or EquipmentSlot.lhand)
+                && DataHandler.IsCharacterInBattle(args.Character, out int actorIndex))
+            {
+                int battleInventoryIndex = InventoryRamData.BlockCount + actorIndex;
+                if (args.EquipmentSlot == EquipmentSlot.lhand)
+                {
+                    // Offset to the left hand item slots.
+                    battleInventoryIndex += 4;
+                }
+
+                // Overwrite current hand item.
+                BattleInventorySlot handSlot = _battleInventory[battleInventoryIndex];
+                handSlot.Item = _itemDataList[itemIndex];
+                _sniClient.WriteMemory(handSlot);
+
+                // Set flag for equipment update.
+                _sniClient.WriteMemory(0x7E2F30 + (uint)actorIndex, new byte[] { 1 });
+            }
         }
         // Stat boost effect.
         else if (Enum.IsDefined(typeof(Stat), args.CharacterEffect.ToString()))
         {
-            // Read current character data.
-            targetCharacter.UpdateData(_sniClient.ReadMemory(targetCharacter));
-
             // Update stat.
             targetCharacter.SetStatBoost(args.StatBoostType, args.StatBoostValue);
 

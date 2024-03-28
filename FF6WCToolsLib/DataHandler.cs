@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FF6WCToolsLib.DataTemplates;
+using System;
 using System.Collections.Generic;
 using static FF6WCToolsLib.WCData;
 
@@ -9,6 +10,47 @@ namespace FF6WCToolsLib;
 /// </summary>
 public static class DataHandler
 {
+    /// <summary>
+    /// Takes the full item equipability data and extracts the equipability for the current battle characters.
+    /// </summary>
+    /// <param name="fullEquipability">Concatenated data of item equipability.</param>
+    /// <returns>A byte with the battle equipability flags.</returns>
+    public static byte GetEquipability(int fullEquipability)
+    {
+        byte equipFlags = 0b00001111; // Initialize flags as unequippable.
+        if (BattleActorData.CurrentLineupData == null) return equipFlags;
+
+        // Iterate each battle character and toggle equipability bit.
+        for (int i = 0; i < BattleActorData.CurrentLineupData.Length; i++)
+        {
+            int characterIndex = BattleActorData.CurrentLineupData[i];
+            if (CheckBitSet(fullEquipability, characterIndex))
+            {
+                equipFlags = ToggleBit(equipFlags, (byte)(1 << i));
+            }
+        }
+
+        return equipFlags;
+    }
+
+    public static byte[] GetBattleLineup(byte[] masks)
+    {
+        byte[] battleLineup = InitializeArrayWithData(4, 0xFF);
+
+        for (byte i = 0; i < masks.Length; i++)
+        {
+            byte maskValue = masks[i];
+            if (maskValue != 0xFF)
+            {
+                // Halve maskValue to get the character order
+                // 0: top, 3: bottom
+                battleLineup[maskValue / 2] = i;
+            }
+        }
+
+        return battleLineup;
+    }
+    
     /// <summary>
     /// Checks if the item is a consumable or throwable (non-equippable) item.
     /// </summary>
@@ -497,6 +539,19 @@ public static class DataHandler
         return statBoostInfo;
     }
 
+    public static StatBoostValues GetStatBoostValues(byte vigorAndSpeed, byte staminaAndMagic)
+    {
+        byte[] vigorAndSpeedData = GetItemStatBoostInfo(vigorAndSpeed);
+        byte[] staminaAndMagicData = GetItemStatBoostInfo(staminaAndMagic);
+
+        int vigor = vigorAndSpeedData[1] == 0 ? vigorAndSpeedData[0] : vigorAndSpeedData[0] * -1;
+        int speed = vigorAndSpeedData[3] == 0 ? vigorAndSpeedData[2] : vigorAndSpeedData[2] * -1;
+        int stamina = staminaAndMagicData[1] == 0 ? staminaAndMagicData[0] : staminaAndMagicData[0] * -1;
+        int magic = staminaAndMagicData[3] == 0 ? staminaAndMagicData[2] : staminaAndMagicData[2] * -1;
+
+        return new StatBoostValues(vigor, speed, stamina, magic);
+    }
+
     /// <summary>
     /// Constructs a byte with the given stat boost information.
     /// Use it with bitwise operators, otherwise you'll overwrite other stat boosts.
@@ -641,5 +696,31 @@ public static class DataHandler
         }
 
         return gameState;
+    }
+
+    /// <summary>
+    /// Looks for a given character in the current lineup data, and determines if it's in battle.
+    /// </summary>
+    /// <param name="character">The character to check.</param>
+    /// <returns>true if the character is in battle, false if it isn't or if the game isn't in battle mode.</returns>
+    public static bool IsCharacterInBattle(Character character, out int actorIndex)
+    {
+        bool isCharacterInBattle = false;
+        actorIndex = 0;
+
+        if (BattleActorData.CurrentLineupData != null)
+        {
+            for (int i = 0; i < BattleActorData.CurrentLineupData.Length; i++)
+            {
+                if (BattleActorData.CurrentLineupData[i] == (int)character)
+                {
+                    isCharacterInBattle = true;
+                    actorIndex = i;
+                    break;
+                }
+            } 
+        }
+
+        return isCharacterInBattle;
     }
 }

@@ -11,12 +11,23 @@ public class ItemRomData : BaseRomData
 {
     private readonly ItemType _itemType;
 
+    public static readonly ItemRomData Empty = new( // Empty item data:
+        new byte[] { 0x01, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                     0x00, 0x00, 0x00, 0x00, 0x41, 0x00, 0x00, 0x00, 0x00, 0x82,
+                     0x0a, 0xc8, 0xff, 0x00, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00 },
+        0xFF); // Item 255
+
     public static uint StartAddress => ITEM_DATA_START;
     public static byte BlockSize => ITEM_DATA_BLOCK_SIZE;
     public static int BlockCount => ITEM_DATA_BLOCK_COUNT;
     public static uint DataSize => (uint)BlockCount * BlockSize;
 
     public override uint TargetAddress => StartAddress + (uint)(BlockSize * _dataIndex);
+    public ItemType ItemType => _itemType;
+    public ItemTypeFlags ItemTypeFlags => (ItemTypeFlags)_data[(int)ItemDataStructure.ItemType];
+
+    /// TODO: split this class into each item type and inherit?
+    /// Bytes that have shared information are messy and ugly.
 
     public ItemRomData(byte[] itemData, int itemIndex) : base(itemData, itemIndex)
     {

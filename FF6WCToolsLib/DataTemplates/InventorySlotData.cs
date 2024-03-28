@@ -7,22 +7,22 @@ namespace FF6WCToolsLib.DataTemplates;
 /// </summary>
 public readonly struct InventorySlotData : IWritableMemoryBlock
 {
-    private readonly byte _slotIndex;
+    private readonly int _slotIndex;
     private readonly uint _offset;
     private readonly byte _data;
-    public uint TargetAddress => InventoryRamData.StartAddress + _slotIndex + _offset;
+    public uint TargetAddress => InventoryRamData.StartAddress + (uint)_slotIndex + _offset;
 
     /// <summary>
     /// Quantity data offsets the address by the size of the inventory item indexes (256 bytes).
     /// </summary>
-    public InventorySlotData(byte itemQuantity, byte slotIndex)
+    public InventorySlotData(byte itemQuantity, int slotIndex)
     {
         _slotIndex = slotIndex;
-        _offset = InventoryRamData.BlockSize;
+        _offset = (uint)InventoryRamData.BlockCount;
         _data = itemQuantity;
     }
 
-    public InventorySlotData(Item item, byte slotIndex)
+    public InventorySlotData(Item item, int slotIndex)
     {
         _slotIndex = slotIndex;
         _offset = 0;

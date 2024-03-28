@@ -50,6 +50,8 @@ public class CrowdControl
     private readonly List<SpellDanceName> _spellDanceNamesList;
 
     private readonly InventoryRamData _inventory;
+    private readonly BattleInventoryRamData _battleInventory;
+    private readonly BattleActorData _battleActorData;
 
     // Community names!
     private readonly List<string> _communityNames = new()
@@ -89,6 +91,7 @@ public class CrowdControl
 
     // Game state.
     private GameState _gameState;
+    private GameState _previousGameState;
 
     public string? LibVersion { get => _libVersion; }
     public static Random Rng => _rng;
@@ -119,6 +122,8 @@ public class CrowdControl
         _characterDataList = InitializeRamData<CharacterRamData>(CharacterRamData.BlockCount);
         _characterSpellDataList = InitializeRamData<CharacterSpellRamData>(CharacterSpellRamData.BlockCount);
         _inventory = new InventoryRamData();
+        _battleInventory = new BattleInventoryRamData();
+        _battleActorData = new BattleActorData();
 
         _itemNamesList = InitializeData<ItemName>(_defaultItemNamesData, ItemName.BlockCount);
         _spellMagicalNamesList = InitializeData<SpellMagicalName>(_defaultSpellMagicalNamesData, SpellMagicalName.BlockCount);
@@ -192,12 +197,15 @@ public class CrowdControl
 
         try
         {
+            _previousGameState = GameState.FIELD;
+            _gameState = GameState.FIELD;
             // TODO: add timer shenanigans.
             // TODO: better error messages (remove the exception throwing for non-implemented effects).
             
 
             // Seed start detection code goes here (same logic as Companion)
 
+            await Task.Delay(1000); // TODO: this should be 3500ms like in Companion, after starting a seed
 
             while (true)
             {
@@ -207,9 +215,17 @@ public class CrowdControl
                 byte[] gameStateData = _sniClient.ReadMemory(NMI_JUMP_CODE, 3);
                 _gameState = DataHandler.GetGameState(gameStateData);
 
-                // Don't execute Crowd Control commands if in battle.
-                // TODO: consider if updating battle ram is worth the trouble.
-                if (_gameState == GameState.BATTLE) continue;
+                if (HasBattleStarted())
+                {
+                    await Task.Delay(500); // Just in case RAM is not loaded yet
+                    // Save battle lineup
+                    byte[] masks = _sniClient.ReadMemory(BATTLE_CHARACTER_MASKS, CHARACTER_DATA_BLOCK_COUNT);
+                    BattleActorData.CurrentLineupData = DataHandler.GetBattleLineup(masks);
+                }
+                else if (HasBattleEnded())
+                {
+                    BattleActorData.CurrentLineupData = null;
+                }
 
                 // Check that the queue isn't empty.
                 if (_crowdControlMessageQueue.Count != 0)
@@ -220,12 +236,24 @@ public class CrowdControl
                     // Remove oldest message from the list. TODO: don't remove if they're time or currency throttled.
                     _crowdControlMessageQueue.RemoveAt(0);
                 }
+
+                _previousGameState = _gameState;
             }
         }
         catch (Exception e)
         {
             await Console.Out.WriteLineAsync(e.ToString());
         }
+    }
+
+    private bool HasBattleEnded()
+    {
+        return _gameState != GameState.BATTLE && _previousGameState == GameState.BATTLE;
+    }
+
+    private bool HasBattleStarted()
+    {
+        return _gameState == GameState.BATTLE && _previousGameState != GameState.BATTLE;
     }
 
     /// <summary>
@@ -277,36 +305,68 @@ public class CrowdControl
 
     private void ModifyInventory(CrowdControlArgs args)
     {
-        // Read inventory.
-        _inventory.UpdateData(_sniClient.ReadMemory(_inventory));
+        ItemRomData itemToModify = _itemDataList[(int)args.Item];
 
-        InventorySlot? targetInventorySlot = null;
-        bool emptySlotWasUsed = false;
-        
+
+        // TODO: figure out how to make this work with generic inventories without reflection.
+
         // For now, adding and removing items is limited to 1 per effect. This might change in the future.
-        switch (args.InventoryEffect)
+        if (_gameState == GameState.BATTLE)
         {
-            case InventoryEffect.add:
-                targetInventorySlot = _inventory.AddItem(args.Item, 1, out emptySlotWasUsed);
-                break;
-            case InventoryEffect.remove:
-                targetInventorySlot = _inventory.RemoveItem(args.Item, 1, out emptySlotWasUsed);
-                break;
-            default:
-                throw new NotImplementedException();
-        }
+            // Read battle inventory.
+            _battleInventory.UpdateData(_sniClient.ReadMemory(_battleInventory), _itemDataList);
 
-        // Write slot to memory.
-        if (targetInventorySlot != null)
-        {
-            // Write new item quantity.
-            _sniClient.WriteMemory(targetInventorySlot.GetItemQuantitySlotData());
+            BattleInventorySlot? targetInventorySlot = null;
 
-            // If the item slot was empty, also write the item.
-            if (emptySlotWasUsed)
+            switch (args.InventoryEffect)
             {
-                _sniClient.WriteMemory(targetInventorySlot.GetItemIndexSlotData());
+                case InventoryEffect.add:
+                    targetInventorySlot = _battleInventory.AddItem(itemToModify, 1, out _);
+                    break;
+                case InventoryEffect.remove:
+                    targetInventorySlot = _battleInventory.RemoveItem(itemToModify, 1, out _);
+                    break;
+                default:
+                    throw new NotImplementedException();
             }
+
+            // Write slot to memory.
+            if (targetInventorySlot != null)
+            {
+                _sniClient.WriteMemory(targetInventorySlot);
+            }
+        }
+        else
+        {
+            // Read sram inventory.
+            _inventory.UpdateData(_sniClient.ReadMemory(_inventory), _itemDataList);
+            bool emptySlotWasUsed;
+            InventorySlot? targetInventorySlot;
+
+            switch (args.InventoryEffect)
+            {
+                case InventoryEffect.add:
+                    targetInventorySlot = _inventory.AddItem(itemToModify, 1, out emptySlotWasUsed);
+                    break;
+                case InventoryEffect.remove:
+                    targetInventorySlot = _inventory.RemoveItem(itemToModify, 1, out emptySlotWasUsed);
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+
+            // Write slot to memory.
+            if (targetInventorySlot != null)
+            {
+                // Write new item quantity.
+                _sniClient.WriteMemory(targetInventorySlot.GetItemQuantitySlotData());
+
+                // If the item slot was empty, also write the item.
+                if (emptySlotWasUsed)
+                {
+                    _sniClient.WriteMemory(targetInventorySlot.GetItemIndexSlotData());
+                }
+            } 
         }
     }
 
@@ -405,7 +465,8 @@ public class CrowdControl
         }
         
         CharacterRamData targetCharacter = _characterDataList[(int)args.Character];
-        
+        targetCharacter.UpdateData(_sniClient.ReadMemory(targetCharacter));
+
         // Equipment effect.
         if (Enum.IsDefined(typeof(EquipmentSlot), args.CharacterEffect.ToString())) // TODO: get rid of string checking?
         {
@@ -416,17 +477,33 @@ public class CrowdControl
             uint equipmentAddress = CharacterRamData.GetEquipmentAddress(args.Character, args.EquipmentSlot);
             
             // Get the item index.
-            byte itemValue = (byte)args.Item;
+            byte itemIndex = (byte)args.Item;
 
-            // Write the character item to memory.
-            _sniClient.WriteMemory(equipmentAddress, new byte[] { itemValue });
+            // Write the character item to SRAM.
+            _sniClient.WriteMemory(equipmentAddress, new byte[] { itemIndex });
+
+            if (_gameState == GameState.BATTLE && (args.EquipmentSlot is EquipmentSlot.rhand or EquipmentSlot.lhand)
+                && DataHandler.IsCharacterInBattle(args.Character, out int actorIndex))
+            {
+                int battleInventoryIndex = InventoryRamData.BlockCount + actorIndex;
+                if (args.EquipmentSlot == EquipmentSlot.lhand)
+                {
+                    // Offset to the left hand item slots.
+                    battleInventoryIndex += 4;
+                }
+
+                // Overwrite current hand item.
+                BattleInventorySlot handSlot = _battleInventory[battleInventoryIndex];
+                handSlot.Item = _itemDataList[itemIndex];
+                _sniClient.WriteMemory(handSlot);
+
+                // Set flag for equipment update.
+                _sniClient.WriteMemory(0x7E2F30 + (uint)actorIndex, new byte[] { 1 });
+            }
         }
         // Stat boost effect.
         else if (Enum.IsDefined(typeof(Stat), args.CharacterEffect.ToString()))
         {
-            // Read current character data.
-            targetCharacter.UpdateData(_sniClient.ReadMemory(targetCharacter));
-
             // Update stat.
             targetCharacter.SetStatBoost(args.StatBoostType, args.StatBoostValue);
 

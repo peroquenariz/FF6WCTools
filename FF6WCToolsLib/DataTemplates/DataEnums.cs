@@ -252,6 +252,9 @@ public static class DataEnums
         FieldEffect,
         StatusProtection1,
         StatusProtection2,
+        /// <summary>
+        /// StatusCondition3 auto-status.
+        /// </summary>
         EquipmentStatus,
         ItemFlags1,
         ItemFlags2,
@@ -269,6 +272,9 @@ public static class DataEnums
         Status2__AbsorbElement,
         Status3__NullifyElement,
         Status4__WeakElement,
+        /// <summary>
+        /// StatusCondition2 auto-status.
+        /// </summary>
         _EquipmentStatus,
         PhysicalAndMagicEvasion,
         /// <summary>
@@ -489,7 +495,7 @@ public static class DataEnums
         CURATIVE_ATTRIBUTES,
         RANDOMLY_SLICE,
         OGRE_NIX_BREAKS,
-        UNKNOWN
+        UNKNOWN // Consumables have this property
     }
 
     public enum EsperDataStructure
@@ -571,5 +577,64 @@ public static class DataEnums
         WALK_FASTER = 0x20,
         UNKNOWN_0x40 = 0x40,
         TINTINABAR = 0x80
+    }
+
+    public enum BattleItemDataStructure
+    {
+        Index,
+        ItemType,
+        Targeting,
+        Quantity,
+        Equipability
+    }
+
+    [Flags]
+    public enum BattleItemType
+    {
+        NONE = 0x0,
+        UNKNOWN_0x1 = 0x1,
+        UNKNOWN_0x2 = 0x2,
+        IS_A_SHIELD = 0x4,
+        IS_A_WEAPON = 0x8,
+        CAN_BE_USED_WITH_JUMP = 0x10,
+        CAN_BE_THROWN = 0x20,
+        USEABLE_WITH_TOOLS = 0x40,
+        NOT_USABLE_IN_BATTLE = 0x80
+    }
+
+    public enum BattleActorDataStructure
+    {
+        Level = 12,
+        Speed,
+        VigorX2,
+        SpeedDummy,
+        Stamina,
+        MagPowX1_5,
+        /// <summary>
+        /// 255 - (Evade * 2) + 1
+        /// </summary>
+        EvadeFormula,
+        /// <summary>
+        /// 255 - (MBlock * 2) + 1
+        /// </summary>
+        MBlockFormula,
+        BatPowMainHand,
+        BatPowOffHand,
+        HitRateMainHand,
+        HitRateOffHand,
+        AttackElementMainHand,
+        AttackElementOffHand,
+        WeaponPropertiesMainHand,
+        WeaponPropertiesOffHand,
+        AbsorbedElements,
+        InmuneElements,
+        WeakElements,
+        HalvedElements,
+        ItemIndexMainHand = 52,
+        ItemIndexOffHand,
+        SpecialEffectMainHand,
+        SpecialEffectOffHand,
+        WeaponSpellIndexMainHand = 66,
+        WeaponSpellIndexOffHand,
     }
 }

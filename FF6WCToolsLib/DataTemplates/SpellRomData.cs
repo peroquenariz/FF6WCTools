@@ -38,6 +38,11 @@ public class SpellRomData : BaseRomData
         return spellDescription;
     }
 
+    public void SetSpecialEffect(byte specialEffect)
+    {
+        _data[(int)SpellDataStructure.SpecialEffect] = specialEffect;
+    }
+
     /// <summary>
     /// Modifies a spell to make it usable in the menu.
     /// </summary>

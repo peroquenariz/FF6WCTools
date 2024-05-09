@@ -111,7 +111,7 @@ internal class CrowdControlArgs
         }
         else
         {
-            _effectType = GetEffectTypeAndTarget(splitMessage); 
+            _effectType = GetEffectTypeAndTarget(splitMessage);
         }
 
         // Get effect and command parameters.
@@ -232,7 +232,15 @@ internal class CrowdControlArgs
         {
             // TODO: mirror command triggers even if you put other parameters
             // This is a placeholder for future text mirroring effects.
-            return Effect.mirror;
+
+            if (effect == "items")
+            {
+                return Effect.mirror; 
+            }
+            else
+            {
+                return Effect._INVALID;
+            }
         }
         else
         {

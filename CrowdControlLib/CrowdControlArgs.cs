@@ -39,7 +39,9 @@ internal class CrowdControlArgs
     private const int ITEM_STAT_BOOST_MIN_VALUE = -7;
     private const int ITEM_STAT_BOOST_MAX_VALUE = 7;
     private const int SPELL_COST_MAX_VALUE = 254;
-    
+
+    private int _cost;
+
     private readonly Effect _effectType;
     private WindowEffect _windowEffect;
     private GPEffect _gpEffect;
@@ -63,6 +65,7 @@ internal class CrowdControlArgs
 
     public bool IsValid => _isValid;
     public string ErrorMessage => _errorMessage;
+    public int Cost => _cost;
     public Effect EffectType => _effectType;
     public WindowEffect WindowEffect => _windowEffect;
     public GPEffect GPEffect => _gpEffect;

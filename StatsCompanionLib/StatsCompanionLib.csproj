@@ -7,7 +7,7 @@
     <Title>StatsCompanionLib</Title>
     <Company>$(Authors)</Company>
     <Authors>peroquenariz</Authors>
-    <Version>0.2.4</Version>
+    <Version>0.2.5</Version>
     <Configurations>Debug;Release;JSON_DEBUG</Configurations>
   </PropertyGroup>
 

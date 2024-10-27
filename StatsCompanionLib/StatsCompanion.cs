@@ -365,12 +365,14 @@ public class StatsCompanion
                 }
             }
 
+#if !JSON_DEBUG
             // If the seed has been abandoned, start tracking the new run.
             if (run.SeedHasBeenAbandoned)
             {
                 _fileHandler.ResetLastLoadedSeed();
                 continue;
             }
+#endif
 
             // If KT skip was unlocked, format a string with the time.
             if (run.IsKTSkipUnlocked)

@@ -7,6 +7,18 @@ public class BattleActor
     private readonly int _index;
     private readonly byte[] _data;
 
+    public int CurrentHp =>
+        DataHandler.ConcatenateByteArray(_data[
+            (int)BattleActorDataStructure.CurrentHp..
+            (int)BattleActorDataStructure.CurrentMp
+        ]);
+
+    public int MaxHp =>
+        DataHandler.ConcatenateByteArray(_data[
+            (int)BattleActorDataStructure.MaximumHp..
+            (int)BattleActorDataStructure.MaximumMp
+        ]);
+
     public BattleActor(int index)
     {
         _data = new byte[BattleActorData.BlockSize];

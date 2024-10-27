@@ -393,6 +393,7 @@ public class StatsCompanion
             run.DragonsKilled = DataHandler.GetDragonsKilled(run.DragonsBytes);
             run.StepsTaken = DataHandler.ConcatenateByteArray(_sniClient.ReadMemory(STEP_COUNTER, 3));
             run.SaveCount = DataHandler.ConcatenateByteArray(_sniClient.ReadMemory(SAVE_COUNTER, 2));
+            run.BattleActorData.UpdateData(_sniClient.ReadMemory(run.BattleActorData));
 
             // Get checks data.
             run.GetListOfCompletedChecks();

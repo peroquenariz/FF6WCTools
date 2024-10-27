@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using FF6WCToolsLib;
+using FF6WCToolsLib.DataTemplates;
 using static FF6WCToolsLib.WCData;
 
 namespace StatsCompanionLib;
@@ -229,6 +230,8 @@ public class Run
     public TimeSpan FinalTime { get => _finalTime; set => _finalTime = value; }
     public int StepsTaken { get => _stepsTaken; set => _stepsTaken = value; }
     public int SaveCount { get => _saveCount; set => _saveCount = value; }
+    public BattleActorData BattleActorData { get; set; } = new();
+    
 
     public Run()
     {
@@ -746,7 +749,7 @@ public class Run
             string name = DataHandler.GetCharacterName(characterData);
             
             // Add character to the final battle character array.
-            _finalBattleCharacters[i] = new Character(characterData, characterSpellData, name);
+            _finalBattleCharacters[i] = new Character(characterIndex, characterData, characterSpellData, name, BattleActorData[i]);
         }
     }
 

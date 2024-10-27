@@ -1,5 +1,8 @@
 ﻿using System.Collections.Generic;
+using FF6WCToolsLib;
+using FF6WCToolsLib.DataTemplates;
 using static FF6WCToolsLib.WCData;
+using static FF6WCToolsLib.DataTemplates.DataEnums;
 
 namespace StatsCompanionLib;
 
@@ -9,6 +12,8 @@ namespace StatsCompanionLib;
 public class Character
 {
     private string _name;
+    private int _hp;
+    private int _maxHp;
     private byte _level;
     private byte _vigor;
     private byte _speed;
@@ -25,6 +30,9 @@ public class Character
     private List<string> _spells;
 
     public string Name { get => _name; set => _name = value; }
+    public string OriginalName { get; private set; }
+    public int Hp { get => _hp; set => _hp = value; } // TODO: make all these auto-implemented and use JsonPropertyName
+    public int MaxHp { get => _maxHp; set => _maxHp = value; }
     public byte Level { get => _level; set => _level = value; }
     public byte Vigor { get => _vigor; set => _vigor = value; }
     public byte Speed { get => _speed; set => _speed = value; }
@@ -40,10 +48,11 @@ public class Character
     public List<string> Commands { get => _commands; set => _commands = value; }
     public List<string> Spells { get => _spells; set => _spells = value; }
 
-    public Character(byte[] characterData, byte[] characterSpellsData, string name)
+    public Character(int characterIndex, byte[] characterData, byte[] characterSpellsData, string name, BattleActor battleActor)
     {
         _name = name;
-        _level = characterData[0x08];
+        OriginalName = ((WCData.Character)characterIndex).ToString();
+        _level = characterData[0x08]; // TODO: replace all magic numbers with CharaterDataStructure enum values
         _commands = new List<string>() {
             COMMAND_DICT[characterData[0x16]],
             COMMAND_DICT[characterData[0x17]],
@@ -63,6 +72,8 @@ public class Character
         _relic2 = ITEM_DICT[characterData[0x24]];
         _spells = new List<string>();
         GetSpellList(characterSpellsData);
+        _hp = battleActor.CurrentHp;
+        _maxHp = battleActor.MaxHp;
     }
 
     /// <summary>

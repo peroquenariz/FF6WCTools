@@ -204,6 +204,7 @@ public class FileHandler
             _seedData = new(_seedDirStatus);
             _lastLoadedSeed = "";
             if (showData) OnShowSeedInfoStatus?.Invoke(this, new SeedInfoEventArgs(_seedData));
+            EmptySeedInfo(seedInfo);
             return seedInfo;
         }
         
@@ -232,6 +233,7 @@ public class FileHandler
             _seedDirStatus = SeedDirectoryStatus.NO_SEEDS_FOUND;
             _seedData = new(_seedDirStatus);
             if (showData) OnShowSeedInfoStatus?.Invoke(this, new SeedInfoEventArgs(_seedData));
+            EmptySeedInfo(seedInfo);
             return seedInfo;
         }
         
@@ -285,6 +287,7 @@ public class FileHandler
                     _seedDirStatus = SeedDirectoryStatus.SEED_FOUND_NO_INFO_AVAILABLE;
                     _seedData = new(_seedDirStatus, filenameWithoutExtension);
                     _lastLoadedSeed = "";
+                    EmptySeedInfo(seedInfo);
                 }
             }
 
@@ -294,7 +297,15 @@ public class FileHandler
         return seedInfo;
     }
 
-    private SeedData ReadSeedData(string filename, ZipArchiveEntry seedTxt, string[] seedInfo)
+    private static void EmptySeedInfo(string?[] seedInfo)
+    {
+        for (int i = 0; i < seedInfo.Length; i++)
+        {
+            seedInfo[i] = null;
+        }
+    }
+
+    private SeedData ReadSeedData(string filename, ZipArchiveEntry seedTxt, string?[] seedInfo)
     {
         using (Stream seedTextStream = seedTxt.Open())
         {

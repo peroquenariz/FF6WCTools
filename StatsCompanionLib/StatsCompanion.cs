@@ -96,7 +96,7 @@ public class StatsCompanion
             run.StartingCommands = DataHandler.GetAvailableCommands(run.CharactersBytes, run.CharacterCommands);
 
             // Get initial GP count.
-            run.GPCurrent = run.GPPrevious = DataHandler.ConcatenateByteArray(_sniClient.ReadMemory(CURRENT_GP_START, 3));
+            run.StartingGp = run.GPCurrent = run.GPPrevious = DataHandler.ConcatenateByteArray(_sniClient.ReadMemory(CURRENT_GP_START, 3));
 
             // Loop while run is in progress.
             while (!run.HasFinished)

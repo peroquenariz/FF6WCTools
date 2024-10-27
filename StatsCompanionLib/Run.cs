@@ -214,6 +214,7 @@ public class Run
     public int BattlesFought { get => _battlesFought; set => _battlesFought = value; }
     public bool InAuctionHouse { get => _inAuctionHouse; set => _inAuctionHouse = value; }
     public byte[] MonsterBytes { get => _monsterBytes; set => _monsterBytes = value; }
+    public int StartingGp { get; set; }
     public int GPSpent { get => _gpSpent; set => _gpSpent = value; }
     public byte NextMenuState { get => _nextMenuState; set => _nextMenuState = value; }
     public TimeSpan TimeSpentOnMenus { get => _timeSpentOnMenus; set => _timeSpentOnMenus = value; }

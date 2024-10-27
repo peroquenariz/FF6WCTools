@@ -32,6 +32,7 @@ public class RunJson
     public int countBattlesFought { get; set; }
     public int startingGp { get; set; }
     public int gpSpent { get; set; }
+    public int gpEarned { get; set; }
     public int countTimesGameWasSaved { get; set; }
     public int stepsTaken { get; set; }
     public List<string> chars { get; set; }
@@ -127,6 +128,7 @@ public class RunJson
         stepsTaken = run.StepsTaken;
         startingGp = run.StartingGp;
         gpSpent = run.GPSpent;
+        gpEarned = run.GPEarned;
         checksCompleted = run.ChecksCompleted;
         checksPeeked = run.ChecksPeeked;
         finalBattleCharacters = run.FinalBattleCharacters;

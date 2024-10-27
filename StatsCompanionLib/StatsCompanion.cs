@@ -214,7 +214,7 @@ public class StatsCompanion
                     {
                         run.GPCurrent = DataHandler.ConcatenateByteArray(_sniClient.ReadMemory(CURRENT_GP_START, 3));
                     }
-                    run.UpdateGPSpent();
+                    run.UpdateGp();
 
                     // Only execute on game reset.
                     if (run.MapId == 3)

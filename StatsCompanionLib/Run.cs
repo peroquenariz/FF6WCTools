@@ -81,6 +81,7 @@ public class Run
     private int _gpCurrent;
     private int _gpPrevious;
     private int _gpSpent;
+    private int _gpEarned;
     private int _resetCount;
     private int _stepsTaken;
     private int _saveCount;
@@ -216,6 +217,7 @@ public class Run
     public byte[] MonsterBytes { get => _monsterBytes; set => _monsterBytes = value; }
     public int StartingGp { get; set; }
     public int GPSpent { get => _gpSpent; set => _gpSpent = value; }
+    public int GPEarned { get => _gpEarned; set => _gpEarned = value; } // TODO: refactor all of these into auto-implemented properties
     public byte NextMenuState { get => _nextMenuState; set => _nextMenuState = value; }
     public TimeSpan TimeSpentOnMenus { get => _timeSpentOnMenus; set => _timeSpentOnMenus = value; }
     public TimeSpan TimeSpentOnShops { get => _timeSpentOnShops; set => _timeSpentOnShops = value; }
@@ -829,12 +831,20 @@ public class Run
         }
     }
 
-    public void UpdateGPSpent()
+    public void UpdateGp()
     {
-        if (_gpCurrent < _gpPrevious && !IsInSaveMenu())
+        if (IsInSaveMenu()) return;
+        
+        if (_gpCurrent < _gpPrevious)
         {
             _gpSpent += (_gpPrevious - _gpCurrent);
         }
+            
+        else if (_gpCurrent > _gpPrevious)
+        {
+            _gpEarned += (_gpCurrent - _gpPrevious);
+        }
+            
         _gpPrevious = _gpCurrent;
     }
 

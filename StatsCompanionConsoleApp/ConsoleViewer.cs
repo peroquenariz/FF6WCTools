@@ -179,31 +179,49 @@ internal class ConsoleViewer
     {
         // If status is SEED_INFO_FOUND, data will not be null.
         string filename = seedData.Filename!;
-        string[] seedInfo = seedData.SeedInfo!;
+        string?[] seedInfo = seedData.SeedInfo!;
         List<string> seedInfoLines = seedData.SeedInfoLines!;
         string flags = "";
-        string flagset;
+        bool spoilerLogEnabled = false;
+        
         Console.CursorLeft = 0;
         Console.CursorTop = 8;
         Console.ForegroundColor = ConsoleColor.Cyan;
         Console.WriteLine($"Loaded seed: {filename}".PadRight(RIGHT_PADDING));
         Console.ForegroundColor = ConsoleColor.White;
         Console.WriteLine();
-        for (int i = 0; i < seedInfo.Length; i++)
+        
+        foreach (var line in seedInfo)
         {
-            string lineStart = seedInfo[i].Split(" ")[0];
+            if (line == null)
+            {
+                spoilerLogEnabled = true;
+                break;
+            }
+            
+            string lineStart = line.Split(" ")[0];
+            
             if (seedInfoLines.Contains(lineStart))
             {
-                Console.WriteLine(seedInfo[i].PadRight(RIGHT_PADDING));
+                Console.WriteLine(line.PadRight(RIGHT_PADDING));
             }
             if (lineStart == "Flags")
             {
-                flags = seedInfo[i].Substring(10).PadRight(RIGHT_PADDING);
+                flags = line.Substring(10).PadRight(RIGHT_PADDING);
             }
         }
-        flagset = FlagHandler.GetFlagset(flags);
+
         Console.WriteLine();
-        Console.WriteLine($"Detected flagset: {flagset}".PadRight(RIGHT_PADDING));
+        
+        if (spoilerLogEnabled)
+        {
+            Console.WriteLine("Flagset hidden!");
+        }
+        else
+        {
+            string flagset = FlagHandler.GetFlagset(flags);
+            Console.WriteLine($"Detected flagset: {flagset}".PadRight(RIGHT_PADDING));
+        }
     }
 
     public static void TrackingRun()

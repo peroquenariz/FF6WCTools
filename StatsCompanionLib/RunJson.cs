@@ -143,22 +143,24 @@ public class RunJson
     /// If the seed folder is not setup properly, seedInfo will be null and no info will be collected.
     /// </summary>
     /// <param name="seedInfo">String array containing the first 9 lines of the seed txt file.</param>
-    private void GetSeedInfo(string[] seedInfo)
+    private void GetSeedInfo(string?[] seedInfo)
     {
         for (int i = 0; i < 9; i++)
         {
-            string line = seedInfo[i];
-            if (line == null)
+            if (seedInfo[i] == null)
             {
-                return;
+                continue;
             }
-            else if (line.StartsWith("Seed")) // Randomizer seed
+            
+            string line = seedInfo[i]!;
+            
+            if (line.StartsWith("Seed")) // Randomizer seed
             {
-                seedRaw = seedInfo[i].Substring(10);
+                seedRaw = line.Substring(10);
             }
             else if (line.StartsWith("Flags")) // Flagset
             {
-                string flags = seedInfo[i].Substring(10);
+                string flags = line.Substring(10);
                 flagsetRaw = flags;
                 flagset = ReplaceCharacters(FlagHandler.GetFlagset(flags));
             }

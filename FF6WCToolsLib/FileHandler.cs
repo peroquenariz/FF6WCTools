@@ -11,6 +11,8 @@ namespace FF6WCToolsLib;
 /// </summary>
 public class FileHandler
 {
+    public const int SEED_INFO_LINE_COUNT = 9;
+    
     private readonly TimeSpan _refreshInterval = new(0,0,2);
     private readonly List<string> _directoryList;
     private readonly string _appDirectory;
@@ -178,7 +180,7 @@ public class FileHandler
     /// <param name="seedInfoPrevious"></param>
     /// <param name="showData">Should the seed data be shown on screen?</param>
     /// <returns>An array with the first lines of the seed info txt.</returns>
-    public string[] UpdateSeedInfo(string[] seedInfoPrevious, bool showData = true)
+    public string?[] UpdateSeedInfo(string?[] seedInfoPrevious, bool showData = true)
     {
         if (!_isSeedDirectoryValid && showData)
         {
@@ -187,7 +189,7 @@ public class FileHandler
         }
         
         _lastDirectoryRefresh = DateTime.Now;
-        string[] seedInfo = seedInfoPrevious;
+        string?[] seedInfo = seedInfoPrevious;
         _seedDirStatus = SeedDirectoryStatus.NO_FILES_FOUND;
 
         // Scan directory
@@ -302,7 +304,7 @@ public class FileHandler
         return new(_seedDirStatus, filename, seedInfo, _seedInfoLines);
     }
 
-    private SeedData ReadSeedData(string filename, string txtPath, string[] seedInfo)
+    private SeedData ReadSeedData(string filename, string txtPath, string?[] seedInfo)
     {
         using (Stream seedTextStream = File.OpenRead(txtPath))
         {
@@ -317,7 +319,7 @@ public class FileHandler
     /// </summary>
     /// <param name="seedTextStream">The text file stream.</param>
     /// <param name="seedInfo">The seed information array</param>
-    private static void ReadSeedTextStream(Stream seedTextStream, string[] seedInfo)
+    private static void ReadSeedTextStream(Stream seedTextStream, string?[] seedInfo)
     {
         StreamReader reader = new(seedTextStream);
         for (int i = 0; i < 9; i++)

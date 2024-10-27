@@ -68,7 +68,7 @@ public class Run
     private byte[] _monsterBytesPrevious;
     private byte[] _gameStateData;
     private Character[] _finalBattleCharacters;
-    private string[] _seedInfo;
+    private string?[] _seedInfo;
     private int _chestCount;
     private int _characterCount;
     private int _isKefkaFight;
@@ -222,7 +222,7 @@ public class Run
     public byte[] GameStateData { get => _gameStateData; set => _gameStateData = value; }
     public GameState GameState { get => _gameState; set => _gameState = value; }
     public bool IsReset { get => _isReset; set => _isReset = value; }
-    public string[] SeedInfo { get => _seedInfo; set => _seedInfo = value; }
+    public string?[] SeedInfo { get => _seedInfo; set => _seedInfo = value; }
     public TimeSpan FinalTime { get => _finalTime; set => _finalTime = value; }
     public int StepsTaken { get => _stepsTaken; set => _stepsTaken = value; }
     public int SaveCount { get => _saveCount; set => _saveCount = value; }
@@ -274,7 +274,7 @@ public class Run
         _monsterBytesPrevious = Array.Empty<byte>();
         _gameStateData = Array.Empty<byte>();
         _finalBattleCharacters = new Character[4];
-        _seedInfo = new string[9];
+        _seedInfo = new string?[FileHandler.SEED_INFO_LINE_COUNT];
 
         // Enums
         _tzenThiefBought = TzenThiefBought.None;

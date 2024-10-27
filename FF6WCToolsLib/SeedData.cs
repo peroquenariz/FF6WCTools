@@ -6,7 +6,7 @@ public readonly struct SeedData
 {
     public FileHandler.SeedDirectoryStatus Status { get; }
     public string? Filename { get; }
-    public string[]? SeedInfo { get; }
+    public string?[]? SeedInfo { get; }
     public List<string>? SeedInfoLines { get; }
 
     /// <summary>
@@ -34,7 +34,7 @@ public readonly struct SeedData
     /// <summary>
     /// Seed and its info has been found.
     /// </summary>
-    public SeedData(FileHandler.SeedDirectoryStatus status, string filename, string[] seedInfo, List<string> seedInfoLines)
+    public SeedData(FileHandler.SeedDirectoryStatus status, string filename, string?[] seedInfo, List<string> seedInfoLines)
     {
         Status = status;
         Filename = filename;
